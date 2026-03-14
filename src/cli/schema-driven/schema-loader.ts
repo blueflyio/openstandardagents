@@ -36,20 +36,20 @@ export class SchemaLoader {
   private definitions: Map<string, SchemaDefinition> = new Map();
 
   constructor(schemaPath?: string) {
-    // Default to v0.4 schema - find it relative to this module
+    // Default to the current schema - find it relative to this module
     // When installed as npm package, __dirname will be in node_modules/@bluefly/openstandardagents/dist/cli/schema-driven/
-    // Schema is at node_modules/@bluefly/openstandardagents/dist/spec/v0.4/agent.schema.json
+    // Schema is at node_modules/@bluefly/openstandardagents/dist/spec/v0.5/agent.schema.json
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
 
     // Try multiple paths to find the schema
     const possiblePaths = [
       // When running from dist/ (npm installed or local build)
-      path.join(__dirname, '../../../spec/v0.4/agent.schema.json'),
+      path.join(__dirname, '../../../spec/v0.5/agent.schema.json'),
       // When running from source (development)
-      path.join(__dirname, '../../../spec/v0.4/agent.schema.json'),
+      path.join(__dirname, '../../../spec/v0.5/agent.schema.json'),
       // Fallback to cwd (for backwards compatibility)
-      path.join(process.cwd(), 'spec/v0.4/agent.schema.json'),
+      path.join(process.cwd(), 'spec/v0.5/agent.schema.json'),
     ];
 
     let resolvedPath: string;

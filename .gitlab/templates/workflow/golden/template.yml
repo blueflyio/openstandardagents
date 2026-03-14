@@ -339,7 +339,7 @@ test:nodejs:
     - redis:latest
     - postgres:13
   variables:
-    DATABASE_URL: 'postgresql://postgres:postgres@0.1.16postgres:5432/test_db'
+    DATABASE_URL: 'postgresql://postgres:${POSTGRES_PASSWORD}@0.1.16postgres:5432/test_db'
     REDIS_URL: 'redis://redis:6379'
   script:
     - |
@@ -388,7 +388,7 @@ test:drupal:
         MYSQL_USER: drupal
         MYSQL_PASSWORD: drupal
   variables:
-    SIMPLETEST_DB: 'mysql://drupal:drupal@0.1.16mysql/drupal_test'
+    SIMPLETEST_DB: 'mysql://drupal:${DRUPAL_DB_PASSWORD}@0.1.16mysql/drupal_test'
     SIMPLETEST_BASE_URL: 'http://localhost:8080'
   before_script:
     - apt-get update && apt-get install -y git unzip libzip-dev mysql-client chromium-driver
@@ -456,7 +456,7 @@ test:python:
     - redis:latest
     - postgres:13
   variables:
-    DATABASE_URL: 'postgresql://postgres:postgres@0.1.16postgres:5432/test_db'
+    DATABASE_URL: 'postgresql://postgres:${POSTGRES_PASSWORD}@0.1.16postgres:5432/test_db'
     REDIS_URL: 'redis://redis:6379'
   script:
     - |

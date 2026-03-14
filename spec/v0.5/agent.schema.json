@@ -25,11 +25,12 @@
       "type": "string",
       "enum": [
         "Agent",
+        "Role",
         "Task",
         "Workflow",
         "Flow"
       ],
-      "description": "Resource type: Agent (agentic loops), Task (deterministic steps), Workflow (composition), or Flow (streaming)"
+      "description": "Resource type: Agent (agentic loops), Role (IDE operator overlay), Task (deterministic steps), Workflow (composition), or Flow (streaming)"
     },
     "metadata": {
       "$ref": "#/definitions/Metadata"

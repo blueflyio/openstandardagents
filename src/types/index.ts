@@ -77,6 +77,21 @@ export type {
 export { isOssaSkill } from './skill.js';
 export type { OssaSkill } from './skill.js';
 
+// Export Role types (v0.5 — IDE operator contexts)
+export { createRoleManifest, isOssaRole } from './role.js';
+export type {
+    OssaRole,
+    RoleActivation,
+    RoleContext,
+    RoleExtension,
+    RoleHooks,
+    RoleInstructions,
+    RoleMCPServer,
+    RoleProtocols,
+    RoleSpec,
+    RoleTools
+} from './role.js';
+
 // Export MCP server manifest types
 export { isOssaMCPServer } from './mcp-server-manifest.js';
 export type { OssaMCPServer } from './mcp-server-manifest.js';

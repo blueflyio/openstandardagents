@@ -126,7 +126,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 
 **Examples**:
 ```bash
-JWT_SECRET="SET_JWT_SECRET_BASE64"
+JWT_SECRET="xK9mPqR8sT2vYnZ5cF7hJ3kL6nQ1wE4r"
 ```
 
 **Security Notes**:
@@ -164,7 +164,7 @@ openssl rand -base64 32
 
 **Examples**:
 ```bash
-ENCRYPTION_KEY="SET_ENCRYPTION_KEY_BASE64"
+ENCRYPTION_KEY="aB3dE6fG9hI2jK5lM8nO1pQ4rS7tU0vW"
 ```
 
 **Security Notes**:
@@ -258,25 +258,25 @@ ALLOWED_ORIGINS="*"
 **Type**: Connection String
 **Required**: Yes
 **Secret**: Yes
-**Format**: `postgresql://DB_USER:DB_PASSWORD__AT__DB_HOST:DB_PORT/DB_NAME`
+**Format**: `postgresql://<user>:<password>@<host>:<port>/<database>`
 **Description**: PostgreSQL connection string
 
 **Examples**:
 ```bash
 # Standard format
-DATABASE_URL="postgresql://OSSA_USER:OSSA_DB_PASSWORD__AT__localhost:5432/ossa_db"
+DATABASE_URL="postgresql://ossa_user:${POSTGRES_PASSWORD}@localhost:5432/ossa_db"
 
 # With SSL
-DATABASE_URL="postgresql://DB_USER:DB_PASSWORD__AT__DB_HOST:5432/db?sslmode=require"
+DATABASE_URL="postgresql://user:${POSTGRES_PASSWORD}@host:5432/db?sslmode=require"
 
 # Railway (auto-injected)
 DATABASE_URL="postgresql://postgres:***@monorail.proxy.rlwy.net:12345/railway"
 
 # Render (auto-injected)
-DATABASE_URL="postgres://DB_USER:DB_PASSWORD__AT__dpg-abc123.oregon-postgres.render.com/db"
+DATABASE_URL="postgres://user:${POSTGRES_PASSWORD}@dpg-abc123.oregon-postgres.render.com/db"
 
 # Fly.io (auto-injected)
-DATABASE_URL="postgres://postgres:DB_PASSWORD__AT__top2.nearest.of.ossa-db.internal:5432/ossa"
+DATABASE_URL="postgres://postgres:${POSTGRES_PASSWORD}@top2.nearest.of.ossa-db.internal:5432/ossa"
 ```
 
 **Platform Notes**:
@@ -354,7 +354,7 @@ POSTGRES_SHARED_BUFFERS=4GB    # Large DB
 **Type**: Connection String
 **Required**: Yes
 **Secret**: Yes
-**Format**: `redis://REDIS_USER:REDIS_PASSWORD__AT__REDIS_HOST:REDIS_PORT`
+**Format**: `redis://<user>:<password>@<host>:<port>`
 **Description**: Redis connection string
 
 **Examples**:
@@ -1027,7 +1027,7 @@ DRUPAL_API_KEY=CHANGE_ME
 BRIDGE_API_KEY=CHANGE_ME
 
 # Database (auto-injected by platforms)
-DATABASE_URL=postgresql://DB_USER:DB_PASSWORD__AT__localhost:5432/ossa
+DATABASE_URL=postgresql://user:${POSTGRES_PASSWORD}@localhost:5432/ossa
 REDIS_URL=redis://localhost:6379
 
 # Vector Database
@@ -1096,7 +1096,7 @@ JWT_SECRET=dev-secret-do-not-use-in-prod
 JWT_SECRET=staging-secret-different-from-prod
 
 # Production
-JWT_SECRET=SET_PRODUCTION_JWT_SECRET
+JWT_SECRET=prod-secret-rotate-every-90-days
 ```
 
 ### 4. Audit Environment Variables

@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.4.7
+apiVersion: ossa/v0.5.0
 kind: Workflow
 metadata:
   name: code-review-pipeline
