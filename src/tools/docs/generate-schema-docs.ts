@@ -5,49 +5,13 @@
  * Usage: npm run docs:schema:generate
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs';
-import { join, resolve } from 'path';
+import { readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { join } from 'path';
+import { SCHEMA_FILE, SPEC_PATH, VERSION } from '../../version.js';
 
-// Dynamic version detection - find latest spec directory
-function getLatestSchemaVersion(): { dir: string; file: string } {
-  const specDir = join(process.cwd(), 'spec');
-  const dirs = readdirSync(specDir, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && d.name.startsWith('v'))
-    .map((d) => d.name)
-    .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
-
-  if (dirs.length === 0) {
-    throw new Error('No schema version directories found in spec/');
-  }
-
-  const latestDir = dirs[0];
-  const version = latestDir.slice(1); // Remove 'v' prefix
-  return {
-    dir: latestDir,
-    file: `ossa-${version}.schema.json`,
-  };
-}
-
-interface SchemaProperty {
-  type: string | string[];
-  description?: string;
-  format?: string;
-  pattern?: string;
-  enum?: string[];
-  minimum?: number;
-  maximum?: number;
-  minLength?: number;
-  maxLength?: number;
-  required?: boolean;
-  default?: any;
-  examples?: any[];
-  properties?: Record<string, SchemaProperty>;
-  items?: SchemaProperty;
-}
-
-// Dynamic paths based on detected version
-const schemaVersion = getLatestSchemaVersion();
-const SPEC_DIR = join(process.cwd(), 'spec', schemaVersion.dir);
+const schemaVersionLabel = `v${VERSION.split('.').slice(0, 2).join('.')}`;
+const schemaPath = join(process.cwd(), SPEC_PATH, SCHEMA_FILE);
+const schemaLink = `${SPEC_PATH}/${SCHEMA_FILE}`;
 const OUTPUT_DIR = join(process.cwd(), 'docs/schema-reference');
 
 // Field documentation metadata
@@ -226,8 +190,7 @@ function main() {
   mkdirSync(OUTPUT_DIR, { recursive: true });
 
   // Read schema dynamically
-  const schemaPath = join(SPEC_DIR, schemaVersion.file);
-  console.log(`📜 Using schema: ${schemaVersion.dir}/${schemaVersion.file}`);
+  console.log(`📜 Using schema: ${schemaLink}`);
   const schemaContent = readFileSync(schemaPath, 'utf-8');
   const schema = JSON.parse(schemaContent);
 
@@ -274,7 +237,7 @@ The OSSA schema defines the structure of agent manifests. Every field serves a s
 
 ## Schema Versions
 
-- **Current**: ${schemaVersion.dir}
+- **Current**: ${schemaVersionLabel}
 
 See [Versioning Guide](../guides/versioning.md) for migration information.
 
@@ -289,7 +252,7 @@ ossa validate agent.ossa.yaml
 ## Complete Schema
 
 View the complete JSON Schema:
-- [${schemaVersion.dir} Schema](https://github.com/blueflyio/openstandardagents/blob/main/spec/${schemaVersion.dir}/${schemaVersion.file})
+- [Current Schema](https://github.com/blueflyio/openstandardagents/blob/main/${schemaLink})
 
 ## Related Documentation
 

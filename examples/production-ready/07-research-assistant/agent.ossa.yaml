@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.4.7
+apiVersion: ossa/v0.5
 kind: Agent
 metadata:
   name: research-assistant
@@ -19,19 +19,16 @@ spec:
     - Citation management
     - Research question formulation
     - Methodology analysis
-
   llm:
     provider: anthropic
     model: claude-sonnet-4-20250514
     temperature: 0.5
     maxTokens: 4000
-
   capabilities:
     - search_papers
     - summarize_paper
     - generate_citations
     - compare_studies
-
   tools:
     - type: function
       name: search_papers
@@ -45,7 +42,11 @@ spec:
             type: array
             items:
               type: string
-              enum: [pubmed, arxiv, semantic_scholar, google_scholar]
+              enum:
+                - pubmed
+                - arxiv
+                - semantic_scholar
+                - google_scholar
           filters:
             type: object
             properties:
@@ -57,7 +58,6 @@ spec:
                 type: number
         required:
           - query
-
     - type: function
       name: summarize_paper
       description: Generate structured summary of research paper
@@ -68,10 +68,13 @@ spec:
             type: string
           summaryType:
             type: string
-            enum: [abstract, full, methodology, findings]
+            enum:
+              - abstract
+              - full
+              - methodology
+              - findings
         required:
           - paperId
-
     - type: function
       name: generate_citations
       description: Generate citations in various formats
@@ -84,11 +87,14 @@ spec:
               type: string
           format:
             type: string
-            enum: [apa, mla, chicago, bibtex]
+            enum:
+              - apa
+              - mla
+              - chicago
+              - bibtex
         required:
           - papers
           - format
-
   memory:
     enabled: true
     type: summary_memory
@@ -97,7 +103,6 @@ spec:
       summary_prompt: |
         Summarize the key research topics, papers discussed,
         and important findings from this session.
-
   observability:
     logging:
       level: info
@@ -107,13 +112,16 @@ spec:
         - papers_searched
         - summaries_generated
         - citations_created
-
 extensions:
   langchain:
-    agent_type: react
-    memory_type: summary
-    tools_mapping:
-      - ossa_capability: search_papers
-        langchain_tool: academic_search
-      - ossa_capability: summarize_paper
-        langchain_tool: paper_summarizer
+    enabled: true
+    chain_type: agent
+    memory:
+      type: summary
+    tools:
+      - name: search_papers
+        description: Search academic papers and publications
+      - name: summarize_paper
+        description: Generate structured summary of research paper
+      - name: generate_citations
+        description: Generate citations in various formats

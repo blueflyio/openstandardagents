@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.4.7
+apiVersion: ossa/v0.5
 kind: Agent
 metadata:
   name: customer-support-bot
@@ -26,19 +26,16 @@ spec:
     - Clear and concise explanations
     - Proactive in offering solutions
     - Transparent about limitations
-
   llm:
     provider: openai
     model: gpt-4o
     temperature: 0.7
     maxTokens: 1500
-
   capabilities:
     - search_documentation
     - create_ticket
     - send_email
     - conversation_memory
-
   tools:
     - type: function
       name: search_docs
@@ -55,7 +52,6 @@ spec:
             default: 5
         required:
           - query
-
     - type: function
       name: create_ticket
       description: Create a support ticket for issues requiring human attention
@@ -70,7 +66,11 @@ spec:
             description: Detailed description of the issue
           priority:
             type: string
-            enum: [low, medium, high, urgent]
+            enum:
+              - low
+              - medium
+              - high
+              - urgent
             description: Priority level of the ticket
           category:
             type: string
@@ -79,7 +79,6 @@ spec:
           - title
           - description
           - priority
-
     - type: function
       name: send_email
       description: Send follow-up email to customer
@@ -98,12 +97,14 @@ spec:
           template:
             type: string
             description: Email template to use
-            enum: [follow_up, resolution, escalation]
+            enum:
+              - follow_up
+              - resolution
+              - escalation
         required:
           - to
           - subject
           - body
-
   autonomy:
     level: supervised
     approval_required: false
@@ -112,7 +113,6 @@ spec:
         action: notify_human
       - condition: ticket_count > 3
         action: escalate
-
   memory:
     enabled: true
     type: conversation_buffer
@@ -121,7 +121,6 @@ spec:
       enabled: true
       backend: redis
       ttl: 86400
-
   safety:
     input_filters:
       - type: pii_detection
@@ -132,8 +131,9 @@ spec:
       - type: hallucination_check
         threshold: 0.8
       - type: tone_analysis
-        required_sentiment: [positive, neutral]
-
+        required_sentiment:
+          - positive
+          - neutral
   observability:
     logging:
       level: info
@@ -150,23 +150,16 @@ spec:
     tracing:
       enabled: true
       provider: opentelemetry
-
 extensions:
   langchain:
-    agent_type: react
-    memory_type: conversation_buffer
-    chain_type: conversation
-    tools_mapping:
-      - ossa_capability: search_documentation
-        langchain_tool: search_docs
-        tool_class: CustomSearchTool
-      - ossa_capability: create_ticket
-        langchain_tool: create_ticket
-        tool_class: TicketingTool
-      - ossa_capability: send_email
-        langchain_tool: send_email
-        tool_class: EmailTool
-    export_config:
-      format: python
-      include_dependencies: true
-      output_file: customer_support_agent.py
+    enabled: true
+    chain_type: agent
+    memory:
+      type: buffer
+    tools:
+      - name: search_docs
+        description: Search the knowledge base for relevant documentation
+      - name: create_ticket
+        description: Create a support ticket for issues requiring human attention
+      - name: send_email
+        description: Send follow-up email to customer

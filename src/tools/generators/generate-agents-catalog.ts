@@ -1,10 +1,11 @@
 #!/usr/bin/env tsx
 import {
+  existsSync,
+  mkdirSync,
   readdirSync,
   readFileSync,
-  writeFileSync,
   statSync,
-  mkdirSync,
+  writeFileSync,
 } from 'fs';
 import { join, relative } from 'path';
 import yaml from 'js-yaml';
@@ -15,83 +16,114 @@ import {
 } from '../../utils/constants.js';
 
 const AGENTS_DIR = join(process.cwd(), GITLAB_AGENTS_DIR);
-const OUTPUT_FILE = join(
-  process.cwd(),
-  'website/content/docs/agents/catalog.md'
-);
+const OUTPUT_DIR = join(process.cwd(), 'website/content/docs/agents');
+const OUTPUT_FILE = join(OUTPUT_DIR, 'catalog.md');
+
+interface Capability {
+  name: string;
+  description?: string;
+}
 
 interface Agent {
   id: string;
   name: string;
   role: string;
   description?: string;
-  capabilities: Array<{ name: string; description: string }>;
+  capabilities: Capability[];
   path: string;
 }
 
-function findAgents(): Agent[] {
-  const agents: Agent[] = [];
-  const entries = readdirSync(AGENTS_DIR);
+function readManifest(manifestPath: string): Agent | null {
+  try {
+    const content = readFileSync(manifestPath, 'utf8');
+    const data = yaml.load(content, { schema: yaml.JSON_SCHEMA }) as any;
+    const agent = data?.agent;
 
-  for (const entry of entries) {
-    import { GITLAB_MANIFEST_NAME } from '../../utils/constants.js';
-    try {
-      const content = readFileSync(manifestPath, 'utf-8');
-      // Use safeLoad to prevent arbitrary code execution (CWE-502)
-      const data = yaml.load(content, { schema: yaml.JSON_SCHEMA }) as Record<
-        string,
-        unknown
-      >;
-
-      if (data?.agent) {
-        agents.push({
-          id: data.agent.id,
-          name: data.agent.name,
-          role: data.agent.role,
-          description: data.agent.description,
-          capabilities: data.agent.capabilities || [],
-          path: relative(process.cwd(), manifestPath),
-        });
-      }
-    } catch (error) {
-      // Skip if no manifest
+    if (!agent?.id || !agent?.name || !agent?.role) {
+      return null;
     }
+
+    return {
+      id: String(agent.id),
+      name: String(agent.name),
+      role: String(agent.role),
+      description:
+        typeof agent.description === 'string' ? agent.description : undefined,
+      capabilities: Array.isArray(agent.capabilities)
+        ? agent.capabilities
+            .filter((capability: any) => capability?.name)
+            .map((capability: any) => ({
+              name: String(capability.name),
+              description:
+                typeof capability.description === 'string'
+                  ? capability.description
+                  : undefined,
+            }))
+        : [],
+      path: relative(process.cwd(), manifestPath),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function findAgents(): Agent[] {
+  if (!existsSync(AGENTS_DIR)) {
+    return [];
   }
 
-  return agents;
+  return readdirSync(AGENTS_DIR)
+    .map((entry) => join(AGENTS_DIR, entry))
+    .filter((entryPath) => statSync(entryPath).isDirectory())
+    .map((entryPath) => readManifest(join(entryPath, GITLAB_MANIFEST_NAME)))
+    .filter((agent): agent is Agent => agent !== null)
+    .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function renderCatalog(agents: Agent[]): string {
+  let doc = [
+    '# GitLab Agents Catalog',
+    '',
+    'OSSA-compliant agents for GitLab CI/CD automation.',
+    '',
+    `**Total Agents**: ${agents.length}`,
+  ].join('\n');
+
+  if (agents.length === 0) {
+    return `${doc}\n\nNo GitLab agent manifests are currently published under \`.gitlab/agents\`.\n`;
+  }
+
+  for (const agent of agents) {
+    doc += `\n\n## ${agent.name}\n\n`;
+    doc += `**ID**: \`${agent.id}\`  \n`;
+    doc += `**Role**: \`${agent.role}\`\n\n`;
+
+    if (agent.description) {
+      doc += `${agent.description}\n\n`;
+    }
+
+    if (agent.capabilities.length > 0) {
+      doc += '### Capabilities\n\n';
+      for (const capability of agent.capabilities) {
+        doc += `- **${capability.name}**`;
+        if (capability.description) {
+          doc += `: ${capability.description}`;
+        }
+        doc += '\n';
+      }
+      doc += '\n';
+    }
+
+    doc += `**Manifest**: [\`${agent.path}\`](https://github.com/blueflyio/openstandardagents/blob/main/${agent.path})\n\n`;
+    doc += '```bash\n';
+    doc += `# Deploy agent\nkubectl apply -f ${agent.path}\n`;
+    doc += '```\n';
+  }
+
+  return `${doc}\n`;
 }
 
 const agents = findAgents();
-
-let doc = `# GitLab Agents Catalog
-
-OSSA-compliant agents for GitLab CI/CD automation.
-
-**Total Agents**: ${agents.length}
-
-`;
-
-for (const agent of agents.sort((a, b) => a.name.localeCompare(b.name))) {
-  doc += `## ${agent.name}\n\n`;
-  doc += `**ID**: \`${agent.id}\`  \n`;
-  doc += `**Role**: \`${agent.role}\`\n\n`;
-  if (agent.description) doc += `${agent.description}\n\n`;
-
-  if (agent.capabilities.length > 0) {
-    doc += `### Capabilities\n\n`;
-    for (const cap of agent.capabilities) {
-      doc += `- **${cap.name}**: ${cap.description}\n`;
-    }
-    doc += '\n';
-  }
-
-  doc += `**Manifest**: [\`${agent.path}\`](https://github.com/blueflyio/openstandardagents/blob/main/${agent.path})\n\n`;
-  doc += `\`\`\`bash\n# Deploy agent\nkubectl apply -f ${agent.path}\n\`\`\`\n\n`;
-}
-
-mkdirSync(join(process.cwd(), 'website/content/docs/agents'), {
-  recursive: true,
-});
-writeFileSync(OUTPUT_FILE, doc);
-
+mkdirSync(OUTPUT_DIR, { recursive: true });
+writeFileSync(OUTPUT_FILE, renderCatalog(agents));
 console.log(`✅ Generated agents catalog: ${agents.length} agents`);

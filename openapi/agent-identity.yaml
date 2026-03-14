@@ -63,7 +63,7 @@ paths:
         Supports multiple authentication methods: API key, OAuth2, and mTLS.
       tags: [Authentication]
       operationId: authenticateAgent
-      security: []  # Authentication endpoint doesn't require auth
+      security: [] # Authentication endpoint doesn't require auth
       parameters:
         - $ref: '#/components/parameters/AgentId'
       requestBody:
@@ -76,31 +76,31 @@ paths:
               apiKeyAuth:
                 summary: API Key Authentication
                 value:
-                  agent_id: "data-processor-agent"
+                  agent_id: 'data-processor-agent'
                   credential:
-                    type: "api_key"
-                    api_key: "ossa_ak_1234567890abcdef1234567890abcdef"
-                  scope: ["read", "execute"]
+                    type: 'api_key'
+                    api_key: 'ossa_ak_1234567890abcdef1234567890abcdef'
+                  scope: ['read', 'execute']
                   context:
-                    tenant_id: "tenant-123"
-                    user_id: "user-456"
+                    tenant_id: 'tenant-123'
+                    user_id: 'user-456'
               oauth2Auth:
                 summary: OAuth2 Token Authentication
                 value:
-                  agent_id: "analytics-agent"
+                  agent_id: 'analytics-agent'
                   credential:
-                    type: "oauth2"
-                    access_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
-                    token_type: "Bearer"
-                  scope: ["read", "write", "execute"]
+                    type: 'oauth2'
+                    access_token: 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...'
+                    token_type: 'Bearer'
+                  scope: ['read', 'write', 'execute']
               mtlsAuth:
                 summary: mTLS Certificate Authentication
                 value:
-                  agent_id: "secure-agent"
+                  agent_id: 'secure-agent'
                   credential:
-                    type: "mtls"
-                    certificate: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t..."
-                  scope: ["admin"]
+                    type: 'mtls'
+                    certificate: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t...'
+                  scope: ['admin']
       responses:
         '200':
           description: Authentication successful
@@ -112,13 +112,13 @@ paths:
                 success:
                   summary: Successful authentication
                   value:
-                    access_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZ2VudC0xMjMiLCJpYXQiOjE2MDk0NTkyMDB9.SflKxwRJSM..."
-                    token_type: "Bearer"
+                    access_token: 'example-access-token-redacted'
+                    token_type: 'Bearer'
                     expires_in: 3600
-                    scope: ["read", "execute"]
-                    instance_id: "550e8400-e29b-41d4-a716-446655440000"
-                    issued_at: "2025-12-18T10:00:00Z"
-                    token_id: "650e8400-e29b-41d4-a716-446655440001"
+                    scope: ['read', 'execute']
+                    instance_id: '550e8400-e29b-41d4-a716-446655440000'
+                    issued_at: '2025-12-18T10:00:00Z'
+                    token_id: '650e8400-e29b-41d4-a716-446655440001'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '400':
@@ -155,23 +155,23 @@ paths:
                 activeAgent:
                   summary: Active agent instance
                   value:
-                    agent_id: "data-processor-agent"
-                    instance_id: "550e8400-e29b-41d4-a716-446655440000"
-                    version: "ossa/v0.3.3"
-                    kind: "Agent"
-                    status: "active"
-                    tenant_id: "tenant-123"
-                    user_id: "user-456"
-                    trace_id: "4bf92f3577b34da6a3ce929d0e0e4736"
-                    span_id: "00f067aa0ba902b7"
-                    created_at: "2025-12-18T09:00:00Z"
-                    updated_at: "2025-12-18T10:00:00Z"
+                    agent_id: 'data-processor-agent'
+                    instance_id: '550e8400-e29b-41d4-a716-446655440000'
+                    version: 'ossa/v0.3.3'
+                    kind: 'Agent'
+                    status: 'active'
+                    tenant_id: 'tenant-123'
+                    user_id: 'user-456'
+                    trace_id: '4bf92f3577b34da6a3ce929d0e0e4736'
+                    span_id: '00f067aa0ba902b7'
+                    created_at: '2025-12-18T09:00:00Z'
+                    updated_at: '2025-12-18T10:00:00Z'
                     metadata:
                       labels:
-                        environment: "production"
-                        version: "1.0.0"
+                        environment: 'production'
+                        version: '1.0.0'
                       annotations:
-                        deployed_by: "buildkit-cli"
+                        deployed_by: 'buildkit-cli'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -205,7 +205,7 @@ paths:
                   items:
                     type: string
                   description: Requested token scopes
-                  default: ["read", "execute"]
+                  default: ['read', 'execute']
                 expires_in:
                   type: integer
                   description: Requested token lifetime in seconds (max 86400)
@@ -218,8 +218,8 @@ paths:
               refreshToken:
                 summary: Issue refresh token
                 value:
-                  instance_id: "550e8400-e29b-41d4-a716-446655440000"
-                  scope: ["read", "write", "execute"]
+                  instance_id: '550e8400-e29b-41d4-a716-446655440000'
+                  scope: ['read', 'write', 'execute']
                   expires_in: 7200
       responses:
         '201':
@@ -339,8 +339,8 @@ paths:
               securityBreach:
                 summary: Revoke due to security breach
                 value:
-                  token_id: "650e8400-e29b-41d4-a716-446655440001"
-                  reason: "security_breach"
+                  token_id: '650e8400-e29b-41d4-a716-446655440001'
+                  reason: 'security_breach'
       responses:
         '200':
           description: Token revoked successfully
@@ -353,8 +353,8 @@ paths:
                   summary: Successful revocation
                   value:
                     revoked: true
-                    token_id: "650e8400-e29b-41d4-a716-446655440001"
-                    revoked_at: "2025-12-18T11:00:00Z"
+                    token_id: '650e8400-e29b-41d4-a716-446655440001'
+                    revoked_at: '2025-12-18T11:00:00Z'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -385,37 +385,37 @@ paths:
                   value:
                     authenticated: true
                     principal:
-                      agent_id: "data-processor-agent"
-                      instance_id: "550e8400-e29b-41d4-a716-446655440000"
-                      tenant_id: "tenant-123"
-                      user_id: "user-456"
-                    scopes: ["read", "write", "execute"]
+                      agent_id: 'data-processor-agent'
+                      instance_id: '550e8400-e29b-41d4-a716-446655440000'
+                      tenant_id: 'tenant-123'
+                      user_id: 'user-456'
+                    scopes: ['read', 'write', 'execute']
                     permissions:
                       resources:
-                        - resource_type: "workflows"
-                          resource_id: "*"
-                          actions: ["read", "execute"]
-                        - resource_type: "data"
-                          resource_id: "dataset-123"
-                          actions: ["read", "write"]
-                      policy_version: "v1.0.0"
+                        - resource_type: 'workflows'
+                          resource_id: '*'
+                          actions: ['read', 'execute']
+                        - resource_type: 'data'
+                          resource_id: 'dataset-123'
+                          actions: ['read', 'write']
+                      policy_version: 'v1.0.0'
                     encryption:
                       in_transit:
                         required: true
-                        tls_version: "1.3"
+                        tls_version: '1.3'
                         mtls_required: false
                       at_rest:
                         required: true
-                        algorithm: "AES-256-GCM"
+                        algorithm: 'AES-256-GCM'
                     compliance:
                       fips_mode: false
-                      audit_level: "detailed"
+                      audit_level: 'detailed'
                       retention_days: 90
                     session:
-                      session_id: "750e8400-e29b-41d4-a716-446655440002"
-                      created_at: "2025-12-18T10:00:00Z"
-                      expires_at: "2025-12-18T11:00:00Z"
-                      last_activity: "2025-12-18T10:30:00Z"
+                      session_id: '750e8400-e29b-41d4-a716-446655440002'
+                      created_at: '2025-12-18T10:00:00Z'
+                      expires_at: '2025-12-18T11:00:00Z'
+                      last_activity: '2025-12-18T10:30:00Z'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '500':
@@ -460,10 +460,10 @@ components:
         maxLength: 63
       examples:
         dataProcessor:
-          value: "data-processor-agent"
+          value: 'data-processor-agent'
           summary: Data processing agent
         analyticsAgent:
-          value: "analytics-agent"
+          value: 'analytics-agent'
           summary: Analytics agent
 
   schemas:
@@ -521,12 +521,12 @@ components:
             invalidCredentials:
               summary: Invalid credentials format
               value:
-                error: "invalid_request"
-                message: "Invalid credential format"
+                error: 'invalid_request'
+                message: 'Invalid credential format'
                 details:
-                  field: "credential.api_key"
-                  reason: "Must be at least 32 characters"
-                timestamp: "2025-12-18T10:00:00Z"
+                  field: 'credential.api_key'
+                  reason: 'Must be at least 32 characters'
+                timestamp: '2025-12-18T10:00:00Z'
 
     Unauthorized:
       description: Unauthorized - authentication failed
@@ -538,9 +538,9 @@ components:
             invalidToken:
               summary: Invalid or expired token
               value:
-                error: "unauthorized"
-                message: "Invalid or expired authentication token"
-                timestamp: "2025-12-18T10:00:00Z"
+                error: 'unauthorized'
+                message: 'Invalid or expired authentication token'
+                timestamp: '2025-12-18T10:00:00Z'
 
     Forbidden:
       description: Forbidden - insufficient permissions
@@ -552,12 +552,12 @@ components:
             insufficientScope:
               summary: Insufficient scope
               value:
-                error: "forbidden"
-                message: "Insufficient permissions for requested scopes"
+                error: 'forbidden'
+                message: 'Insufficient permissions for requested scopes'
                 details:
-                  requested: ["admin"]
-                  granted: ["read", "execute"]
-                timestamp: "2025-12-18T10:00:00Z"
+                  requested: ['admin']
+                  granted: ['read', 'execute']
+                timestamp: '2025-12-18T10:00:00Z'
 
     NotFound:
       description: Resource not found
@@ -569,11 +569,11 @@ components:
             agentNotFound:
               summary: Agent not found
               value:
-                error: "not_found"
-                message: "Agent instance not found"
+                error: 'not_found'
+                message: 'Agent instance not found'
                 details:
-                  agent_id: "unknown-agent"
-                timestamp: "2025-12-18T10:00:00Z"
+                  agent_id: 'unknown-agent'
+                timestamp: '2025-12-18T10:00:00Z'
 
     TooManyRequests:
       description: Rate limit exceeded
@@ -598,11 +598,11 @@ components:
             rateLimitExceeded:
               summary: Rate limit exceeded
               value:
-                error: "rate_limit_exceeded"
-                message: "Too many authentication requests. Please try again later."
+                error: 'rate_limit_exceeded'
+                message: 'Too many authentication requests. Please try again later.'
                 details:
                   retry_after: 60
-                timestamp: "2025-12-18T10:00:00Z"
+                timestamp: '2025-12-18T10:00:00Z'
 
     InternalServerError:
       description: Internal server error
@@ -614,7 +614,7 @@ components:
             serverError:
               summary: Internal server error
               value:
-                error: "internal_server_error"
-                message: "An unexpected error occurred"
-                trace_id: "4bf92f3577b34da6a3ce929d0e0e4736"
-                timestamp: "2025-12-18T10:00:00Z"
+                error: 'internal_server_error'
+                message: 'An unexpected error occurred'
+                trace_id: '4bf92f3577b34da6a3ce929d0e0e4736'
+                timestamp: '2025-12-18T10:00:00Z'

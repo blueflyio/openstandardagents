@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.4.7
+apiVersion: ossa/v0.5
 kind: Agent
 metadata:
   name: meeting-assistant
@@ -19,19 +19,16 @@ spec:
     - Action item identification and tracking
     - Meeting minutes generation
     - Follow-up task creation
-
   llm:
     provider: openai
     model: gpt-4o
     temperature: 0.5
     maxTokens: 3000
-
   capabilities:
     - transcribe_audio
     - summarize_meeting
     - extract_action_items
     - generate_minutes
-
   tools:
     - type: function
       name: transcribe_audio
@@ -50,7 +47,6 @@ spec:
             default: true
         required:
           - audioUrl
-
     - type: function
       name: summarize_meeting
       description: Generate meeting summary
@@ -61,13 +57,15 @@ spec:
             type: string
           summaryType:
             type: string
-            enum: [brief, detailed, executive]
+            enum:
+              - brief
+              - detailed
+              - executive
           includeTopic:
             type: boolean
             default: true
         required:
           - transcript
-
     - type: function
       name: extract_action_items
       description: Extract action items from meeting
@@ -82,7 +80,6 @@ spec:
               type: string
         required:
           - transcript
-
     - type: function
       name: generate_minutes
       description: Generate formal meeting minutes
@@ -103,19 +100,22 @@ spec:
                 type: array
           format:
             type: string
-            enum: [markdown, html, pdf]
+            enum:
+              - markdown
+              - html
+              - pdf
             default: markdown
         required:
           - meetingData
-
   triggers:
     - type: webhook
       source: zoom
-      events: [recording.completed]
+      events:
+        - recording.completed
     - type: webhook
       source: google_meet
-      events: [recording.ready]
-
+      events:
+        - recording.ready
   tasks:
     - name: process-recording
       steps:
@@ -125,20 +125,17 @@ spec:
           params:
             audioUrl: ${inputs.recording_url}
             speakerDiarization: true
-
         - name: generate-summary
           action: function_call
           function: summarize_meeting
           params:
             transcript: ${outputs.transcript}
             summaryType: detailed
-
         - name: extract-actions
           action: function_call
           function: extract_action_items
           params:
             transcript: ${outputs.transcript}
-
         - name: create-minutes
           action: function_call
           function: generate_minutes
@@ -148,26 +145,23 @@ spec:
               attendees: ${inputs.attendees}
               topics: ${outputs.summary}
               decisions: ${outputs.action_items}
-
         - name: send-to-participants
           action: http
           method: POST
           url: ${env.EMAIL_SERVICE_URL}/send
           body:
             to: ${inputs.attendees}
-            subject: "Meeting Notes: ${inputs.meeting_title}"
+            subject: 'Meeting Notes: ${inputs.meeting_title}'
             body: ${outputs.minutes}
             attachments:
               - type: pdf
                 content: ${outputs.minutes_pdf}
-
   memory:
     enabled: true
     type: conversation_buffer
     window_size: 5
     persistence:
       enabled: false
-
   outputs:
     - name: transcript
       type: string
@@ -181,7 +175,6 @@ spec:
     - name: minutes
       type: string
       description: Formal meeting minutes
-
   observability:
     logging:
       level: info
@@ -193,19 +186,18 @@ spec:
         - action_items_extracted
     tracing:
       enabled: true
-
 extensions:
   langchain:
-    agent_type: react
-    memory_type: conversation_buffer
-    tools_mapping:
-      - ossa_capability: transcribe_audio
-        langchain_tool: whisper_transcriber
-      - ossa_capability: summarize_meeting
-        langchain_tool: meeting_summarizer
-      - ossa_capability: extract_action_items
-        langchain_tool: action_extractor
-    export_config:
-      format: python
-      include_dependencies: true
-      output_file: meeting_assistant.py
+    enabled: true
+    chain_type: agent
+    memory:
+      type: buffer
+    tools:
+      - name: transcribe_audio
+        description: Transcribe meeting audio to text
+      - name: summarize_meeting
+        description: Generate meeting summary
+      - name: extract_action_items
+        description: Extract action items from meeting
+      - name: generate_minutes
+        description: Generate formal meeting minutes

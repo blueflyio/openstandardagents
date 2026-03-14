@@ -32,6 +32,7 @@ Complete reference for all environment variables used in OSSA Buildkit deploymen
 **Description**: Node.js environment mode
 
 **Examples**:
+
 ```bash
 # Production
 NODE_ENV=production
@@ -44,6 +45,7 @@ NODE_ENV=development
 ```
 
 **Platform Notes**:
+
 - **Railway**: Set in `railway.json` → `environments`
 - **Render**: Set in `render.yaml` → `envVars`
 - **Fly.io**: Set in `fly.toml` → `[env]`
@@ -59,12 +61,14 @@ NODE_ENV=development
 **Description**: HTTP server port
 
 **Examples**:
+
 ```bash
 PORT=8080  # Default
 PORT=3000  # Alternative
 ```
 
 **Platform Notes**:
+
 - **Railway**: Auto-injected, but can override
 - **Render**: Uses Render's assigned PORT (do not override)
 - **Fly.io**: Set in `fly.toml`, matches `internal_port`
@@ -89,6 +93,7 @@ app.listen(port, () => {
 **Description**: Logging verbosity level
 
 **Examples**:
+
 ```bash
 LOG_LEVEL=error  # Production (errors only)
 LOG_LEVEL=info   # Production (normal)
@@ -97,6 +102,7 @@ LOG_LEVEL=trace  # Deep debugging
 ```
 
 **Impact**:
+
 - `error`: Only log errors
 - `warn`: Errors + warnings
 - `info`: Normal operational logs
@@ -116,6 +122,7 @@ LOG_LEVEL=trace  # Deep debugging
 **Description**: Secret key for signing JWT tokens
 
 **Generation**:
+
 ```bash
 # Linux/macOS
 openssl rand -base64 32
@@ -125,17 +132,20 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
 **Examples**:
+
 ```bash
-JWT_SECRET="xK9mPqR8sT2vYnZ5cF7hJ3kL6nQ1wE4r"
+JWT_SECRET="<generate-with-openssl-rand-base64-32>"
 ```
 
 **Security Notes**:
+
 - NEVER commit to version control
 - Rotate periodically (recommended: every 90 days)
 - Use different secrets for each environment
 - Store in platform secret manager
 
 **Platform Commands**:
+
 ```bash
 # Railway
 railway variables set JWT_SECRET="$(openssl rand -base64 32)"
@@ -158,16 +168,19 @@ fly secrets set JWT_SECRET="$(openssl rand -base64 32)"
 **Description**: Key for encrypting sensitive data at rest
 
 **Generation**:
+
 ```bash
 openssl rand -base64 32
 ```
 
 **Examples**:
+
 ```bash
-ENCRYPTION_KEY="aB3dE6fG9hI2jK5lM8nO1pQ4rS7tU0vW"
+ENCRYPTION_KEY="<generate-with-openssl-rand-base64-32>"
 ```
 
 **Security Notes**:
+
 - Used for encrypting agent credentials, API keys, etc.
 - CRITICAL: Loss of this key = data loss
 - Backup securely before rotation
@@ -183,6 +196,7 @@ ENCRYPTION_KEY="aB3dE6fG9hI2jK5lM8nO1pQ4rS7tU0vW"
 **Description**: API key for authenticating with Drupal
 
 **Generation** (in Drupal):
+
 ```php
 // Drupal admin UI
 // Configuration > Web Services > API Keys > Generate New Key
@@ -192,11 +206,13 @@ $api_key = \Drupal::service('ai_agents_ossa.key_generator')->generate();
 ```
 
 **Examples**:
+
 ```bash
-DRUPAL_API_KEY="drupal-api-key-a1b2c3d4e5f6"
+DRUPAL_API_KEY="<generated-drupal-api-key>"
 ```
 
 **Usage**:
+
 ```javascript
 // In requests to Drupal
 headers: {
@@ -214,13 +230,15 @@ headers: {
 **Description**: API key for authenticating bridge server requests
 
 **Generation**:
+
 ```bash
 openssl rand -hex 32
 ```
 
 **Examples**:
+
 ```bash
-BRIDGE_API_KEY="bridge-key-1a2b3c4d5e6f7g8h"
+BRIDGE_API_KEY="<generate-with-openssl-rand-hex-32>"
 ```
 
 ---
@@ -232,6 +250,7 @@ BRIDGE_API_KEY="bridge-key-1a2b3c4d5e6f7g8h"
 **Description**: CORS allowed origins
 
 **Examples**:
+
 ```bash
 # Single origin
 ALLOWED_ORIGINS="https://app.example.com"
@@ -244,6 +263,7 @@ ALLOWED_ORIGINS="*"
 ```
 
 **Security Notes**:
+
 - NEVER use `*` in production
 - Include protocol (https://)
 - No trailing slashes
@@ -262,6 +282,7 @@ ALLOWED_ORIGINS="*"
 **Description**: PostgreSQL connection string
 
 **Examples**:
+
 ```bash
 # Standard format
 DATABASE_URL="postgresql://ossa_user:${POSTGRES_PASSWORD}@localhost:5432/ossa_db"
@@ -280,19 +301,24 @@ DATABASE_URL="postgres://postgres:${POSTGRES_PASSWORD}@top2.nearest.of.ossa-db.i
 ```
 
 **Platform Notes**:
+
 - **Railway**: Auto-injected when PostgreSQL plugin added
 - **Render**: Auto-injected via `fromDatabase` in render.yaml
 - **Fly.io**: Auto-injected when Postgres attached
 
 **Connection Pool Configuration**:
+
 ```javascript
 // In your app
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: 20,                    // Max connections
-  idleTimeoutMillis: 30000,   // Close idle after 30s
+  max: 20, // Max connections
+  idleTimeoutMillis: 30000, // Close idle after 30s
   connectionTimeoutMillis: 2000, // Connect timeout
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl:
+    process.env.NODE_ENV === 'production'
+      ? { rejectUnauthorized: false }
+      : false,
 });
 ```
 
@@ -307,12 +333,14 @@ const pool = new Pool({
 **Description**: Maximum database connections
 
 **Examples**:
+
 ```bash
 POSTGRES_MAX_CONNECTIONS=100  # Production
 POSTGRES_MAX_CONNECTIONS=20   # Development
 ```
 
 **Calculation**:
+
 ```
 Max Connections = (Number of App Instances × Connection Pool Size) + Buffer
 
@@ -334,6 +362,7 @@ Example:
 **Description**: PostgreSQL shared memory buffer
 
 **Examples**:
+
 ```bash
 POSTGRES_SHARED_BUFFERS=256MB  # Small DB
 POSTGRES_SHARED_BUFFERS=1GB    # Medium DB
@@ -341,6 +370,7 @@ POSTGRES_SHARED_BUFFERS=4GB    # Large DB
 ```
 
 **Guidelines**:
+
 - Set to 25% of available RAM
 - Minimum: 128MB
 - Maximum: 8GB (unless very large DB)
@@ -358,6 +388,7 @@ POSTGRES_SHARED_BUFFERS=4GB    # Large DB
 **Description**: Redis connection string
 
 **Examples**:
+
 ```bash
 # Standard
 REDIS_URL="redis://localhost:6379"
@@ -379,6 +410,7 @@ REDIS_URL="rediss://:pass@fly-ossa-redis.upstash.io:6379"
 ```
 
 **TLS**:
+
 ```bash
 # Use rediss:// for TLS
 REDIS_URL="rediss://:password@host:6380"
@@ -395,6 +427,7 @@ REDIS_URL="rediss://:password@host:6380"
 **Description**: Default cache TTL
 
 **Examples**:
+
 ```bash
 CACHE_TTL_SECONDS=300   # 5 minutes (default)
 CACHE_TTL_SECONDS=3600  # 1 hour
@@ -403,6 +436,7 @@ CACHE_TTL_SECONDS=0     # Disable caching
 ```
 
 **Usage**:
+
 ```javascript
 await cache.set('key', value, process.env.CACHE_TTL_SECONDS);
 ```
@@ -419,6 +453,7 @@ await cache.set('key', value, process.env.CACHE_TTL_SECONDS);
 **Description**: Qdrant vector database URL
 
 **Examples**:
+
 ```bash
 # HTTP
 QDRANT_URL="http://localhost:6333"
@@ -437,6 +472,7 @@ QDRANT_URL="http://ossa-qdrant.internal:6333"
 ```
 
 **Health Check**:
+
 ```bash
 curl $QDRANT_URL/health
 ```
@@ -451,15 +487,17 @@ curl $QDRANT_URL/health
 **Description**: Qdrant authentication key
 
 **Examples**:
+
 ```bash
-QDRANT_API_KEY="qdrant-api-key-xyz123"
+QDRANT_API_KEY="<qdrant-api-key>"
 ```
 
 **Configuration** (in Qdrant):
+
 ```yaml
 # qdrant/config.yaml
 service:
-  api_key: "qdrant-api-key-xyz123"
+  api_key: '<qdrant-api-key>'
 ```
 
 ---
@@ -472,6 +510,7 @@ service:
 **Description**: Qdrant collection name for agent embeddings
 
 **Examples**:
+
 ```bash
 VECTOR_DB_COLLECTION="ossa_agents"           # Default
 VECTOR_DB_COLLECTION="ossa_agents_prod"      # Production
@@ -491,6 +530,7 @@ VECTOR_DB_COLLECTION="ossa_agents_staging"   # Staging
 **Description**: Maximum concurrent agent executions
 
 **Examples**:
+
 ```bash
 MAX_CONCURRENT_AGENTS=5   # Low capacity
 MAX_CONCURRENT_AGENTS=10  # Default
@@ -498,11 +538,13 @@ MAX_CONCURRENT_AGENTS=50  # High capacity
 ```
 
 **Guidelines**:
+
 - Consider available CPU cores
 - Monitor memory usage
 - Adjust based on agent complexity
 
 **Formula**:
+
 ```
 Max Concurrent = (CPU Cores × 2) - 2
 
@@ -522,6 +564,7 @@ Example:
 **Description**: Maximum agent execution time
 
 **Examples**:
+
 ```bash
 AGENT_TIMEOUT_MS=60000    # 1 minute
 AGENT_TIMEOUT_MS=300000   # 5 minutes (default)
@@ -530,6 +573,7 @@ AGENT_TIMEOUT_MS=1800000  # 30 minutes
 ```
 
 **Notes**:
+
 - Agents exceeding timeout are forcefully terminated
 - Set based on longest expected agent runtime
 - Consider platform request timeouts
@@ -544,6 +588,7 @@ AGENT_TIMEOUT_MS=1800000  # 30 minutes
 **Description**: URL to OSSA agent registry
 
 **Examples**:
+
 ```bash
 AGENT_REGISTRY_URL="https://registry.ossa.ai"
 AGENT_REGISTRY_URL="https://registry.your-domain.com"
@@ -562,6 +607,7 @@ AGENT_REGISTRY_URL="http://localhost:3000"  # Development
 **Description**: Base URL for API service (used for generating links)
 
 **Examples**:
+
 ```bash
 # Railway
 API_BASE_URL="https://ossa-buildkit.railway.app"
@@ -577,6 +623,7 @@ API_BASE_URL="https://api.your-domain.com"
 ```
 
 **Usage**:
+
 ```javascript
 const webhookUrl = `${process.env.API_BASE_URL}/webhooks/agent-complete`;
 ```
@@ -591,6 +638,7 @@ const webhookUrl = `${process.env.API_BASE_URL}/webhooks/agent-complete`;
 **Description**: Drupal site base URL
 
 **Examples**:
+
 ```bash
 DRUPAL_BASE_URL="https://drupal.example.com"
 DRUPAL_BASE_URL="https://cms.your-site.com"
@@ -606,6 +654,7 @@ DRUPAL_BASE_URL="https://cms.your-site.com"
 **Description**: Rate limit time window
 
 **Examples**:
+
 ```bash
 RATE_LIMIT_WINDOW=60000   # 1 minute
 RATE_LIMIT_WINDOW=300000  # 5 minutes
@@ -623,6 +672,7 @@ RATE_LIMIT_WINDOW=3600000 # 1 hour
 **Description**: Maximum requests per time window
 
 **Examples**:
+
 ```bash
 RATE_LIMIT_MAX=10   # Strict (10 req/min)
 RATE_LIMIT_MAX=100  # Default (100 req/min)
@@ -630,12 +680,13 @@ RATE_LIMIT_MAX=1000 # Permissive (1000 req/min)
 ```
 
 **Rate Limit Configuration**:
+
 ```javascript
 // In your app
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW),
   max: parseInt(process.env.RATE_LIMIT_MAX),
-  message: 'Too many requests'
+  message: 'Too many requests',
 });
 ```
 
@@ -652,12 +703,14 @@ const limiter = rateLimit({
 **Description**: Enable Prometheus metrics endpoint
 
 **Examples**:
+
 ```bash
 ENABLE_METRICS=true   # Enable (default)
 ENABLE_METRICS=false  # Disable
 ```
 
 **Metrics Endpoint**:
+
 ```
 GET /metrics
 ```
@@ -673,6 +726,7 @@ GET /metrics
 **Description**: Port for metrics endpoint
 
 **Examples**:
+
 ```bash
 METRICS_PORT=9090  # Default
 METRICS_PORT=9091  # Alternative
@@ -689,11 +743,13 @@ METRICS_PORT=9091  # Alternative
 **Description**: Sentry error tracking DSN
 
 **Examples**:
+
 ```bash
 SENTRY_DSN="https://abc123@o123456.ingest.sentry.io/456789"
 ```
 
 **Setup**:
+
 1. Create Sentry project
 2. Copy DSN from project settings
 3. Set environment variable
@@ -708,6 +764,7 @@ SENTRY_DSN="https://abc123@o123456.ingest.sentry.io/456789"
 **Description**: Environment name for Sentry
 
 **Examples**:
+
 ```bash
 SENTRY_ENVIRONMENT=production
 SENTRY_ENVIRONMENT=staging
@@ -725,6 +782,7 @@ SENTRY_ENVIRONMENT=development
 **Description**: Enable debug mode (verbose logging, stack traces)
 
 **Examples**:
+
 ```bash
 ENABLE_DEBUG=false  # Production
 ENABLE_DEBUG=true   # Development/Debugging
@@ -745,6 +803,7 @@ ENABLE_DEBUG=true   # Development/Debugging
 **Description**: Bridge server HTTP port
 
 **Examples**:
+
 ```bash
 BRIDGE_PORT=8081  # Default
 BRIDGE_PORT=8082  # Alternative
@@ -760,6 +819,7 @@ BRIDGE_PORT=8082  # Alternative
 **Description**: Enable CORS on bridge server
 
 **Examples**:
+
 ```bash
 ENABLE_CORS=true   # Enable (default)
 ENABLE_CORS=false  # Disable
@@ -775,6 +835,7 @@ ENABLE_CORS=false  # Disable
 **Description**: CORS allowed origins for bridge server
 
 **Examples**:
+
 ```bash
 CORS_ORIGINS="https://drupal.example.com,https://admin.example.com"
 ```
@@ -790,6 +851,7 @@ CORS_ORIGINS="https://drupal.example.com,https://admin.example.com"
 **Description**: Maximum request payload size
 
 **Examples**:
+
 ```bash
 MAX_PAYLOAD_SIZE=1mb   # Small
 MAX_PAYLOAD_SIZE=10mb  # Default
@@ -807,6 +869,7 @@ MAX_PAYLOAD_SIZE=50mb  # Large
 **Description**: Bridge server request timeout
 
 **Examples**:
+
 ```bash
 REQUEST_TIMEOUT_MS=30000   # 30 seconds (default)
 REQUEST_TIMEOUT_MS=60000   # 1 minute
@@ -820,12 +883,14 @@ REQUEST_TIMEOUT_MS=120000  # 2 minutes
 ### Railway
 
 **Auto-injected**:
+
 - `RAILWAY_ENVIRONMENT`: Current environment
 - `RAILWAY_DEPLOYMENT_ID`: Deployment ID
 - `RAILWAY_SERVICE_NAME`: Service name
 - `RAILWAY_PROJECT_ID`: Project ID
 
 **Usage**:
+
 ```javascript
 console.log(`Deployed to Railway: ${process.env.RAILWAY_SERVICE_NAME}`);
 ```
@@ -835,6 +900,7 @@ console.log(`Deployed to Railway: ${process.env.RAILWAY_SERVICE_NAME}`);
 ### Render
 
 **Auto-injected**:
+
 - `RENDER`: Always `true`
 - `RENDER_SERVICE_NAME`: Service name
 - `RENDER_SERVICE_ID`: Service ID
@@ -844,6 +910,7 @@ console.log(`Deployed to Railway: ${process.env.RAILWAY_SERVICE_NAME}`);
 - `RENDER_EXTERNAL_URL`: External URL
 
 **Usage**:
+
 ```javascript
 console.log(`Deployed to Render: ${process.env.RENDER_EXTERNAL_URL}`);
 ```
@@ -853,6 +920,7 @@ console.log(`Deployed to Render: ${process.env.RENDER_EXTERNAL_URL}`);
 ### Fly.io
 
 **Auto-injected**:
+
 - `FLY_APP_NAME`: App name
 - `FLY_REGION`: Current region
 - `FLY_MACHINE_ID`: Machine ID
@@ -860,6 +928,7 @@ console.log(`Deployed to Render: ${process.env.RENDER_EXTERNAL_URL}`);
 - `FLY_PRIVATE_IP`: Private IP
 
 **Usage**:
+
 ```javascript
 console.log(`Running on Fly.io in region: ${process.env.FLY_REGION}`);
 ```
@@ -871,11 +940,13 @@ console.log(`Running on Fly.io in region: ${process.env.FLY_REGION}`);
 ### Worker Configuration
 
 **WORKER_CONCURRENCY**
+
 ```bash
 WORKER_CONCURRENCY=5  # Number of concurrent jobs
 ```
 
 **WORKER_POLL_INTERVAL_MS**
+
 ```bash
 WORKER_POLL_INTERVAL_MS=1000  # Poll every second
 ```
@@ -885,21 +956,25 @@ WORKER_POLL_INTERVAL_MS=1000  # Poll every second
 ### Cron Job Configuration
 
 **CLEANUP_RETENTION_DAYS**
+
 ```bash
 CLEANUP_RETENTION_DAYS=30  # Keep data for 30 days
 ```
 
 **CLEANUP_CRON_SCHEDULE**
+
 ```bash
 CLEANUP_CRON_SCHEDULE="0 2 * * *"  # Daily at 2 AM
 ```
 
 **SYNC_CRON_SCHEDULE**
+
 ```bash
 SYNC_CRON_SCHEDULE="0 * * * *"  # Every hour
 ```
 
 **SYNC_BATCH_SIZE**
+
 ```bash
 SYNC_BATCH_SIZE=100  # Process 100 agents per batch
 ```
@@ -917,9 +992,13 @@ Implement validation on startup:
 const Joi = require('joi');
 
 const envSchema = Joi.object({
-  NODE_ENV: Joi.string().valid('production', 'staging', 'development', 'test').default('production'),
+  NODE_ENV: Joi.string()
+    .valid('production', 'staging', 'development', 'test')
+    .default('production'),
   PORT: Joi.number().integer().min(1024).max(65535).default(8080),
-  LOG_LEVEL: Joi.string().valid('error', 'warn', 'info', 'debug', 'trace').default('info'),
+  LOG_LEVEL: Joi.string()
+    .valid('error', 'warn', 'info', 'debug', 'trace')
+    .default('info'),
 
   // Required
   API_BASE_URL: Joi.string().uri().required(),
@@ -930,15 +1009,23 @@ const envSchema = Joi.object({
 
   // Optional with defaults
   MAX_CONCURRENT_AGENTS: Joi.number().integer().min(1).max(100).default(10),
-  AGENT_TIMEOUT_MS: Joi.number().integer().min(1000).max(3600000).default(300000),
+  AGENT_TIMEOUT_MS: Joi.number()
+    .integer()
+    .min(1000)
+    .max(3600000)
+    .default(300000),
   CACHE_TTL_SECONDS: Joi.number().integer().min(0).max(86400).default(300),
 
   // Conditional
-  DRUPAL_BASE_URL: Joi.string().uri().when('DRUPAL_API_KEY', { is: Joi.exist(), then: Joi.required() }),
+  DRUPAL_BASE_URL: Joi.string()
+    .uri()
+    .when('DRUPAL_API_KEY', { is: Joi.exist(), then: Joi.required() }),
   DRUPAL_API_KEY: Joi.string(),
 
-  QDRANT_URL: Joi.string().uri().when('QDRANT_API_KEY', { is: Joi.exist(), then: Joi.required() }),
-  QDRANT_API_KEY: Joi.string()
+  QDRANT_URL: Joi.string()
+    .uri()
+    .when('QDRANT_API_KEY', { is: Joi.exist(), then: Joi.required() }),
+  QDRANT_API_KEY: Joi.string(),
 }).unknown();
 
 const { error, value } = envSchema.validate(process.env);
@@ -997,7 +1084,7 @@ module.exports = {
   WORKER_POLL_INTERVAL_MS: 1000,
 
   // Cleanup
-  CLEANUP_RETENTION_DAYS: 30
+  CLEANUP_RETENTION_DAYS: 30,
 };
 ```
 
@@ -1068,6 +1155,7 @@ REQUEST_TIMEOUT_MS=30000
 ### 1. Never Commit Secrets
 
 Add to `.gitignore`:
+
 ```
 .env
 .env.local
@@ -1090,13 +1178,13 @@ railway variables set ENCRYPTION_KEY="$NEW_ENCRYPTION_KEY"
 
 ```bash
 # Development
-JWT_SECRET=dev-secret-do-not-use-in-prod
+JWT_SECRET=<dev-generated-secret>
 
 # Staging
-JWT_SECRET=staging-secret-different-from-prod
+JWT_SECRET=<staging-generated-secret>
 
 # Production
-JWT_SECRET=prod-secret-rotate-every-90-days
+JWT_SECRET=<production-generated-secret>
 ```
 
 ### 4. Audit Environment Variables
@@ -1121,6 +1209,7 @@ fly secrets list
 **Error**: "Missing required environment variable: DATABASE_URL"
 
 **Solution**:
+
 ```bash
 # Check if variable is set
 railway variables list | grep DATABASE_URL
@@ -1134,6 +1223,7 @@ railway variables set DATABASE_URL="postgresql://..."
 **Error**: "Invalid PORT: must be integer between 1024-65535"
 
 **Solution**:
+
 ```bash
 # Check current value
 railway variables get PORT
@@ -1147,6 +1237,7 @@ railway variables set PORT=8080
 **Issue**: Changed secret but app still uses old value
 
 **Solution**:
+
 ```bash
 # Secrets require restart
 railway restart
@@ -1167,6 +1258,7 @@ For issues with environment variables:
    - [Fly.io Guide](./DEPLOYMENT_GUIDE_FLY.md)
 
 2. Validate configuration:
+
    ```bash
    npm run validate:config
    ```

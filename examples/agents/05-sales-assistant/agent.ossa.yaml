@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.4.7
+apiVersion: ossa/v0.5
 kind: Agent
 metadata:
   name: sales-assistant
@@ -19,20 +19,17 @@ spec:
     - Automated follow-up communication
     - Meeting scheduling and coordination
     - Sales pipeline management
-
   llm:
     provider: openai
     model: gpt-4o
     temperature: 0.7
     maxTokens: 1500
-
   capabilities:
     - search_crm
     - create_lead
     - send_followup
     - schedule_meeting
     - update_pipeline
-
   tools:
     - type: function
       name: search_crm
@@ -51,7 +48,6 @@ spec:
                 type: string
               revenue_range:
                 type: string
-
     - type: function
       name: create_lead
       description: Create new lead in CRM
@@ -73,7 +69,6 @@ spec:
         required:
           - name
           - email
-
     - type: function
       name: send_followup
       description: Send automated follow-up email
@@ -84,13 +79,16 @@ spec:
             type: string
           template:
             type: string
-            enum: [intro, demo_followup, pricing, closing]
+            enum:
+              - intro
+              - demo_followup
+              - pricing
+              - closing
           personalization:
             type: object
         required:
           - leadId
           - template
-
     - type: function
       name: schedule_meeting
       description: Schedule meeting with lead
@@ -101,7 +99,11 @@ spec:
             type: string
           meetingType:
             type: string
-            enum: [discovery, demo, negotiation, closing]
+            enum:
+              - discovery
+              - demo
+              - negotiation
+              - closing
           duration:
             type: integer
           suggestedTimes:
@@ -112,16 +114,23 @@ spec:
         required:
           - leadId
           - meetingType
-
   memory:
     enabled: true
     type: entity_memory
     entities:
       - type: lead
-        fields: [name, company, status, last_contact, notes]
+        fields:
+          - name
+          - company
+          - status
+          - last_contact
+          - notes
       - type: interaction
-        fields: [date, type, summary, outcome]
-
+        fields:
+          - date
+          - type
+          - summary
+          - outcome
   observability:
     logging:
       level: info
@@ -132,15 +141,18 @@ spec:
         - emails_sent
         - meetings_scheduled
         - conversion_rate
-
 extensions:
   langchain:
-    agent_type: react
-    memory_type: entity
-    tools_mapping:
-      - ossa_capability: search_crm
-        langchain_tool: crm_search
-      - ossa_capability: create_lead
-        langchain_tool: create_lead
-      - ossa_capability: send_followup
-        langchain_tool: send_email
+    enabled: true
+    chain_type: agent
+    memory:
+      type: vector
+    tools:
+      - name: search_crm
+        description: Search CRM for contacts and accounts
+      - name: create_lead
+        description: Create new lead in CRM
+      - name: send_followup
+        description: Send automated follow-up email
+      - name: schedule_meeting
+        description: Schedule meeting with lead

@@ -1,16 +1,13 @@
-apiVersion: ossa/v0.4.7
+apiVersion: ossa/v0.5
 kind: Agent
 metadata:
   name: security-audit-agent
   version: 1.0.0
-  description: >-
-    Repository security scanner. Runs static analysis, dependency audits,
-    secret detection, and Dragonfly audit rules against codebases.
-    Reports findings with severity and remediation guidance.
+  description: Repository security scanner. Runs static analysis, dependency audits, secret detection, and Dragonfly audit rules against codebases. Reports findings with severity and remediation guidance.
   labels:
     use-case: security-audit
-    production-ready: "false"
-    ossa-native: "true"
+    production-ready: 'false'
+    ossa-native: 'true'
   agentType: custom
   agentKind: specialist
   identity:
@@ -21,8 +18,8 @@ metadata:
       name: BlueFly.io
       email: agents@bluefly.io
       website: https://openstandardagents.org
-    created_at: "2026-03-10T12:00:00Z"
-    updated_at: "2026-03-10T12:00:00Z"
+    created_at: 2026-03-10T12:00:00Z
+    updated_at: 2026-03-10T12:00:00Z
   catalog:
     published: true
     visibility: public
@@ -37,7 +34,6 @@ metadata:
       - phpcs
       - dragonfly
       - ossa-native
-
 spec:
   role: |
     You are a security audit specialist agent.
@@ -56,13 +52,11 @@ spec:
     - Provide actionable remediation for each finding
     - Reference CWE/CVE identifiers where applicable
     - Map findings to NIST AI RMF and OWASP Top 10 where relevant
-
   llm:
     provider: anthropic
     model: claude-sonnet-4-20250514
     temperature: 0.1
     max_tokens: 16384
-
   tools:
     - type: command
       name: phpstan_analyze
@@ -77,7 +71,6 @@ spec:
           type: number
           description: Analysis strictness 0-9
           default: 8
-
     - type: command
       name: phpcs_check
       description: Run PHP CodeSniffer checks
@@ -90,7 +83,6 @@ spec:
         standard:
           type: string
           default: Drupal,DrupalPractice
-
     - type: command
       name: npm_audit
       description: Run npm audit for JS/TS dependencies
@@ -100,7 +92,6 @@ spec:
         path:
           type: string
           description: Project path with package.json
-
     - type: command
       name: secret_scan
       description: Scan for exposed secrets and credentials
@@ -110,7 +101,6 @@ spec:
         path:
           type: string
           description: Repository path to scan
-
     - type: api
       name: dragonfly_audit
       description: Run Dragonfly audit rules from catalog
@@ -122,7 +112,6 @@ spec:
         target_url:
           type: string
           description: URL or path to audit
-
   capabilities:
     - name: static-analysis
       description: PHPStan and PHPCS code analysis
@@ -134,7 +123,6 @@ spec:
       description: Run Dragonfly quality audit rules
     - name: compliance-mapping
       description: Map findings to NIST, OWASP, CWE frameworks
-
   safety:
     guardrails:
       - never_output_secrets
@@ -142,14 +130,12 @@ spec:
       - audit_all_actions
     pii_handling: redact
     audit_all_actions: true
-    max_cost_per_execution: 0.40
-
+    max_cost_per_execution: 0.4
   observability:
     telemetry:
       enabled: true
       export_traces: true
       export_metrics: true
-
 security:
   tier: tier_1_read
   threat_model:
@@ -176,10 +162,10 @@ security:
       max_execution_seconds: 600
   network_access:
     allowed_domains:
-      - "registry.npmjs.org"
-      - "packagist.org"
-      - "api.anthropic.com"
-      - "nvd.nist.gov"
+      - registry.npmjs.org
+      - packagist.org
+      - api.anthropic.com
+      - nvd.nist.gov
     protocols:
       - https
     egress_policy: allow-list
@@ -189,42 +175,60 @@ security:
     log_outputs: false
     log_tool_calls: true
     retention_days: 365
-
 protocols:
   mcp:
+    version: 1.0.0
     role: client
-    transport: stdio
     capabilities:
       tools: true
       resources: true
+      prompts: false
+      sampling: false
     servers:
       - name: dragonfly
+        transport: stdio
         command: dragonfly
-        description: Dragonfly audit engine for quality rules
+        tools:
+          - dragonfly_audit
   a2a:
-    role: server
-    endpoint: /agents/security-audit-agent
-    skills:
-      - name: audit-repository
-        description: Run a full security audit on a repository
-        input_schema:
-          type: object
-          properties:
-            repo_path:
-              type: string
-            audit_level:
-              type: string
-              enum:
-                - quick
-                - standard
-                - deep
-          required:
-            - repo_path
-
+    version: 0.2.0
+    endpoint: https://openstandardagents.org/agents/security-audit-agent
+    agent_card:
+      name: Security Audit Agent
+      description: Run repository security audits and compliance scans
+      skills:
+        - id: audit-repository
+          name: Audit Repository
+          description: Run a security audit on a repository
+    capabilities:
+      streaming: false
+      pushNotifications: false
+      stateTransitionHistory: true
+    authentication:
+      schemes:
+        - none
 governance:
-  cedar_policy_set: blueflyio/cedar-policies
-  pre_execution_check: true
-  compliance_profiles:
-    - NIST AI RMF 1.0
-    - OWASP Top 10
-    - CWE Top 25
+  authorization:
+    clearance_level: 1
+    policy_references:
+      - blueflyio/cedar-policies
+    tool_permissions:
+      - tool: phpstan_analyze
+        risk_level: low
+      - tool: phpcs_check
+        risk_level: low
+      - tool: npm_audit
+        risk_level: low
+      - tool: secret_scan
+        risk_level: medium
+      - tool: dragonfly_audit
+        risk_level: medium
+  quality_requirements:
+    confidence_threshold: 0.9
+    security_score_threshold: 90
+    max_vulnerability_count: 0
+  compliance:
+    frameworks:
+      - NIST-800-53
+    data_classification: confidential
+    audit_logging_required: true
