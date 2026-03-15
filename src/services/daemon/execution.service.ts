@@ -34,12 +34,17 @@ try {
       const eqIdx = trimmed.indexOf('=');
       if (eqIdx > 0) {
         const key = trimmed.slice(0, eqIdx).trim();
-        const val = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, '');
+        const val = trimmed
+          .slice(eqIdx + 1)
+          .trim()
+          .replace(/^["']|["']$/g, '');
         if (!process.env[key]) process.env[key] = val;
       }
     }
   }
-} catch { /* .env loading is best-effort */ }
+} catch {
+  /* .env loading is best-effort */
+}
 
 const MAX_CONCURRENT = 3;
 const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
@@ -91,7 +96,13 @@ export interface Execution {
  * @experimental This feature is experimental and may change without notice.
  */
 export interface ExecutionEvent {
-  type: 'stdout' | 'stderr' | 'tool_call' | 'tool_result' | 'completion' | 'error';
+  type:
+    | 'stdout'
+    | 'stderr'
+    | 'tool_call'
+    | 'tool_result'
+    | 'completion'
+    | 'error';
   executionId: string;
   data: string;
   timestamp: string;
@@ -127,14 +138,14 @@ export class ExecutionService extends EventEmitter {
     manifestPath: string,
     input?: unknown,
     runtime?: string,
-    timeoutMs?: number,
+    timeoutMs?: number
   ): Promise<Execution> {
     // Enforce concurrency limit
     const running = this.getRunningExecutions();
     if (running.length >= MAX_CONCURRENT) {
       throw new Error(
         `Max concurrent executions (${MAX_CONCURRENT}) reached. ` +
-        `Running: ${running.map((e) => e.id).join(', ')}`,
+          `Running: ${running.map((e) => e.id).join(', ')}`
       );
     }
 
@@ -143,7 +154,7 @@ export class ExecutionService extends EventEmitter {
     if (!SUPPORTED_RUNTIMES.includes(selectedRuntime)) {
       throw new Error(
         `Unsupported runtime '${selectedRuntime}'. ` +
-        `Supported: ${SUPPORTED_RUNTIMES.join(', ')}`,
+          `Supported: ${SUPPORTED_RUNTIMES.join(', ')}`
       );
     }
 
@@ -152,7 +163,7 @@ export class ExecutionService extends EventEmitter {
     if (envKey && !process.env[envKey]) {
       throw new Error(
         `Missing API key: ${envKey} not set in environment. ` +
-        `Add it to your .env file.`,
+          `Add it to your .env file.`
       );
     }
 
@@ -176,11 +187,16 @@ export class ExecutionService extends EventEmitter {
     this.timeoutTimers.set(executionId, timer);
 
     // Run asynchronously — don't block the caller
-    this.runExecution(executionId, manifestPath, input, selectedRuntime, abortController.signal)
-      .catch((err) => {
-        // Safety net for unhandled errors
-        logger.error({ err, executionId }, 'Unhandled execution error');
-      });
+    this.runExecution(
+      executionId,
+      manifestPath,
+      input,
+      selectedRuntime,
+      abortController.signal
+    ).catch((err) => {
+      // Safety net for unhandled errors
+      logger.error({ err, executionId }, 'Unhandled execution error');
+    });
 
     return execution;
   }
@@ -199,7 +215,12 @@ export class ExecutionService extends EventEmitter {
       controller.abort();
     }
 
-    this.completeExecution(executionId, 'cancelled', undefined, 'Cancelled by user');
+    this.completeExecution(
+      executionId,
+      'cancelled',
+      undefined,
+      'Cancelled by user'
+    );
     return true;
   }
 
@@ -215,7 +236,7 @@ export class ExecutionService extends EventEmitter {
    */
   getRunningExecutions(): Execution[] {
     return Array.from(this.executions.values()).filter(
-      (e) => e.status === 'running',
+      (e) => e.status === 'running'
     );
   }
 
@@ -224,7 +245,7 @@ export class ExecutionService extends EventEmitter {
    */
   onExecutionEvent(
     executionId: string,
-    callback: (event: ExecutionEvent) => void,
+    callback: (event: ExecutionEvent) => void
   ): void {
     const handler = (event: ExecutionEvent) => {
       if (event.executionId === executionId) {
@@ -265,7 +286,7 @@ export class ExecutionService extends EventEmitter {
     manifestPath: string,
     input: unknown,
     runtime: RuntimeAdapter,
-    signal: AbortSignal,
+    signal: AbortSignal
   ): Promise<void> {
     try {
       // Load and validate manifest
@@ -279,7 +300,12 @@ export class ExecutionService extends EventEmitter {
         const errMsg = validationResult.errors
           .map((e: { message?: string }) => e.message || String(e))
           .join('; ');
-        this.completeExecution(executionId, 'failed', undefined, `Validation failed: ${errMsg}`);
+        this.completeExecution(
+          executionId,
+          'failed',
+          undefined,
+          `Validation failed: ${errMsg}`
+        );
         return;
       }
 
@@ -292,23 +318,28 @@ export class ExecutionService extends EventEmitter {
           executionId,
           'failed',
           undefined,
-          `Runtime '${runtime}' adapter not yet fully implemented`,
+          `Runtime '${runtime}' adapter not yet fully implemented`
         );
         return;
       }
 
       adapter.initialize();
 
-      this.emitEvent(executionId, 'stdout', `Agent loaded: ${manifest.metadata?.name || manifestPath}`);
+      this.emitEvent(
+        executionId,
+        'stdout',
+        `Agent loaded: ${manifest.metadata?.name || manifestPath}`
+      );
 
       if (signal.aborted) return;
 
       // Run the chat with the provided input
-      const userMessage = typeof input === 'string'
-        ? input
-        : input
-          ? JSON.stringify(input)
-          : 'Hello';
+      const userMessage =
+        typeof input === 'string'
+          ? input
+          : input
+            ? JSON.stringify(input)
+            : 'Hello';
 
       // Wrap tool calls to emit events
       this.wrapToolEvents(adapter, executionId);
@@ -337,7 +368,7 @@ export class ExecutionService extends EventEmitter {
    */
   private createAdapter(
     runtime: RuntimeAdapter,
-    manifest: OssaManifest,
+    manifest: OssaManifest
   ): OpenAIAdapter | AnthropicAdapter | null {
     switch (runtime) {
       case 'openai':
@@ -346,7 +377,7 @@ export class ExecutionService extends EventEmitter {
       case 'anthropic':
       case 'claude':
         return new AnthropicAdapter(
-          manifest as import('../../services/runtime/anthropic.adapter.js').OssaManifest,
+          manifest as import('../../services/runtime/anthropic.adapter.js').OssaManifest
         );
       // Stub adapters — files exist but don't share a common interface yet.
       // When they implement initialize()/chat(), wire them here.
@@ -368,7 +399,7 @@ export class ExecutionService extends EventEmitter {
    */
   private wrapToolEvents(
     adapter: OpenAIAdapter | AnthropicAdapter,
-    executionId: string,
+    executionId: string
   ): void {
     // The adapters have private executeTool methods. We can't cleanly hook
     // into them without modifying the adapter classes. For now, we emit
@@ -393,7 +424,7 @@ export class ExecutionService extends EventEmitter {
       executionId,
       'failed',
       undefined,
-      `Execution timed out after ${DEFAULT_TIMEOUT_MS / 1000}s`,
+      `Execution timed out after ${DEFAULT_TIMEOUT_MS / 1000}s`
     );
   }
 
@@ -404,7 +435,7 @@ export class ExecutionService extends EventEmitter {
     executionId: string,
     status: 'completed' | 'failed' | 'cancelled',
     output?: unknown,
-    error?: string,
+    error?: string
   ): void {
     const execution = this.executions.get(executionId);
     if (!execution) return;
@@ -427,7 +458,7 @@ export class ExecutionService extends EventEmitter {
       this.emitEvent(
         executionId,
         'completion',
-        typeof output === 'string' ? output : JSON.stringify(output),
+        typeof output === 'string' ? output : JSON.stringify(output)
       );
     } else {
       this.emitEvent(executionId, 'error', error || `Execution ${status}`);
@@ -440,7 +471,7 @@ export class ExecutionService extends EventEmitter {
   private emitEvent(
     executionId: string,
     type: ExecutionEvent['type'],
-    data: string,
+    data: string
   ): void {
     const event: ExecutionEvent = {
       type,

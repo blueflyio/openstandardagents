@@ -64,10 +64,10 @@ import { IndexService } from './services/registry/index.service.js';
 
 // Skills Pipeline Services
 import {
-    SkillsExportService,
-    SkillsGeneratorService,
-    SkillsInstallService,
-    SkillsResearchService,
+  SkillsExportService,
+  SkillsGeneratorService,
+  SkillsInstallService,
+  SkillsResearchService,
 } from './services/skills-pipeline/index.js';
 
 // Daemon Services (Neural Forge)

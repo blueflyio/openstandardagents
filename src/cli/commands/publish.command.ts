@@ -15,16 +15,15 @@ import {
 } from '../utils/standard-options.js';
 
 export const publishCommand = new Command('publish')
-  .description('Publish an OSSA agent to the registry (local or remote DUADP node)')
+  .description(
+    'Publish an OSSA agent to the registry (local or remote DUADP node)'
+  )
   .argument('<manifest>', 'Path to OSSA manifest file')
   .option(
     '-v, --version <version>',
     'Version to publish (defaults to manifest version)'
   )
-  .option(
-    '-r, --registry <path>',
-    'Registry path (defaults to .ossa-registry)'
-  )
+  .option('-r, --registry <path>', 'Registry path (defaults to .ossa-registry)')
   .option(
     '--remote <url>',
     'Publish to a remote DUADP node (e.g., https://discover.duadp.org)'
@@ -92,12 +91,24 @@ publishCommand.action(
 
         const result = await client.publish(manifest as any);
         if (result.success) {
-          log(`\nPublished to ${options.remote}: ${(result as any).gaid || manifest.metadata?.name}`, chalk.green);
+          log(
+            `\nPublished to ${options.remote}: ${(result as any).gaid || manifest.metadata?.name}`,
+            chalk.green
+          );
           if (options.verbose && (result as any).trust_verification) {
-            log(`  Trust tier: ${(result as any).trust_verification.verified_tier}`, chalk.gray);
+            log(
+              `  Trust tier: ${(result as any).trust_verification.verified_tier}`,
+              chalk.gray
+            );
           }
         } else {
-          console.error(useColor ? chalk.red(`\nPublish failed: ${(result as any).error || 'Unknown error'}`) : `\nPublish failed`);
+          console.error(
+            useColor
+              ? chalk.red(
+                  `\nPublish failed: ${(result as any).error || 'Unknown error'}`
+                )
+              : `\nPublish failed`
+          );
           process.exit(ExitCode.GENERAL_ERROR);
         }
         process.exit(ExitCode.SUCCESS);

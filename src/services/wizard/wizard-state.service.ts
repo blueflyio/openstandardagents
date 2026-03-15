@@ -454,7 +454,10 @@ export class WizardStateService {
    * Step definitions for API consumption (no session required).
    * Strips validation and condition so response is JSON-serializable.
    */
-  getStepDefinitions(kind: WizardKind = 'Agent', mode: WizardMode = 'guided'): StepDefinitionApi[] {
+  getStepDefinitions(
+    kind: WizardKind = 'Agent',
+    mode: WizardMode = 'guided'
+  ): StepDefinitionApi[] {
     const session = this.createSession({ kind, mode });
     try {
       const steps = this.getSteps(session);

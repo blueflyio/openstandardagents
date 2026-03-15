@@ -26,7 +26,12 @@ export interface XSignature {
   timestamp?: string;
 }
 
-export type TrustTier = 'official' | 'verified-signature' | 'signed' | 'community' | 'experimental';
+export type TrustTier =
+  | 'official'
+  | 'verified-signature'
+  | 'signed'
+  | 'community'
+  | 'experimental';
 
 export interface TrustVerificationResult {
   verified: boolean;
@@ -44,14 +49,18 @@ const didResolver = new Resolver({ ...webResolver() });
  * Canonicalize the agent manifest using RFC 8785 (json-canonicalize),
  * then return the UTF-8 bytes. This is the payload that x-signature.value signs.
  */
-export function canonicalManifestBytes(manifest: Record<string, unknown>): Uint8Array {
+export function canonicalManifestBytes(
+  manifest: Record<string, unknown>
+): Uint8Array {
   // Remove x-signature from the manifest before canonicalizing — it must not
   // be part of the signed payload (same as JWT header exclusion)
   const { metadata, ...rest } = manifest;
   const meta = metadata as Record<string, unknown> | null | undefined;
   const { 'x-signature': _sig, ...cleanMetadata } = meta ?? {};
   const cleaned = { ...rest, metadata: cleanMetadata };
-  const canonical = (canonicalize as unknown as (v: unknown) => string)(cleaned);
+  const canonical = (canonicalize as unknown as (v: unknown) => string)(
+    cleaned
+  );
   return new TextEncoder().encode(canonical);
 }
 
@@ -62,7 +71,7 @@ export function canonicalManifestBytes(manifest: Record<string, unknown>): Uint8
 async function verifyEd25519(
   payload: Uint8Array,
   signatureB64: string,
-  publicKeyB64: string,
+  publicKeyB64: string
 ): Promise<boolean> {
   const sig = base64ToBytes(signatureB64);
   const pub = base64ToBytes(publicKeyB64);
@@ -73,7 +82,10 @@ async function verifyEd25519(
  * Verify a compact JWT. The `value` field IS the JWT — publicKey is the JWK or PEM.
  * Uses `jose` — handles RS256, ES256, EdDSA etc automatically.
  */
-async function verifyJwt(jwt: string, publicKeyPemOrJwk: string): Promise<boolean> {
+async function verifyJwt(
+  jwt: string,
+  publicKeyPemOrJwk: string
+): Promise<boolean> {
   try {
     let key;
     try {
@@ -96,7 +108,7 @@ async function verifyJwt(jwt: string, publicKeyPemOrJwk: string): Promise<boolea
  */
 async function verifyDid(
   payload: Uint8Array,
-  signature: XSignature,
+  signature: XSignature
 ): Promise<boolean> {
   if (!signature.issuer) return false;
   try {
@@ -107,7 +119,8 @@ async function verifyDid(
     // Try each verification method in the DID document
     for (const vm of doc.verificationMethod) {
       if (vm.publicKeyBase64 || vm.publicKeyBase58 || vm.publicKeyJwk) {
-        const pubKeyB64 = vm.publicKeyBase64 ??
+        const pubKeyB64 =
+          vm.publicKeyBase64 ??
           (vm.publicKeyBase58 ? base58ToBase64(vm.publicKeyBase58) : null);
 
         if (pubKeyB64) {
@@ -135,7 +148,7 @@ async function verifyDid(
 export async function verifyAgentSignature(
   manifest: Record<string, unknown>,
   signature: XSignature,
-  agentId?: string,
+  agentId?: string
 ): Promise<TrustVerificationResult> {
   const base: Omit<TrustVerificationResult, 'verified' | 'tier' | 'reason'> = {
     signatureType: signature.type,
@@ -149,7 +162,8 @@ export async function verifyAgentSignature(
       ...base,
       verified: false,
       tier: 'signed',
-      reason: 'x-signature present but missing required fields (type, value, or publicKey)',
+      reason:
+        'x-signature present but missing required fields (type, value, or publicKey)',
     };
   }
 
@@ -159,7 +173,11 @@ export async function verifyAgentSignature(
 
     switch (signature.type) {
       case 'Ed25519':
-        verified = await verifyEd25519(payload, signature.value, signature.publicKey);
+        verified = await verifyEd25519(
+          payload,
+          signature.value,
+          signature.publicKey
+        );
         break;
 
       case 'jwt':
@@ -175,7 +193,10 @@ export async function verifyAgentSignature(
       case 'RSA-PSS': {
         // Use jose compact verification for asymmetric algorithms
         try {
-          const key = await importSPKI(signature.publicKey, signature.type === 'ECDSA' ? 'ES256' : 'PS256');
+          const key = await importSPKI(
+            signature.publicKey,
+            signature.type === 'ECDSA' ? 'ES256' : 'PS256'
+          );
           await compactVerify(signature.value, key);
           verified = true;
         } catch {
@@ -197,7 +218,9 @@ export async function verifyAgentSignature(
       ...base,
       verified,
       tier: verified ? 'verified-signature' : 'signed',
-      reason: verified ? undefined : 'Signature verification failed — payload mismatch or invalid key',
+      reason: verified
+        ? undefined
+        : 'Signature verification failed — payload mismatch or invalid key',
     };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'unknown';
@@ -237,7 +260,7 @@ export async function signAgentManifest(
     type: 'Ed25519',
     value: signatureB64,
     publicKey: publicKeyB64,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   if (issuer) {
@@ -250,8 +273,8 @@ export async function signAgentManifest(
     ...manifest,
     metadata: {
       ...metadata,
-      'x-signature': signature
-    }
+      'x-signature': signature,
+    },
   };
 }
 
@@ -270,11 +293,14 @@ function base64ToBytes(b64: string): Uint8Array {
  */
 function base58ToBase64(b58: string): string {
   const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-  const alphabetMap = new Map<string, number>(ALPHABET.split('').map((c, i) => [c, i]));
+  const alphabetMap = new Map<string, number>(
+    ALPHABET.split('').map((c, i) => [c, i])
+  );
   let value = BigInt(0);
   for (const char of b58) {
     const digit = alphabetMap.get(char);
-    if (digit === undefined) throw new Error(`Invalid base58 character: ${char}`);
+    if (digit === undefined)
+      throw new Error(`Invalid base58 character: ${char}`);
     value = value * BigInt(58) + BigInt(digit);
   }
   const hex = value.toString(16).padStart(b58.length * 2, '0');

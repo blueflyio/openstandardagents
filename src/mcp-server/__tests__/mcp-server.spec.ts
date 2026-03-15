@@ -655,7 +655,9 @@ describe('MCP resources', () => {
       uri: 'ossa://template/minimal',
     });
     expect(result.contents.length).toBe(1);
-    expect(readTextResource(result.contents[0])).toContain('apiVersion: ossa/v0.4');
+    expect(readTextResource(result.contents[0])).toContain(
+      'apiVersion: ossa/v0.4'
+    );
     expect(readTextResource(result.contents[0])).toContain('kind: Agent');
   });
 
@@ -681,7 +683,9 @@ describe('MCP resources', () => {
     const result = await client.readResource({
       uri: 'ossa://platforms/supported',
     });
-    const platforms = JSON.parse(readTextResource(result.contents[0]) as string);
+    const platforms = JSON.parse(
+      readTextResource(result.contents[0]) as string
+    );
     expect(platforms.total).toBeGreaterThanOrEqual(14);
     expect(platforms.platforms).toBeInstanceOf(Array);
     const openai = platforms.platforms.find(

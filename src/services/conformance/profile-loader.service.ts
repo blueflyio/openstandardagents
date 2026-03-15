@@ -34,7 +34,10 @@ export class ConformanceProfileLoader {
       // Strategy 4: From openstandardagents directory
       join(process.cwd(), 'openstandardagents/spec/v0.3/conformance/profiles'),
       // Strategy 5: Absolute path from repo root (CI environments)
-      join(process.env.CI_PROJECT_DIR || '/builds', 'spec/v0.3/conformance/profiles'),
+      join(
+        process.env.CI_PROJECT_DIR || '/builds',
+        'spec/v0.3/conformance/profiles'
+      ),
     ];
 
     for (const path of strategies) {

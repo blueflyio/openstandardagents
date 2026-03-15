@@ -5,11 +5,22 @@ import * as path from 'path';
 import { signAgentManifest } from '../../services/trust/trust.service.js';
 
 export const signCommand = new Command('sign')
-  .description('Cryptographically sign an OSSA manifest using an Ed25519 private key')
+  .description(
+    'Cryptographically sign an OSSA manifest using an Ed25519 private key'
+  )
   .argument('<manifest>', 'Path to the OSSA manifest file (.yaml or .json)')
-  .requiredOption('-k, --private-key <hex>', 'Ed25519 private key in hex format')
-  .option('-i, --issuer <did>', 'Optional DID of the signing entity (e.g. did:web:example.com)')
-  .option('-o, --output <file>', 'Optional output file path. Defaults to overwriting the input file.')
+  .requiredOption(
+    '-k, --private-key <hex>',
+    'Ed25519 private key in hex format'
+  )
+  .option(
+    '-i, --issuer <did>',
+    'Optional DID of the signing entity (e.g. did:web:example.com)'
+  )
+  .option(
+    '-o, --output <file>',
+    'Optional output file path. Defaults to overwriting the input file.'
+  )
   .action(async (manifestPath: string, options) => {
     try {
       const fullPath = path.resolve(process.cwd(), manifestPath);
@@ -23,25 +34,39 @@ export const signCommand = new Command('sign')
 
       let manifest: Record<string, unknown>;
       try {
-        manifest = isJson ? JSON.parse(content) : yaml.load(content) as Record<string, unknown>;
+        manifest = isJson
+          ? JSON.parse(content)
+          : (yaml.load(content) as Record<string, unknown>);
       } catch (e: unknown) {
-        console.error(`Error parsing manifest: ${e instanceof Error ? e.message : 'Unknown error'}`);
+        console.error(
+          `Error parsing manifest: ${e instanceof Error ? e.message : 'Unknown error'}`
+        );
         process.exit(1);
       }
 
-      const signedManifest = await signAgentManifest(manifest, options.privateKey, options.issuer);
+      const signedManifest = await signAgentManifest(
+        manifest,
+        options.privateKey,
+        options.issuer
+      );
 
       const outputContent = isJson
         ? JSON.stringify(signedManifest, null, 2)
         : yaml.dump(signedManifest, { noRefs: true, indent: 2 });
 
-      const outputPath = options.output ? path.resolve(process.cwd(), options.output) : fullPath;
+      const outputPath = options.output
+        ? path.resolve(process.cwd(), options.output)
+        : fullPath;
 
       fs.writeFileSync(outputPath, outputContent, 'utf-8');
 
-      console.log(`Successfully signed manifest. Output saved to ${outputPath}`);
+      console.log(
+        `Successfully signed manifest. Output saved to ${outputPath}`
+      );
     } catch (e: unknown) {
-      console.error(`Error signing manifest: ${e instanceof Error ? e.message : 'Unknown error'}`);
+      console.error(
+        `Error signing manifest: ${e instanceof Error ? e.message : 'Unknown error'}`
+      );
       process.exit(1);
     }
   });

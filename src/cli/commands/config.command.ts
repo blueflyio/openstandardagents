@@ -35,7 +35,9 @@ configCommand
 
 configCommand
   .command('get [key]')
-  .description('Get a config value (env overrides file). Omit key to show config path.')
+  .description(
+    'Get a config value (env overrides file). Omit key to show config path.'
+  )
   .action((key: string | undefined) => {
     if (!key) {
       console.log(getConfigPath());
@@ -57,7 +59,11 @@ configCommand
     const data = listConfig();
     const keys = Object.keys(data).sort();
     if (keys.length === 0) {
-      console.log(chalk.gray('No keys in config file. Use: ossa config set SKILLS_PATH <path>'));
+      console.log(
+        chalk.gray(
+          'No keys in config file. Use: ossa config set SKILLS_PATH <path>'
+        )
+      );
       console.log(chalk.gray('Config path: ' + getConfigPath()));
       return;
     }

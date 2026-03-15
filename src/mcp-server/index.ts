@@ -24,13 +24,13 @@ import 'reflect-metadata';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
-    CallToolRequestSchema,
-    GetPromptRequestSchema,
-    ListPromptsRequestSchema,
-    ListResourcesRequestSchema,
-    ListToolsRequestSchema,
-    ReadResourceRequestSchema,
-    type Tool,
+  CallToolRequestSchema,
+  GetPromptRequestSchema,
+  ListPromptsRequestSchema,
+  ListResourcesRequestSchema,
+  ListToolsRequestSchema,
+  ReadResourceRequestSchema,
+  type Tool,
 } from '@modelcontextprotocol/sdk/types.js';
 import axios from 'axios';
 import fg from 'fast-glob';
@@ -43,15 +43,15 @@ import semver from 'semver';
 import { z } from 'zod';
 
 import {
-    registry as convertRegistry,
-    initializeAdapters,
+  registry as convertRegistry,
+  initializeAdapters,
 } from '../adapters/index.js';
 import {
-    getAgentTypeConfigs,
-    getDefaultAgentKind,
-    getDefaultAgentVersion,
-    getDefaultDescriptionTemplate,
-    getDefaultRoleTemplate,
+  getAgentTypeConfigs,
+  getDefaultAgentKind,
+  getDefaultAgentVersion,
+  getDefaultDescriptionTemplate,
+  getDefaultRoleTemplate,
 } from '../config/defaults.js';
 import { container } from '../di-container.js';
 import { ManifestRepository } from '../repositories/manifest.repository.js';
@@ -1163,8 +1163,14 @@ async function handleScaffold(args: Record<string, unknown>) {
       description:
         input.description || getDefaultDescriptionTemplate(input.name),
       mesh_bindings: {
-        source_project_id: input.source_project_id || process.env.OSSA_DEFAULT_SOURCE_PROJECT_ID || '',
-        execution_node_id: input.execution_node_id || process.env.OSSA_DEFAULT_EXECUTION_NODE_ID || '',
+        source_project_id:
+          input.source_project_id ||
+          process.env.OSSA_DEFAULT_SOURCE_PROJECT_ID ||
+          '',
+        execution_node_id:
+          input.execution_node_id ||
+          process.env.OSSA_DEFAULT_EXECUTION_NODE_ID ||
+          '',
       },
     },
     spec: {

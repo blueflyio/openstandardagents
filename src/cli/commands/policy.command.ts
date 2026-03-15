@@ -16,7 +16,7 @@ import { validateManifestCedarPolicies } from '../../services/governance/cedar-v
 
 const validateSubcommand = new Command('validate')
   .description(
-    'Validate Cedar policies embedded in an OSSA manifest (extensions.security.cedar)',
+    'Validate Cedar policies embedded in an OSSA manifest (extensions.security.cedar)'
   )
   .argument('<manifest>', 'Path to the OSSA manifest file (.yaml or .json)')
   .option('-v, --verbose', 'Show detailed validation output')
@@ -37,7 +37,7 @@ const validateSubcommand = new Command('validate')
         : (yaml.load(content) as Record<string, unknown>);
     } catch (e: unknown) {
       console.error(
-        `Error parsing manifest: ${e instanceof Error ? e.message : 'Unknown error'}`,
+        `Error parsing manifest: ${e instanceof Error ? e.message : 'Unknown error'}`
       );
       process.exit(1);
     }
@@ -49,15 +49,13 @@ const validateSubcommand = new Command('validate')
     const authorization = governance?.authorization as
       | Record<string, unknown>
       | undefined;
-    const policyRefs = authorization?.policy_references as
-      | string[]
-      | undefined;
+    const policyRefs = authorization?.policy_references as string[] | undefined;
     if (policyRefs && policyRefs.length > 0) {
       console.log(
-        `ℹ  Found ${policyRefs.length} external policy reference(s) in governance.authorization.policy_references`,
+        `ℹ  Found ${policyRefs.length} external policy reference(s) in governance.authorization.policy_references`
       );
       console.log(
-        '   External references cannot be validated offline. Use DUADP node for runtime evaluation.',
+        '   External references cannot be validated offline. Use DUADP node for runtime evaluation.'
       );
     }
 
@@ -66,18 +64,18 @@ const validateSubcommand = new Command('validate')
 
     if (result.policyCount === 0) {
       console.log(
-        'No inline Cedar policies found in extensions.security.cedar',
+        'No inline Cedar policies found in extensions.security.cedar'
       );
       if (!policyRefs || policyRefs.length === 0) {
         console.log(
-          'Tip: Add Cedar policies to extensions.security.cedar or governance.authorization.policy_references',
+          'Tip: Add Cedar policies to extensions.security.cedar or governance.authorization.policy_references'
         );
       }
       process.exit(0);
     }
 
     console.log(
-      `Validating ${result.policyCount} Cedar polic${result.policyCount === 1 ? 'y' : 'ies'}${result.hasSchema ? ' (with schema)' : ''}...\n`,
+      `Validating ${result.policyCount} Cedar polic${result.policyCount === 1 ? 'y' : 'ies'}${result.hasSchema ? ' (with schema)' : ''}...\n`
     );
 
     for (const r of result.results) {
@@ -104,13 +102,13 @@ const validateSubcommand = new Command('validate')
 
     if (result.valid) {
       console.log(
-        `All ${result.policyCount} Cedar polic${result.policyCount === 1 ? 'y' : 'ies'} validated successfully.`,
+        `All ${result.policyCount} Cedar polic${result.policyCount === 1 ? 'y' : 'ies'} validated successfully.`
       );
       process.exit(0);
     } else {
       const failCount = result.results.filter((r) => !r.valid).length;
       console.error(
-        `${failCount} of ${result.policyCount} Cedar polic${result.policyCount === 1 ? 'y' : 'ies'} failed validation.`,
+        `${failCount} of ${result.policyCount} Cedar polic${result.policyCount === 1 ? 'y' : 'ies'} failed validation.`
       );
       process.exit(1);
     }

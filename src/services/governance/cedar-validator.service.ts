@@ -44,7 +44,7 @@ interface CedarExtension {
 function extractErrors(answer: CheckParseAnswer): string[] {
   if (answer.type === 'failure') {
     return answer.errors.map(
-      (e: DetailedError) => e.message ?? JSON.stringify(e),
+      (e: DetailedError) => e.message ?? JSON.stringify(e)
     );
   }
   return [];
@@ -55,7 +55,7 @@ function extractErrors(answer: CheckParseAnswer): string[] {
  */
 export function validatePolicyText(
   policyText: string,
-  policyId?: string,
+  policyId?: string
 ): CedarValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -67,7 +67,7 @@ export function validatePolicyText(
     errors.push(...extractErrors(result));
   } catch (e: unknown) {
     errors.push(
-      `Cedar WASM error: ${e instanceof Error ? e.message : String(e)}`,
+      `Cedar WASM error: ${e instanceof Error ? e.message : String(e)}`
     );
   }
 
@@ -80,7 +80,7 @@ export function validatePolicyText(
 export function validatePolicyWithSchema(
   policyText: string,
   schemaText: string,
-  policyId?: string,
+  policyId?: string
 ): CedarValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -95,7 +95,7 @@ export function validatePolicyWithSchema(
     }
   } catch (e: unknown) {
     errors.push(
-      `Cedar schema parse error: ${e instanceof Error ? e.message : String(e)}`,
+      `Cedar schema parse error: ${e instanceof Error ? e.message : String(e)}`
     );
     return { valid: false, policyId, errors, warnings };
   }
@@ -108,7 +108,7 @@ export function validatePolicyWithSchema(
     errors.push(...extractErrors(result));
   } catch (e: unknown) {
     errors.push(
-      `Cedar WASM error: ${e instanceof Error ? e.message : String(e)}`,
+      `Cedar WASM error: ${e instanceof Error ? e.message : String(e)}`
     );
   }
 
@@ -119,11 +119,9 @@ export function validatePolicyWithSchema(
  * Extract and validate all Cedar policies from an OSSA manifest.
  */
 export function validateManifestCedarPolicies(
-  manifest: Record<string, unknown>,
+  manifest: Record<string, unknown>
 ): CedarManifestValidationResult {
-  const extensions = manifest.extensions as
-    | Record<string, unknown>
-    | undefined;
+  const extensions = manifest.extensions as Record<string, unknown> | undefined;
   const security = extensions?.security as Record<string, unknown> | undefined;
   const cedarExt = security?.cedar as CedarExtension | undefined;
 
@@ -139,7 +137,7 @@ export function validateManifestCedarPolicies(
       ? validatePolicyWithSchema(
           policy.policy_text,
           cedarExt.schema_text!,
-          policy.id,
+          policy.id
         )
       : validatePolicyText(policy.policy_text, policy.id);
     results.push(result);

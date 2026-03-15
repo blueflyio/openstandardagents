@@ -19,22 +19,22 @@
 
 import * as crypto from 'crypto';
 import type {
-    A2AProtocolDescriptor,
-    AgentAutonomy,
-    AgentCard,
-    AgentCardSeparation,
-    AgentCardState,
-    AgentConstraints,
-    AgentHandoff,
-    AgentModelInfo,
-    AgentObservability,
-    AgentTaxonomy,
-    AuthMethod,
-    EncryptionSpec,
-    McpServerDescriptor,
-    TokenEfficiencySummary,
-    ToolDescriptor,
-    Transport,
+  A2AProtocolDescriptor,
+  AgentAutonomy,
+  AgentCard,
+  AgentCardSeparation,
+  AgentCardState,
+  AgentConstraints,
+  AgentHandoff,
+  AgentModelInfo,
+  AgentObservability,
+  AgentTaxonomy,
+  AuthMethod,
+  EncryptionSpec,
+  McpServerDescriptor,
+  TokenEfficiencySummary,
+  ToolDescriptor,
+  Transport,
 } from '../mesh/types.js';
 import type { OssaAgent } from '../types/index.js';
 
@@ -159,8 +159,12 @@ export class AgentCardGenerator {
       name,
       version,
       ossaVersion: manifest.apiVersion || 'ossa/v0.4',
-      ...((manifest.metadata as any)?.identity?.uuid ? { uuid: (manifest.metadata as any).identity.uuid } : {}),
-      ...((manifest.metadata as any)?.identity?.gaid ? { gaid: (manifest.metadata as any).identity.gaid } : {}),
+      ...((manifest.metadata as any)?.identity?.uuid
+        ? { uuid: (manifest.metadata as any).identity.uuid }
+        : {}),
+      ...((manifest.metadata as any)?.identity?.gaid
+        ? { gaid: (manifest.metadata as any).identity.gaid }
+        : {}),
 
       // Taxonomy — what kind of agent
       ...(taxonomy ? { taxonomy } : {}),

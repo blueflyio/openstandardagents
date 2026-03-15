@@ -21,7 +21,9 @@ export function mcpRouter(): Router {
     try {
       const { source, directory = '.' } = req.body;
       if (!source) {
-        res.status(400).json({ error: 'source is required (e.g. claude-desktop, cursor)' });
+        res
+          .status(400)
+          .json({ error: 'source is required (e.g. claude-desktop, cursor)' });
         return;
       }
       const result = await service.sync(source, directory);

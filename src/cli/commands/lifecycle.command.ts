@@ -29,11 +29,13 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
+import { addGlobalOptions, ExitCode } from '../utils/standard-options.js';
 import {
-  addGlobalOptions,
-  ExitCode,
-} from '../utils/standard-options.js';
-import { printSuccess, printError, printInfo, outputJSON } from '../utils/index.js';
+  printSuccess,
+  printError,
+  printInfo,
+  outputJSON,
+} from '../utils/index.js';
 
 // ─── Constants ───────────────────────────────────────────────────
 
@@ -95,11 +97,18 @@ function readMeta(agentsDir: string, agentName: string): AgentMeta {
   return JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
 }
 
-function writeMeta(agentsDir: string, agentName: string, meta: AgentMeta): void {
+function writeMeta(
+  agentsDir: string,
+  agentName: string,
+  meta: AgentMeta
+): void {
   const dir = path.join(agentsDir, agentName);
   ensureDir(dir);
   meta.updatedAt = new Date().toISOString();
-  fs.writeFileSync(path.join(dir, '_meta.json'), JSON.stringify(meta, null, 2) + '\n');
+  fs.writeFileSync(
+    path.join(dir, '_meta.json'),
+    JSON.stringify(meta, null, 2) + '\n'
+  );
 }
 
 function transitionAgent(
@@ -157,7 +166,8 @@ function scoreManifest(manifestPath: string): ScoreResult {
   if (/role\s*:\s*\|/.test(raw)) role += 15;
   else if (/role\s*:\s*["']?.{20,}/m.test(raw)) role += 10;
   else if (/role\s*:\s*["']?.{5,}/m.test(raw)) role += 5;
-  if (/role\s*:[\s\S]*?(You are|Act as|Your task|Your role)/im.test(raw)) role += 5;
+  if (/role\s*:[\s\S]*?(You are|Act as|Your task|Your role)/im.test(raw))
+    role += 5;
   if (/role\s*:[\s\S]*?(step|instructions|guidelines)/im.test(raw)) role += 5;
   categories.role = Math.min(25, role);
 
@@ -172,7 +182,8 @@ function scoreManifest(manifestPath: string): ScoreResult {
   // LLM (10)
   let llm = 0;
   if (/\bllm\s*:/m.test(raw)) llm += 3;
-  if (/provider\s*:\s*(anthropic|openai|gemini|ollama|litellm)/m.test(raw)) llm += 3;
+  if (/provider\s*:\s*(anthropic|openai|gemini|ollama|litellm)/m.test(raw))
+    llm += 3;
   if (/model\s*:\s*["']?\S+/m.test(raw)) llm += 2;
   if (/fallback/im.test(raw)) llm += 2;
   categories.llm = Math.min(10, llm);
@@ -180,7 +191,8 @@ function scoreManifest(manifestPath: string): ScoreResult {
   // Security (10)
   let security = 0;
   if (/security\s*:/m.test(raw)) security += 3;
-  if (/tier\s*:\s*(open|standard|strict|isolated|signed)/m.test(raw)) security += 3;
+  if (/tier\s*:\s*(open|standard|strict|isolated|signed)/m.test(raw))
+    security += 3;
   if (/governance\s*:/m.test(raw)) security += 2;
   if (/safety\s*:/m.test(raw) || /guardrails\s*:/m.test(raw)) security += 2;
   categories.security = Math.min(10, security);
@@ -238,7 +250,9 @@ async function registerWithDuadp(
   };
 
   const token = process.env.DUADP_PUBLISH_TOKEN;
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   try {
@@ -266,38 +280,84 @@ export function createLifecycleCommand(): Command {
     .option('--min <score>', 'Minimum passing score', '75')
     .description('Score an OSSA manifest (0-100 across 7 categories)');
   addGlobalOptions(scoreCmd);
-  scoreCmd.action(async (manifestFile: string, options: { min?: string; verbose?: boolean; json?: boolean; quiet?: boolean; color?: boolean }) => {
-    if (!fs.existsSync(manifestFile)) {
-      printError(`File not found: ${manifestFile}`);
-      process.exit(ExitCode.GENERAL_ERROR);
-    }
-    const result = scoreManifest(manifestFile);
-    const minScore = parseInt(options.min || '75', 10);
-    const pass = result.total >= minScore;
-
-    if (options.json) {
-      outputJSON({ ...result, pass, min: minScore });
-    } else {
-      const maxes: Record<string, number> = { identity: 20, role: 25, tooling: 20, llm: 10, security: 10, metadata: 10, extensions: 5 };
-      console.log(`\n  Manifest: ${manifestFile}`);
-      console.log(`  Score: ${result.total}/100 (minimum: ${minScore})\n`);
-      for (const [cat, score] of Object.entries(result.categories)) {
-        const max = maxes[cat] || 0;
-        const bar = '█'.repeat(Math.round((score / max) * 10)).padEnd(10, '░');
-        console.log(`  ${cat.padEnd(12)} ${bar} ${score}/${max}`);
+  scoreCmd.action(
+    async (
+      manifestFile: string,
+      options: {
+        min?: string;
+        verbose?: boolean;
+        json?: boolean;
+        quiet?: boolean;
+        color?: boolean;
       }
-      console.log(`\n  ${pass ? chalk.green('PASS') : chalk.red('FAIL')}\n`);
+    ) => {
+      if (!fs.existsSync(manifestFile)) {
+        printError(`File not found: ${manifestFile}`);
+        process.exit(ExitCode.GENERAL_ERROR);
+      }
+      const result = scoreManifest(manifestFile);
+      const minScore = parseInt(options.min || '75', 10);
+      const pass = result.total >= minScore;
+
+      if (options.json) {
+        outputJSON({ ...result, pass, min: minScore });
+      } else {
+        const maxes: Record<string, number> = {
+          identity: 20,
+          role: 25,
+          tooling: 20,
+          llm: 10,
+          security: 10,
+          metadata: 10,
+          extensions: 5,
+        };
+        console.log(`\n  Manifest: ${manifestFile}`);
+        console.log(`  Score: ${result.total}/100 (minimum: ${minScore})\n`);
+        for (const [cat, score] of Object.entries(result.categories)) {
+          const max = maxes[cat] || 0;
+          const bar = '█'
+            .repeat(Math.round((score / max) * 10))
+            .padEnd(10, '░');
+          console.log(`  ${cat.padEnd(12)} ${bar} ${score}/${max}`);
+        }
+        console.log(`\n  ${pass ? chalk.green('PASS') : chalk.red('FAIL')}\n`);
+      }
+      process.exit(pass ? ExitCode.SUCCESS : ExitCode.GENERAL_ERROR);
     }
-    process.exit(pass ? ExitCode.SUCCESS : ExitCode.GENERAL_ERROR);
-  });
+  );
 
   // ── Status transition commands ───────────────────────────────
   for (const { name, desc, status, extraOpts } of [
-    { name: 'review', desc: 'Submit agent for review', status: 'review', extraOpts: [] as string[] },
-    { name: 'approve', desc: 'Approve agent for publishing', status: 'approved', extraOpts: [] as string[] },
-    { name: 'reject', desc: 'Reject agent with reason', status: 'rejected', extraOpts: ['--reason <reason>'] },
-    { name: 'deprecate', desc: 'Mark agent as deprecated', status: 'deprecated', extraOpts: ['--sunset <date>'] },
-    { name: 'archive', desc: 'Archive agent', status: 'archived', extraOpts: [] as string[] },
+    {
+      name: 'review',
+      desc: 'Submit agent for review',
+      status: 'review',
+      extraOpts: [] as string[],
+    },
+    {
+      name: 'approve',
+      desc: 'Approve agent for publishing',
+      status: 'approved',
+      extraOpts: [] as string[],
+    },
+    {
+      name: 'reject',
+      desc: 'Reject agent with reason',
+      status: 'rejected',
+      extraOpts: ['--reason <reason>'],
+    },
+    {
+      name: 'deprecate',
+      desc: 'Mark agent as deprecated',
+      status: 'deprecated',
+      extraOpts: ['--sunset <date>'],
+    },
+    {
+      name: 'archive',
+      desc: 'Archive agent',
+      status: 'archived',
+      extraOpts: [] as string[],
+    },
   ]) {
     const cmd = new Command(name)
       .argument('<name>', 'Agent name')
@@ -306,36 +366,46 @@ export function createLifecycleCommand(): Command {
       cmd.option(opt, `${name} option`);
     }
     addGlobalOptions(cmd);
-    cmd.action(async (agentName: string, options: Record<string, string | boolean | undefined>) => {
-      const agentsDir = resolveAgentsDir();
-      try {
-        const extra: Record<string, unknown> = {};
-        if (options.reason) extra.rejectionReason = options.reason;
-        if (options.sunset) extra.sunsetDate = options.sunset;
-        if (status === 'approved') extra.approvedBy = process.env.USER || 'cli';
+    cmd.action(
+      async (
+        agentName: string,
+        options: Record<string, string | boolean | undefined>
+      ) => {
+        const agentsDir = resolveAgentsDir();
+        try {
+          const extra: Record<string, unknown> = {};
+          if (options.reason) extra.rejectionReason = options.reason;
+          if (options.sunset) extra.sunsetDate = options.sunset;
+          if (status === 'approved')
+            extra.approvedBy = process.env.USER || 'cli';
 
-        const meta = transitionAgent(agentsDir, agentName, status, extra);
+          const meta = transitionAgent(agentsDir, agentName, status, extra);
 
-        if (status === 'archived') {
-          const archiveDir = path.join(path.dirname(agentsDir), '.archive');
-          ensureDir(archiveDir);
-          const src = path.join(agentsDir, agentName);
-          const dest = path.join(archiveDir, agentName);
-          if (fs.existsSync(src)) {
-            fs.renameSync(src, dest);
+          if (status === 'archived') {
+            const archiveDir = path.join(path.dirname(agentsDir), '.archive');
+            ensureDir(archiveDir);
+            const src = path.join(agentsDir, agentName);
+            const dest = path.join(archiveDir, agentName);
+            if (fs.existsSync(src)) {
+              fs.renameSync(src, dest);
+            }
           }
-        }
 
-        if (options.json) {
-          outputJSON({ name: agentName, status: meta.status, updatedAt: meta.updatedAt });
-        } else {
-          printSuccess(`${agentName}: → ${meta.status}`);
+          if (options.json) {
+            outputJSON({
+              name: agentName,
+              status: meta.status,
+              updatedAt: meta.updatedAt,
+            });
+          } else {
+            printSuccess(`${agentName}: → ${meta.status}`);
+          }
+        } catch (err) {
+          printError(err instanceof Error ? err.message : String(err));
+          process.exit(ExitCode.GENERAL_ERROR);
         }
-      } catch (err) {
-        printError(err instanceof Error ? err.message : String(err));
-        process.exit(ExitCode.GENERAL_ERROR);
       }
-    });
+    );
     lifecycle.addCommand(cmd);
   }
 
@@ -344,33 +414,40 @@ export function createLifecycleCommand(): Command {
     .option('--status <status>', 'Filter by status')
     .description('List agents in the registry');
   addGlobalOptions(listCmd);
-  listCmd.action(async (options: { status?: string; json?: boolean; quiet?: boolean }) => {
-    const agentsDir = resolveAgentsDir();
-    if (!fs.existsSync(agentsDir)) {
-      if (!options.quiet) printInfo('No agents directory found');
-      return;
-    }
-    const dirs = fs.readdirSync(agentsDir, { withFileTypes: true })
-      .filter(d => d.isDirectory() && d.name !== 'incoming');
-
-    const agents = dirs.map(d => readMeta(agentsDir, d.name))
-      .filter(a => !options.status || a.status === options.status);
-
-    if (options.json) {
-      outputJSON({ agents, total: agents.length });
-    } else {
-      console.log(`\n${'Name'.padEnd(30)} ${'Status'.padEnd(12)} ${'Score'.padEnd(6)} Tags`);
-      console.log('-'.repeat(80));
-      for (const a of agents) {
-        console.log(`${(a.name || '').padEnd(30)} ${(a.status || 'draft').padEnd(12)} ${String(a.score ?? '-').padEnd(6)} ${(a.tags || []).join(',')}`);
+  listCmd.action(
+    async (options: { status?: string; json?: boolean; quiet?: boolean }) => {
+      const agentsDir = resolveAgentsDir();
+      if (!fs.existsSync(agentsDir)) {
+        if (!options.quiet) printInfo('No agents directory found');
+        return;
       }
-      console.log(`\nTotal: ${agents.length}`);
+      const dirs = fs
+        .readdirSync(agentsDir, { withFileTypes: true })
+        .filter((d) => d.isDirectory() && d.name !== 'incoming');
+
+      const agents = dirs
+        .map((d) => readMeta(agentsDir, d.name))
+        .filter((a) => !options.status || a.status === options.status);
+
+      if (options.json) {
+        outputJSON({ agents, total: agents.length });
+      } else {
+        console.log(
+          `\n${'Name'.padEnd(30)} ${'Status'.padEnd(12)} ${'Score'.padEnd(6)} Tags`
+        );
+        console.log('-'.repeat(80));
+        for (const a of agents) {
+          console.log(
+            `${(a.name || '').padEnd(30)} ${(a.status || 'draft').padEnd(12)} ${String(a.score ?? '-').padEnd(6)} ${(a.tags || []).join(',')}`
+          );
+        }
+        console.log(`\nTotal: ${agents.length}`);
+      }
     }
-  });
+  );
 
   // ── stats ────────────────────────────────────────────────────
-  const statsCmd = new Command('stats')
-    .description('Show registry statistics');
+  const statsCmd = new Command('stats').description('Show registry statistics');
   addGlobalOptions(statsCmd);
   statsCmd.action(async (options: { json?: boolean }) => {
     const agentsDir = resolveAgentsDir();
@@ -378,8 +455,9 @@ export function createLifecycleCommand(): Command {
       printInfo('No agents directory found');
       return;
     }
-    const dirs = fs.readdirSync(agentsDir, { withFileTypes: true })
-      .filter(d => d.isDirectory() && d.name !== 'incoming');
+    const dirs = fs
+      .readdirSync(agentsDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && d.name !== 'incoming');
 
     const byStatus: Record<string, number> = {};
     let totalScore = 0;
@@ -388,16 +466,25 @@ export function createLifecycleCommand(): Command {
     for (const d of dirs) {
       const meta = readMeta(agentsDir, d.name);
       byStatus[meta.status] = (byStatus[meta.status] || 0) + 1;
-      if (meta.score != null) { totalScore += meta.score; scored++; }
+      if (meta.score != null) {
+        totalScore += meta.score;
+        scored++;
+      }
     }
 
     if (options.json) {
-      outputJSON({ total: dirs.length, averageScore: scored ? Math.round(totalScore / scored) : null, byStatus });
+      outputJSON({
+        total: dirs.length,
+        averageScore: scored ? Math.round(totalScore / scored) : null,
+        byStatus,
+      });
     } else {
       console.log('\nAgent Registry Stats');
       console.log('─'.repeat(40));
       console.log(`Total: ${dirs.length}`);
-      console.log(`Average score: ${scored ? Math.round(totalScore / scored) : 'N/A'}`);
+      console.log(
+        `Average score: ${scored ? Math.round(totalScore / scored) : 'N/A'}`
+      );
       for (const [s, c] of Object.entries(byStatus).sort()) {
         console.log(`  ${s.padEnd(15)} ${c}`);
       }
@@ -413,7 +500,9 @@ export function createLifecycleCommand(): Command {
     const curationDir = resolveCurationDir();
     ensureDir(curationDir);
     const featPath = path.join(curationDir, 'featured.json');
-    const data = fs.existsSync(featPath) ? JSON.parse(fs.readFileSync(featPath, 'utf-8')) : { featured: [] };
+    const data = fs.existsSync(featPath)
+      ? JSON.parse(fs.readFileSync(featPath, 'utf-8'))
+      : { featured: [] };
     if (!data.featured.includes(agentName)) data.featured.push(agentName);
     fs.writeFileSync(featPath, JSON.stringify(data, null, 2) + '\n');
     if (options.json) outputJSON({ featured: data.featured });
@@ -435,24 +524,29 @@ export function createLifecycleCommand(): Command {
       return;
     }
 
-    const dirs = fs.readdirSync(agentsDir, { withFileTypes: true })
-      .filter(d => d.isDirectory() && d.name !== 'incoming');
+    const dirs = fs
+      .readdirSync(agentsDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && d.name !== 'incoming');
 
     const featPath = path.join(curationDir, 'featured.json');
-    const featured = fs.existsSync(featPath) ? JSON.parse(fs.readFileSync(featPath, 'utf-8')).featured : [];
+    const featured = fs.existsSync(featPath)
+      ? JSON.parse(fs.readFileSync(featPath, 'utf-8')).featured
+      : [];
 
-    const agents = dirs.map(d => {
-      const meta = readMeta(agentsDir, d.name);
-      return {
-        slug: d.name,
-        name: meta.name || d.name,
-        score: meta.score || 0,
-        status: meta.status || 'draft',
-        category: meta.category || 'uncategorized',
-        tags: meta.tags || [],
-        featured: featured.includes(d.name),
-      };
-    }).sort((a, b) => b.score - a.score);
+    const agents = dirs
+      .map((d) => {
+        const meta = readMeta(agentsDir, d.name);
+        return {
+          slug: d.name,
+          name: meta.name || d.name,
+          score: meta.score || 0,
+          status: meta.status || 'draft',
+          category: meta.category || 'uncategorized',
+          tags: meta.tags || [],
+          featured: featured.includes(d.name),
+        };
+      })
+      .sort((a, b) => b.score - a.score);
 
     const catalog = {
       generatedAt: new Date().toISOString(),
@@ -475,50 +569,56 @@ export function createLifecycleCommand(): Command {
     .option('--node <url>', 'DUADP node URL', 'https://discover.duadp.org')
     .description('Register agent with DUADP discovery network');
   addGlobalOptions(duadpRegCmd);
-  duadpRegCmd.action(async (agentName: string, options: { node?: string; json?: boolean }) => {
-    const agentsDir = resolveAgentsDir();
-    const nodeUrl = options.node || 'https://discover.duadp.org';
-    const ok = await registerWithDuadp(agentsDir, agentName, nodeUrl);
-    if (options.json) outputJSON({ name: agentName, registered: ok, node: nodeUrl });
-    else if (ok) printSuccess(`${agentName} registered on ${nodeUrl}`);
-    else printError(`Failed to register ${agentName} on ${nodeUrl}`);
-    process.exit(ok ? ExitCode.SUCCESS : ExitCode.GENERAL_ERROR);
-  });
+  duadpRegCmd.action(
+    async (agentName: string, options: { node?: string; json?: boolean }) => {
+      const agentsDir = resolveAgentsDir();
+      const nodeUrl = options.node || 'https://discover.duadp.org';
+      const ok = await registerWithDuadp(agentsDir, agentName, nodeUrl);
+      if (options.json)
+        outputJSON({ name: agentName, registered: ok, node: nodeUrl });
+      else if (ok) printSuccess(`${agentName} registered on ${nodeUrl}`);
+      else printError(`Failed to register ${agentName} on ${nodeUrl}`);
+      process.exit(ok ? ExitCode.SUCCESS : ExitCode.GENERAL_ERROR);
+    }
+  );
 
   // ── duadp-sync ───────────────────────────────────────────────
   const duadpSyncCmd = new Command('duadp-sync')
     .option('--node <url>', 'DUADP node URL', 'https://discover.duadp.org')
     .description('Sync all approved/published agents with DUADP');
   addGlobalOptions(duadpSyncCmd);
-  duadpSyncCmd.action(async (options: { node?: string; json?: boolean; quiet?: boolean }) => {
-    const agentsDir = resolveAgentsDir();
-    const nodeUrl = options.node || 'https://discover.duadp.org';
+  duadpSyncCmd.action(
+    async (options: { node?: string; json?: boolean; quiet?: boolean }) => {
+      const agentsDir = resolveAgentsDir();
+      const nodeUrl = options.node || 'https://discover.duadp.org';
 
-    if (!fs.existsSync(agentsDir)) {
-      printInfo('No agents directory found');
-      return;
-    }
-
-    const dirs = fs.readdirSync(agentsDir, { withFileTypes: true })
-      .filter(d => d.isDirectory() && d.name !== 'incoming');
-
-    let registered = 0;
-    let skipped = 0;
-
-    for (const d of dirs) {
-      const meta = readMeta(agentsDir, d.name);
-      if (['approved', 'published'].includes(meta.status)) {
-        const ok = await registerWithDuadp(agentsDir, d.name, nodeUrl);
-        if (ok) registered++;
-        if (!options.quiet) console.log(`  ${ok ? '✓' : '✗'} ${d.name}`);
-      } else {
-        skipped++;
+      if (!fs.existsSync(agentsDir)) {
+        printInfo('No agents directory found');
+        return;
       }
-    }
 
-    if (options.json) outputJSON({ registered, skipped, node: nodeUrl });
-    else printSuccess(`Synced: ${registered} registered, ${skipped} skipped`);
-  });
+      const dirs = fs
+        .readdirSync(agentsDir, { withFileTypes: true })
+        .filter((d) => d.isDirectory() && d.name !== 'incoming');
+
+      let registered = 0;
+      let skipped = 0;
+
+      for (const d of dirs) {
+        const meta = readMeta(agentsDir, d.name);
+        if (['approved', 'published'].includes(meta.status)) {
+          const ok = await registerWithDuadp(agentsDir, d.name, nodeUrl);
+          if (ok) registered++;
+          if (!options.quiet) console.log(`  ${ok ? '✓' : '✗'} ${d.name}`);
+        } else {
+          skipped++;
+        }
+      }
+
+      if (options.json) outputJSON({ registered, skipped, node: nodeUrl });
+      else printSuccess(`Synced: ${registered} registered, ${skipped} skipped`);
+    }
+  );
 
   // Register all subcommands
   lifecycle.addCommand(scoreCmd);

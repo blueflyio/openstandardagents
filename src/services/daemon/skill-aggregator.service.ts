@@ -39,18 +39,78 @@ interface SourceStatus {
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 const BUILTIN_SKILLS: AggregatedSkill[] = [
-  { name: 'web-search', source: 'builtin', description: 'Search the web for information', tags: ['search', 'web'] },
-  { name: 'code-review', source: 'builtin', description: 'Review code for quality, security, and best practices', tags: ['code', 'review', 'quality'] },
-  { name: 'text-summary', source: 'builtin', description: 'Summarize text content into concise form', tags: ['text', 'summary', 'nlp'] },
-  { name: 'data-analysis', source: 'builtin', description: 'Analyze structured and unstructured data', tags: ['data', 'analysis', 'statistics'] },
-  { name: 'image-generation', source: 'builtin', description: 'Generate images from text descriptions', tags: ['image', 'generation', 'creative'] },
-  { name: 'translation', source: 'builtin', description: 'Translate text between languages', tags: ['translation', 'language', 'nlp'] },
-  { name: 'file-management', source: 'builtin', description: 'Read, write, and manage files in the workspace', tags: ['file', 'io', 'workspace'] },
-  { name: 'api-integration', source: 'builtin', description: 'Integrate with external REST and GraphQL APIs', tags: ['api', 'integration', 'http'] },
-  { name: 'database-query', source: 'builtin', description: 'Query and manage database connections', tags: ['database', 'sql', 'query'] },
-  { name: 'monitoring', source: 'builtin', description: 'Monitor system health, metrics, and alerts', tags: ['monitoring', 'observability', 'health'] },
-  { name: 'testing', source: 'builtin', description: 'Run and manage test suites', tags: ['testing', 'quality', 'ci'] },
-  { name: 'documentation', source: 'builtin', description: 'Generate and maintain documentation', tags: ['docs', 'documentation', 'writing'] },
+  {
+    name: 'web-search',
+    source: 'builtin',
+    description: 'Search the web for information',
+    tags: ['search', 'web'],
+  },
+  {
+    name: 'code-review',
+    source: 'builtin',
+    description: 'Review code for quality, security, and best practices',
+    tags: ['code', 'review', 'quality'],
+  },
+  {
+    name: 'text-summary',
+    source: 'builtin',
+    description: 'Summarize text content into concise form',
+    tags: ['text', 'summary', 'nlp'],
+  },
+  {
+    name: 'data-analysis',
+    source: 'builtin',
+    description: 'Analyze structured and unstructured data',
+    tags: ['data', 'analysis', 'statistics'],
+  },
+  {
+    name: 'image-generation',
+    source: 'builtin',
+    description: 'Generate images from text descriptions',
+    tags: ['image', 'generation', 'creative'],
+  },
+  {
+    name: 'translation',
+    source: 'builtin',
+    description: 'Translate text between languages',
+    tags: ['translation', 'language', 'nlp'],
+  },
+  {
+    name: 'file-management',
+    source: 'builtin',
+    description: 'Read, write, and manage files in the workspace',
+    tags: ['file', 'io', 'workspace'],
+  },
+  {
+    name: 'api-integration',
+    source: 'builtin',
+    description: 'Integrate with external REST and GraphQL APIs',
+    tags: ['api', 'integration', 'http'],
+  },
+  {
+    name: 'database-query',
+    source: 'builtin',
+    description: 'Query and manage database connections',
+    tags: ['database', 'sql', 'query'],
+  },
+  {
+    name: 'monitoring',
+    source: 'builtin',
+    description: 'Monitor system health, metrics, and alerts',
+    tags: ['monitoring', 'observability', 'health'],
+  },
+  {
+    name: 'testing',
+    source: 'builtin',
+    description: 'Run and manage test suites',
+    tags: ['testing', 'quality', 'ci'],
+  },
+  {
+    name: 'documentation',
+    source: 'builtin',
+    description: 'Generate and maintain documentation',
+    tags: ['docs', 'documentation', 'writing'],
+  },
 ];
 
 @injectable()
@@ -171,20 +231,32 @@ export class SkillAggregatorService {
   /**
    * Get status of all sources.
    */
-  getSourceStatus(): Array<{ name: string; status: string; count: number; lastLoaded?: string }> {
-    return Array.from(this.sourceStatuses.values()).map(({ name, status, count, lastLoaded }) => ({
-      name,
-      status,
-      count,
-      lastLoaded,
-    }));
+  getSourceStatus(): Array<{
+    name: string;
+    status: string;
+    count: number;
+    lastLoaded?: string;
+  }> {
+    return Array.from(this.sourceStatuses.values()).map(
+      ({ name, status, count, lastLoaded }) => ({
+        name,
+        status,
+        count,
+        lastLoaded,
+      })
+    );
   }
 
   // --- Private loaders ---
 
   private async loadLocal(): Promise<AggregatedSkill[]> {
     const patterns = ['**/*.skill.yaml', '**/*.skill.yml', '**/SKILL.md'];
-    const ignorePatterns = ['**/node_modules/**', '**/dist/**', '**/.git/**', '**/coverage/**'];
+    const ignorePatterns = [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.git/**',
+      '**/coverage/**',
+    ];
 
     const files = await fg(patterns, {
       cwd: this.workspacePath,
@@ -201,24 +273,40 @@ export class SkillAggregatorService {
           // SKILL.md — extract name from first heading, rest is description
           const lines = content.split('\n');
           const heading = lines.find((l) => l.startsWith('#'));
-          const name = heading ? heading.replace(/^#+\s*/, '').trim() : path.basename(path.dirname(file));
+          const name = heading
+            ? heading.replace(/^#+\s*/, '').trim()
+            : path.basename(path.dirname(file));
           const description = lines
             .filter((l) => !l.startsWith('#') && l.trim())
             .slice(0, 3)
             .join(' ')
             .trim();
-          skills.push({ name, source: 'local', description: description || 'Local skill', manifest: content });
+          skills.push({
+            name,
+            source: 'local',
+            description: description || 'Local skill',
+            manifest: content,
+          });
         } else {
           // YAML skill file
           const parsed = safeParseYAML<Record<string, unknown>>(content);
           const meta = parsed?.metadata as Record<string, unknown> | undefined;
           skills.push({
-            name: (meta?.name as string) || path.basename(file, path.extname(file)).replace('.skill', ''),
+            name:
+              (meta?.name as string) ||
+              path.basename(file, path.extname(file)).replace('.skill', ''),
             source: 'local',
-            description: (meta?.description as string) || (parsed?.description as string) || 'Local skill',
+            description:
+              (meta?.description as string) ||
+              (parsed?.description as string) ||
+              'Local skill',
             version: (meta?.version as string) || undefined,
-            capabilities: Array.isArray(parsed?.capabilities) ? (parsed.capabilities as string[]) : undefined,
-            tags: Array.isArray(parsed?.tags) ? (parsed.tags as string[]) : undefined,
+            capabilities: Array.isArray(parsed?.capabilities)
+              ? (parsed.capabilities as string[])
+              : undefined,
+            tags: Array.isArray(parsed?.tags)
+              ? (parsed.tags as string[])
+              : undefined,
             manifest: parsed,
           });
         }
@@ -237,7 +325,10 @@ export class SkillAggregatorService {
   private async loadGitHub(): Promise<AggregatedSkill[]> {
     const url = 'https://api.github.com/repos/anthropics/skills/contents/';
     const response = await fetch(url, {
-      headers: { Accept: 'application/vnd.github.v3+json', 'User-Agent': 'ossa-daemon' },
+      headers: {
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'ossa-daemon',
+      },
       signal: AbortSignal.timeout(10_000),
     });
 
@@ -248,7 +339,11 @@ export class SkillAggregatorService {
       throw new Error(`GitHub API returned ${response.status}`);
     }
 
-    const items = (await response.json()) as Array<{ name: string; type: string; download_url?: string }>;
+    const items = (await response.json()) as Array<{
+      name: string;
+      type: string;
+      download_url?: string;
+    }>;
     const skills: AggregatedSkill[] = [];
 
     for (const item of items) {
@@ -282,7 +377,9 @@ export class SkillAggregatorService {
       source: 'registry' as const,
       description: (item.description as string) || 'Registry skill',
       version: (item.version as string) || undefined,
-      capabilities: Array.isArray(item.capabilities) ? (item.capabilities as string[]) : undefined,
+      capabilities: Array.isArray(item.capabilities)
+        ? (item.capabilities as string[])
+        : undefined,
       tags: Array.isArray(item.tags) ? (item.tags as string[]) : undefined,
     }));
   }

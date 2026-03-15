@@ -45,8 +45,7 @@ function createService(): GitHubSyncService {
       token: process.env.GITHUB_TOKEN || '',
     },
     gitlab: {
-      projectId:
-        process.env.GITLAB_PROJECT_ID || '',
+      projectId: process.env.GITLAB_PROJECT_ID || '',
       token: process.env.GITLAB_TOKEN || '',
     },
   };

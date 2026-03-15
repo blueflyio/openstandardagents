@@ -83,7 +83,11 @@ export class DaemonWebSocketServer {
     server.on('upgrade', (request, socket, head) => {
       // Enforce localhost-only binding at the connection level
       const remoteAddr = request.socket.remoteAddress;
-      if (remoteAddr !== '127.0.0.1' && remoteAddr !== '::1' && remoteAddr !== '::ffff:127.0.0.1') {
+      if (
+        remoteAddr !== '127.0.0.1' &&
+        remoteAddr !== '::1' &&
+        remoteAddr !== '::ffff:127.0.0.1'
+      ) {
         socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
         socket.destroy();
         return;
@@ -91,9 +95,13 @@ export class DaemonWebSocketServer {
 
       // Extract pairing token from Sec-WebSocket-Protocol header
       const protocols = request.headers['sec-websocket-protocol'];
-      const token = typeof protocols === 'string'
-        ? protocols.split(',').map(p => p.trim()).find(p => p.startsWith('pairing.'))
-        : undefined;
+      const token =
+        typeof protocols === 'string'
+          ? protocols
+              .split(',')
+              .map((p) => p.trim())
+              .find((p) => p.startsWith('pairing.'))
+          : undefined;
 
       if (!token) {
         socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
@@ -126,7 +134,11 @@ export class DaemonWebSocketServer {
    */
   sendToSession(sessionId: string, event: WebSocketEvent): void {
     const session = this.sessions.get(sessionId);
-    if (session && session.authenticated && session.ws.readyState === WebSocket.OPEN) {
+    if (
+      session &&
+      session.authenticated &&
+      session.ws.readyState === WebSocket.OPEN
+    ) {
       session.ws.send(JSON.stringify(event));
     }
   }
@@ -227,7 +239,11 @@ export class DaemonWebSocketServer {
 
     // Size check (redundant with maxPayload, but defense in depth)
     if (raw.length > MAX_MESSAGE_SIZE) {
-      this.sendError(session.ws, 'MESSAGE_TOO_LARGE', `Message exceeds ${MAX_MESSAGE_SIZE} byte limit`);
+      this.sendError(
+        session.ws,
+        'MESSAGE_TOO_LARGE',
+        `Message exceeds ${MAX_MESSAGE_SIZE} byte limit`
+      );
       return;
     }
 

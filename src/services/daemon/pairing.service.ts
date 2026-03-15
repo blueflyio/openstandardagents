@@ -42,7 +42,10 @@ export class PairingService {
    */
   getCurrentCode(): string {
     const now = Date.now();
-    if (!this.currentCode || now - this.codeGeneratedAt >= CODE_ROTATION_INTERVAL_MS) {
+    if (
+      !this.currentCode ||
+      now - this.codeGeneratedAt >= CODE_ROTATION_INTERVAL_MS
+    ) {
       this.currentCode = this.generateCode();
       this.codeGeneratedAt = now;
     }

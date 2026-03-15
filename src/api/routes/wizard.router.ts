@@ -29,10 +29,15 @@ export function wizardRouter(): Router {
   router.get('/definitions', (req, res) => {
     const parsed = DefinitionsQuerySchema.safeParse(req.query);
     if (!parsed.success) {
-      res.status(400).json({ error: 'Invalid query', details: parsed.error.flatten() });
+      res
+        .status(400)
+        .json({ error: 'Invalid query', details: parsed.error.flatten() });
       return;
     }
-    const steps = service.getStepDefinitions(parsed.data.kind, parsed.data.mode);
+    const steps = service.getStepDefinitions(
+      parsed.data.kind,
+      parsed.data.mode
+    );
     res.json({ steps });
   });
 

@@ -5,7 +5,7 @@ import {
   AuthorizationRequest,
   AuthorizationResult,
   QualityGateRequest,
-  QualityGateResult
+  QualityGateResult,
 } from '../interfaces/governance-provider.interface.js';
 import { SPEC_VERSION } from '../../version.js';
 
@@ -29,12 +29,16 @@ export class CedarGovernanceProvider implements GovernanceProvider {
     const warnings: string[] = [];
 
     if (!config) {
-      warnings.push('No governance configuration provided. Proceeding with default deny policy.');
+      warnings.push(
+        'No governance configuration provided. Proceeding with default deny policy.'
+      );
       return { compliant: true, issues, warnings };
     }
 
     if (config.authorization?.clearance_level === undefined) {
-      warnings.push('No clearance level defined. Defaulting to lowest trust tier.');
+      warnings.push(
+        'No clearance level defined. Defaulting to lowest trust tier.'
+      );
     }
 
     if (config.authorization?.tool_permissions) {
@@ -43,7 +47,9 @@ export class CedarGovernanceProvider implements GovernanceProvider {
           issues.push('Tool permission defined without a specific tool name.');
         }
         if (!perm.risk_level) {
-          warnings.push(`Tool ${perm.tool || 'unknown'} has no risk level classified.`);
+          warnings.push(
+            `Tool ${perm.tool || 'unknown'} has no risk level classified.`
+          );
         }
       }
     }
@@ -51,7 +57,7 @@ export class CedarGovernanceProvider implements GovernanceProvider {
     return {
       compliant: issues.length === 0,
       issues,
-      warnings
+      warnings,
     };
   }
 
@@ -69,7 +75,9 @@ export class CedarGovernanceProvider implements GovernanceProvider {
 
     // Simulate Policy Evaluation Context
     const principalTier = context?.tier || 'tier_1_read';
-    const isDestructive = action.toLowerCase().includes('delete') || action.toLowerCase().includes('write');
+    const isDestructive =
+      action.toLowerCase().includes('delete') ||
+      action.toLowerCase().includes('write');
 
     policies_evaluated.push('policy_tier_bounds');
 
@@ -81,7 +89,8 @@ export class CedarGovernanceProvider implements GovernanceProvider {
       // In a real integration, this would call the Cedar C++ binding or WASM module:
       // const cedarEval = await cedar.isAuthorized({ principal, action, resource, context });
       decision = 'ALLOW';
-      reason = 'Allowed by default test policy matching principal and action scope.';
+      reason =
+        'Allowed by default test policy matching principal and action scope.';
     }
 
     return {
@@ -89,18 +98,20 @@ export class CedarGovernanceProvider implements GovernanceProvider {
       reason,
       diagnostics: {
         policies_evaluated,
-      }
+      },
     };
   }
 
   /**
    * Evaluate if a pipeline execution passes the security/confidence gate
    */
-  async evaluateQualityGate(request: QualityGateRequest): Promise<QualityGateResult> {
+  async evaluateQualityGate(
+    request: QualityGateRequest
+  ): Promise<QualityGateResult> {
     const blocked_by: string[] = [];
 
     if (request.environment === 'production') {
-      if (request.metrics.confidence_score < 0.90) {
+      if (request.metrics.confidence_score < 0.9) {
         blocked_by.push('Confidence score below production threshold (90%)');
       }
       if (request.metrics.vulnerability_count > 0) {
@@ -108,7 +119,7 @@ export class CedarGovernanceProvider implements GovernanceProvider {
       }
     } else {
       // lower environments
-      if (request.metrics.confidence_score < 0.70) {
+      if (request.metrics.confidence_score < 0.7) {
         blocked_by.push('Confidence score below development threshold (70%)');
       }
     }
@@ -120,8 +131,11 @@ export class CedarGovernanceProvider implements GovernanceProvider {
       blocked_by,
       policy_decision: {
         decision: decision === 'PASS' ? 'ALLOW' : 'DENY',
-        reason: decision === 'PASS' ? 'Quality gate matched constraints.' : 'Metrics failed quality requirements.',
-      }
+        reason:
+          decision === 'PASS'
+            ? 'Quality gate matched constraints.'
+            : 'Metrics failed quality requirements.',
+      },
     };
   }
 }

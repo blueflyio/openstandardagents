@@ -13,8 +13,8 @@ import chalk from 'chalk';
 import Table from 'cli-table3';
 import { Command } from 'commander';
 import {
-    addRegistryOptions,
-    resolveRegistryUrl,
+  addRegistryOptions,
+  resolveRegistryUrl,
 } from '../utils/standard-options.js';
 
 /**
@@ -49,9 +49,15 @@ class AgentProtocolClient {
   private client: DuadpClient;
 
   constructor(config?: { baseUrl?: string; apiKey?: string }) {
-    const baseUrl = config?.baseUrl || process.env.OSSA_REGISTRY_URL || 'https://uadp.blueflyagents.com';
+    const baseUrl =
+      config?.baseUrl ||
+      process.env.OSSA_REGISTRY_URL ||
+      'https://uadp.blueflyagents.com';
     this.client = new DuadpClient(baseUrl, {
-      token: config?.apiKey || process.env.AGENT_PROTOCOL_TOKEN || process.env.GITLAB_PRIVATE_TOKEN,
+      token:
+        config?.apiKey ||
+        process.env.AGENT_PROTOCOL_TOKEN ||
+        process.env.GITLAB_PRIVATE_TOKEN,
     });
   }
 
@@ -69,35 +75,47 @@ class AgentProtocolClient {
       });
 
       // Map UADP OssaAgent to AgentSearchResult
-      return response.data.map((agent: any) => {
-        // Handle variations in agent schema mapping
-        const capabilities: any[] = agent.spec?.capabilities || [];
-        const mappedCapabilities = capabilities.map((c: any) => typeof c === 'string' ? c : (c.name || 'unknown'));
+      return response.data
+        .map((agent: any) => {
+          // Handle variations in agent schema mapping
+          const capabilities: any[] = agent.spec?.capabilities || [];
+          const mappedCapabilities = capabilities.map((c: any) =>
+            typeof c === 'string' ? c : c.name || 'unknown'
+          );
 
-        // Map Tier 1 to 4 to a trust score 0-1
-        let trustLevel = 0.5;
-        const tier = agent.security?.tier;
-        if (tier === 'tier_4_system_admin') trustLevel = 1.0;
-        else if (tier === 'tier_3_write_elevated') trustLevel = 0.8;
-        else if (tier === 'tier_2_write_limited') trustLevel = 0.6;
-        else if (tier === 'tier_1_read') trustLevel = 0.4;
+          // Map Tier 1 to 4 to a trust score 0-1
+          let trustLevel = 0.5;
+          const tier = agent.security?.tier;
+          if (tier === 'tier_4_system_admin') trustLevel = 1.0;
+          else if (tier === 'tier_3_write_elevated') trustLevel = 0.8;
+          else if (tier === 'tier_2_write_limited') trustLevel = 0.6;
+          else if (tier === 'tier_1_read') trustLevel = 0.4;
 
-        return {
-          gaid: (agent.metadata?.catalog as any)?.catalog_id || `uadp://${(this.client as any).nodeInfo?.node_id || 'remote'}/${agent.metadata?.name}`,
-          name: agent.metadata?.name || 'unknown',
-          organization: (agent.metadata?.identity as any)?.namespace || 'community',
-          capabilities: mappedCapabilities,
-          trustLevel: trustLevel,
-          trustTier: tier || 'unverified',
-          description: agent.metadata?.description || '',
-          verified: !!(agent.metadata?.identity as any)?.publisher?.pgp_key,
-        };
-      }).filter((a: AgentSearchResult) => {
-        if (filters?.minTrust && (a.trustLevel || 0) < filters.minTrust) return false;
-        if (filters?.org && a.organization !== filters.org) return false;
-        if (filters?.capability && !a.capabilities.includes(filters.capability)) return false;
-        return true;
-      });
+          return {
+            gaid:
+              (agent.metadata?.catalog as any)?.catalog_id ||
+              `uadp://${(this.client as any).nodeInfo?.node_id || 'remote'}/${agent.metadata?.name}`,
+            name: agent.metadata?.name || 'unknown',
+            organization:
+              (agent.metadata?.identity as any)?.namespace || 'community',
+            capabilities: mappedCapabilities,
+            trustLevel: trustLevel,
+            trustTier: tier || 'unverified',
+            description: agent.metadata?.description || '',
+            verified: !!(agent.metadata?.identity as any)?.publisher?.pgp_key,
+          };
+        })
+        .filter((a: AgentSearchResult) => {
+          if (filters?.minTrust && (a.trustLevel || 0) < filters.minTrust)
+            return false;
+          if (filters?.org && a.organization !== filters.org) return false;
+          if (
+            filters?.capability &&
+            !a.capabilities.includes(filters.capability)
+          )
+            return false;
+          return true;
+        });
     } catch (error: any) {
       throw new Error(`UADP search failed: ${error.message}`);
     }

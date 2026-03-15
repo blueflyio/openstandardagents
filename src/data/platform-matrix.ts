@@ -473,10 +473,7 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
       '.agents/{name}/src/ (Python agent code)',
       'requirements.txt with agentscope',
     ],
-    sdkNpm: [
-      'agentscope (PyPI)',
-      'agentscope[service] (with tool service)',
-    ],
+    sdkNpm: ['agentscope (PyPI)', 'agentscope[service] (with tool service)'],
     exportHow: 'ossa export <manifest> --platform agentscope -o dist/',
     importHow: 'partial',
     specUsage: [

@@ -9,7 +9,8 @@ import * as path from 'path';
 import { homedir } from 'os';
 
 const OSSA_DIR = process.env.OSSA_CONFIG_DIR || path.join(homedir(), '.ossa');
-const CONFIG_FILE = process.env.OSSA_CONFIG_PATH || path.join(OSSA_DIR, 'config.json');
+const CONFIG_FILE =
+  process.env.OSSA_CONFIG_PATH || path.join(OSSA_DIR, 'config.json');
 
 export type ConfigRecord = Record<string, string>;
 

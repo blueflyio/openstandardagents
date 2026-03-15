@@ -78,7 +78,9 @@ export class AuditLogService {
    * Read the most recent audit entries.
    * Reads from the end of the file for efficiency.
    */
-  async getRecentEntries(count: number = DEFAULT_RECENT_COUNT): Promise<AuditEntry[]> {
+  async getRecentEntries(
+    count: number = DEFAULT_RECENT_COUNT
+  ): Promise<AuditEntry[]> {
     try {
       await this.initialize();
       const content = await readFile(AUDIT_LOG_PATH, 'utf-8');
@@ -87,7 +89,11 @@ export class AuditLogService {
       return recent.map((line) => JSON.parse(line) as AuditEntry);
     } catch (err) {
       // File doesn't exist yet or read error — return empty
-      if (err instanceof Error && 'code' in err && (err as NodeJS.ErrnoException).code === 'ENOENT') {
+      if (
+        err instanceof Error &&
+        'code' in err &&
+        (err as NodeJS.ErrnoException).code === 'ENOENT'
+      ) {
         return [];
       }
       process.stderr.write(

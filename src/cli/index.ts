@@ -29,10 +29,10 @@ import { conformanceCommand } from './commands/conformance.command.js';
 import { contractCommand } from './commands/contract.command.js';
 import { dependenciesCommand } from './commands/dependencies.command.js';
 import {
-    deployCommand,
-    rollbackCommand,
-    statusCommand,
-    stopCommand,
+  deployCommand,
+  rollbackCommand,
+  statusCommand,
+  stopCommand,
 } from './commands/deploy.js';
 import { diffCommand } from './commands/diff.command.js';
 import { exportCommand } from './commands/export.command.js';
@@ -108,12 +108,12 @@ import { upgradeCommand } from './commands/upgrade.command.js';
 
 // Extension system (SOLID: Open/Closed via registry pattern)
 import {
-    createExtensionsCommand,
-    getEnabledExtensions,
-    getRegisteredExtensions,
-    loadExtension,
-    shouldLoadExtensions,
-    type OSSAExtension,
+  createExtensionsCommand,
+  getEnabledExtensions,
+  getRegisteredExtensions,
+  loadExtension,
+  shouldLoadExtensions,
+  type OSSAExtension,
 } from './extensions/index.js';
 
 // Load package.json for version (lazy to avoid Jest module resolution issues)
