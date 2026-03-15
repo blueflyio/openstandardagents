@@ -1,7 +1,20 @@
 {
+<<<<<<< HEAD
   "current": "0.4.8",
   "latest_stable": "0.4.8",
   "spec_version": "0.4.8",
   "spec_path": "spec/v0.4",
   "schema_file": "agent.schema.json"
+||||||| merged common ancestors
+  "current": "0.2.5-RC",
+  "latest_stable": "0.2.4",
+  "spec_path": "spec/v{version}",
+  "schema_file": "ossa-{version}.schema.json"
+=======
+  "current": "0.4.7",
+  "latest_stable": "0.4.7",
+  "spec_version": "0.4.7",
+  "spec_path": "spec/v0.4",
+  "schema_file": "agent.schema.json"
+>>>>>>> f6a6f1dc7830984a8700b34625951606c84bc4b1
 }
