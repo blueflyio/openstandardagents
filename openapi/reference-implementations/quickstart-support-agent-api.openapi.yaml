@@ -5,6 +5,9 @@ info:
   description: |
     A helpful customer support agent that answers questions and helps with orders.
     Demonstrates OSSA quickstart patterns for production-ready agents.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

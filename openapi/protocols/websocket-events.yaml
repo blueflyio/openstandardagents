@@ -81,6 +81,9 @@ paths:
         - $ref: "#/components/x-websocket-events/Ping"
         - $ref: "#/components/x-websocket-events/Pong"
       x-ossa-capability: protocol-get-/ws
+      tags:
+        - WebSocket
+      operationId: getWs
 components:
   x-websocket-events:
     Register:
@@ -414,6 +417,8 @@ tags:
     description: Capability invocation
   - name: Health
     description: Agent health and status
+  - name: WebSocket
+    description: WebSocket operations
 x-ossa-metadata:
   version: 0.3.3
   compliance:

@@ -5,6 +5,9 @@ info:
   description: |
     Enterprise orchestrator managing complex multi-agent workflows across distributed systems.
     Coordinates worker agents, manages dependencies, and handles failure recovery.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

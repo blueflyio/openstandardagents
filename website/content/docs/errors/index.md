@@ -2,7 +2,7 @@
 
 Common errors and solutions.
 
-**Total Error Types**: 2
+**Total Error Types**: 1
 
 ## PathValidationError
 
@@ -37,28 +37,6 @@ DEBUG=* ossa <command>
 ```
 
 ### "Path is not a directory: ${dirPath}"
-
-**Cause**: Check the error context for details
-
-**Solution**:
-```bash
-# Enable debug mode
-DEBUG=* ossa <command>
-```
-
-## TypeError
-
-### "Wrong value"
-
-**Cause**: Check the error context for details
-
-**Solution**:
-```bash
-# Enable debug mode
-DEBUG=* ossa <command>
-```
-
-### "Not supported on private methods."
 
 **Cause**: Check the error context for details
 

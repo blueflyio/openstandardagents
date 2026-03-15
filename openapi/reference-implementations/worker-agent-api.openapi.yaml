@@ -5,6 +5,9 @@ info:
   description: |
     High-performance worker agent for distributed data processing tasks.
     Executes tasks delegated by orchestrator agents.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

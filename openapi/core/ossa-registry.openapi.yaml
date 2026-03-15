@@ -24,6 +24,9 @@ info:
     - Performance metrics and health scoring
 
     OSSA Compliance: v0.1.9
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 servers:
   - url: https://registry.openstandardagents.org/api/v1
     description: Production registry
@@ -96,6 +99,7 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
       x-ossa-capability: registry-list-agents
+      description: List all registered agents
     post:
       operationId: registerAgent
       summary: Register a new agent
@@ -124,6 +128,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Register a new agent
   /agents/{agentId}:
     get:
       operationId: getAgent
@@ -144,6 +149,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
       x-ossa-capability: registry-get-agent
+      description: Get agent details
     put:
       operationId: updateAgent
       summary: Update agent metadata
@@ -172,6 +178,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Update agent metadata
     delete:
       operationId: deleteAgent
       summary: Deprecate an agent
@@ -190,6 +197,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Deprecate an agent
   /agents/{agentId}/versions:
     get:
       operationId: listAgentVersions
@@ -217,6 +225,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
       x-ossa-capability: registry-list-agent-versions
+      description: List agent versions
     post:
       operationId: publishVersion
       summary: Publish new agent version
@@ -247,6 +256,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Publish new agent version
   /agents/{agentId}/certifications:
     get:
       operationId: listCertifications
@@ -274,6 +284,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
       x-ossa-capability: registry-list-certifications
+      description: List agent certifications
     post:
       operationId: addCertification
       summary: Add certification
@@ -304,6 +315,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Add certification
   /agents/{agentId}/deploy:
     post:
       operationId: deployAgent
@@ -335,6 +347,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Deploy agent to environment
   /agents/{agentId}/health:
     get:
       operationId: getAgentHealth
@@ -357,6 +370,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
       x-ossa-capability: registry-get-agent-health
+      description: Get agent health metrics
   /compliance/validate:
     post:
       operationId: validateCompliance
@@ -382,6 +396,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Validate agent compliance
   /search:
     post:
       operationId: searchAgents
@@ -416,6 +431,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Search agents
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -931,3 +947,18 @@ x-ossa:
   agent:
     id: ossa-registry
     type: gateway
+tags:
+  - name: Agents
+    description: Agents operations
+  - name: Certifications
+    description: Certifications operations
+  - name: Compliance
+    description: Compliance operations
+  - name: Deployment
+    description: Deployment operations
+  - name: Health
+    description: Health operations
+  - name: Search
+    description: Search operations
+  - name: Versions
+    description: Versions operations

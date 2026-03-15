@@ -5,6 +5,9 @@ info:
   description: |
     Autonomous Kubernetes cluster troubleshooting agent with diagnostic capabilities.
     Diagnoses pod failures, network issues, resource constraints, and configuration problems.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

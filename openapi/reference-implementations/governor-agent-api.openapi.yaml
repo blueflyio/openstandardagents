@@ -5,6 +5,9 @@ info:
   description: |
     Governance agent enforcing policies, compliance, and security standards across systems.
     Validates compliance, assesses risks, and generates audit reports.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

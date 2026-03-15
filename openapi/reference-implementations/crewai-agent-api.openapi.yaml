@@ -5,6 +5,9 @@ info:
   description: |
     CrewAI research agent for multi-agent collaboration.
     Specializes in gathering comprehensive information on assigned topics.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

@@ -5,6 +5,9 @@ info:
   description: |
     Production document analysis agent with NLP capabilities.
     Analyzes documents for sentiment, extracts entities, generates summaries, and classifies content.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

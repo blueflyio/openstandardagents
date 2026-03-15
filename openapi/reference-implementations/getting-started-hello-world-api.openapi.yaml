@@ -6,6 +6,9 @@ info:
     Minimal OSSA-compliant agent API demonstrating basic capabilities.
     This agent can greet users, echo messages, and report its status.
     Perfect for learning OSSA fundamentals and testing deployments.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

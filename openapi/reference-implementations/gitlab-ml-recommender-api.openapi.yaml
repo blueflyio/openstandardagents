@@ -5,6 +5,9 @@ info:
   description: |
     AI-powered customer success recommendation agent using RAG (Retrieval-Augmented Generation).
     Provides data-driven recommendations for proactive customer engagement.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

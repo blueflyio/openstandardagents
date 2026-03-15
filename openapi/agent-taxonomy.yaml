@@ -9,6 +9,9 @@ info:
     - Domain expertise (devops, security, data, ml, etc.)
     - Capability level (tier_1_read, tier_2_write, tier_3_full, tier_4_policy)
     - Runtime environment (kubernetes, docker, serverless, local)
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 servers:
   - url: http://localhost:3000/api/v1
     description: Local development
@@ -34,6 +37,7 @@ paths:
                   total:
                     type: integer
       x-ossa-capability: list-taxonomy-categories
+      description: List all taxonomy categories
     post:
       summary: Create new category
       operationId: createTaxonomyCategory
@@ -56,6 +60,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Create new category
   /taxonomy/categories/{categoryId}:
     get:
       summary: Get category by ID
@@ -78,6 +83,7 @@ paths:
         "404":
           description: Category not found
       x-ossa-capability: get-taxonomy-category
+      description: Get category by ID
     put:
       summary: Update category
       operationId: updateTaxonomyCategory
@@ -106,6 +112,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Update category
     delete:
       summary: Delete category
       operationId: deleteTaxonomyCategory
@@ -126,6 +133,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Delete category
   /taxonomy/classify:
     post:
       summary: Classify an agent manifest
@@ -153,6 +161,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Classify an agent manifest
   /taxonomy/validate:
     post:
       summary: Validate taxonomy assignment
@@ -181,6 +190,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Validate taxonomy assignment
 components:
   schemas:
     TaxonomyCategory:
@@ -363,3 +373,6 @@ x-ossa:
   agent:
     id: agent-taxonomy-api
     type: specialist
+tags:
+  - name: Taxonomy
+    description: Taxonomy operations

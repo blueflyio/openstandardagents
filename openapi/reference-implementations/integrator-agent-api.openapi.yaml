@@ -5,6 +5,9 @@ info:
   description: |
     Enterprise integration agent for connecting heterogeneous systems and APIs.
     Transforms protocols, maps schemas, and routes messages between systems.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:
