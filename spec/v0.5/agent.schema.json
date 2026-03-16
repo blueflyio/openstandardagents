@@ -1381,7 +1381,7 @@
     },
     "Cognition": {
       "type": "object",
-      "description": "Reasoning pattern, thought trace configuration, and governance for auditable agent cognition (v0.5.0 draft). First-class spec-level primitive for NIST/FedRAMP alignment.",
+      "description": "Reasoning pattern, thought trace configuration, governance, session capabilities, hypothesis behavior, and alignment gates for auditable agent cognition (v0.5.0 draft). First-class spec-level primitive for NIST/FedRAMP alignment.",
       "properties": {
         "pattern": {
           "type": "string",
@@ -1423,6 +1423,37 @@
               }
             },
             "audit_required": { "type": "boolean", "default": false }
+          },
+          "additionalProperties": false
+        },
+        "session": {
+          "type": "object",
+          "description": "Session capabilities for collaborative multi-agent interactions",
+          "properties": {
+            "joinable": { "type": "boolean", "description": "Can this agent join collaborative sessions" },
+            "maxConcurrent": { "type": "integer", "minimum": 1, "default": 1, "description": "Maximum concurrent sessions" },
+            "role": { "type": "string", "enum": ["leader", "contributor", "observer"], "default": "contributor" },
+            "conflictBehavior": { "type": "string", "enum": ["pause", "yield", "escalate"], "default": "pause" }
+          },
+          "additionalProperties": false
+        },
+        "hypothesis": {
+          "type": "object",
+          "description": "Hypothesis declaration behavior for transparent agent reasoning",
+          "properties": {
+            "declaresIntent": { "type": "boolean", "default": true, "description": "Whether the agent declares its intent before acting" },
+            "confidenceThreshold": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.7, "description": "Minimum confidence to proceed without review" },
+            "requiresAlignment": { "type": "boolean", "default": false, "description": "Must pass alignment gate before executing" }
+          },
+          "additionalProperties": false
+        },
+        "alignmentGate": {
+          "type": "object",
+          "description": "Alignment gate configuration for hypothesis validation before execution",
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "arbiter": { "type": "string", "enum": ["human", "compliance-engine", "consensus"], "default": "human" },
+            "timeout": { "type": "string", "default": "5m", "pattern": "^\\d+[smhd]$", "description": "Max wait time for alignment decision" }
           },
           "additionalProperties": false
         }
