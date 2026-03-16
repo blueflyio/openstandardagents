@@ -1414,6 +1414,20 @@
             "audit_required": { "type": "boolean", "default": false }
           },
           "additionalProperties": false
+        },
+        "sessions": {
+          "type": "object",
+          "description": "CAOE collaborative session capabilities for hypothesis broadcasting and conflict detection",
+          "properties": {
+            "sessionCapable": { "type": "boolean", "default": false },
+            "hypothesisEmission": { "type": "string", "enum": ["required", "optional", "disabled"], "default": "optional" },
+            "conflictBehavior": { "type": "string", "enum": ["block", "warn", "defer"], "default": "block" },
+            "alignmentGate": { "type": "string", "enum": ["human_approval", "auto_on_confidence", "peer_agent", "none"], "default": "human_approval" },
+            "autoLockConfidenceThreshold": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.95 },
+            "maxConcurrentHypotheses": { "type": "integer", "minimum": 1, "maximum": 5, "default": 1 },
+            "cognitiveFingerprint": { "type": "string" }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

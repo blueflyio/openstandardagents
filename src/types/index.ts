@@ -96,6 +96,24 @@ export type {
 export { isOssaMCPServer } from './mcp-server-manifest.js';
 export type { OssaMCPServer } from './mcp-server-manifest.js';
 
+// Export Cognition types (v0.4 — CAOE)
+export * from './cognition.zod.js';
+export type {
+    ActorType,
+    CognitionEvent,
+    CognitionEventType,
+    ConflictResolutionRequest,
+    CreateSessionRequest,
+    CreateSessionResponse,
+    EmitHypothesisRequest,
+    Hypothesis,
+    HypothesisStatus,
+    LockHypothesisRequest,
+    OSSACognitionSpec,
+    PresenceSignal,
+    Session,
+} from './cognition.zod.js';
+
 // Export Protocol Declaration types (v0.5)
 export * from './protocols.js';
 export type {
