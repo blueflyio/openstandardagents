@@ -17,7 +17,11 @@
 
 import { program } from 'commander';
 import 'reflect-metadata';
+import { installGlobalFetch } from '../utils/http-client.js';
 import { initializeAdapters } from '../adapters/index.js';
+
+// Patch fetch globally — all HTTP calls get proxy support + OSSA user-agent
+installGlobalFetch();
 
 // Core OSSA commands (platform-agnostic)
 import { agentsLocalCommandGroup } from './commands/agents-local.command.js';
