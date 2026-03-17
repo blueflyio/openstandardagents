@@ -12,14 +12,8 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 
-const SERVER_PATH = path.resolve(
-  import.meta.dirname,
-  '../../../dist/mcp-server/index.js'
-);
-const FIXTURE_DIR = path.resolve(
-  import.meta.dirname,
-  '../../../spec/reference/reference-agents'
-);
+const SERVER_PATH = path.resolve(import.meta.dirname, '../../../dist/mcp-server/index.js');
+const FIXTURE_DIR = path.resolve(import.meta.dirname, '../../../spec/reference/reference-agents');
 
 let client: Client;
 let transport: StdioClientTransport;
@@ -36,7 +30,7 @@ beforeAll(async () => {
 
   client = new Client(
     { name: 'ossa-mcp-test', version: '1.0.0' },
-    { capabilities: {} }
+    { capabilities: {} },
   );
 
   await client.connect(transport);
@@ -50,33 +44,16 @@ afterAll(async () => {
   }
 });
 
-function readTextResource(content: { text?: string; blob?: string }): string {
-  if (typeof content.text === 'string') {
-    return content.text;
-  }
-
-  if (typeof content.blob === 'string') {
-    return Buffer.from(content.blob, 'base64').toString('utf8');
-  }
-
-  throw new Error('Expected text resource content');
-}
-
 describe('ossa_validate', () => {
   it('validates a valid manifest', async () => {
-    const manifestPath = path.join(
-      FIXTURE_DIR,
-      'compliance-auditor/manifest.ossa.yaml'
-    );
+    const manifestPath = path.join(FIXTURE_DIR, 'compliance-auditor/manifest.ossa.yaml');
     const result = await client.callTool({
       name: 'ossa_validate',
       arguments: { path: manifestPath },
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.valid).toBe(true);
     expect(data.manifest_path).toBe(manifestPath);
   });
@@ -88,6 +65,42 @@ describe('ossa_validate', () => {
     });
 
     expect(result.isError).toBe(true);
+  });
+
+  it('returns platform-specific validation when platform is specified', async () => {
+    const manifestPath = path.join(FIXTURE_DIR, 'compliance-auditor/manifest.ossa.yaml');
+    const result = await client.callTool({
+      name: 'ossa_validate',
+      arguments: { path: manifestPath, platform: 'anthropic' },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(data.platform).toBe('anthropic');
+    expect(data.platform_validation).toBeDefined();
+    expect(data.platform_validation.platform).toBe('anthropic');
+    expect(data.platform_validation.errors).toBeInstanceOf(Array);
+    expect(data.platform_validation.warnings).toBeInstanceOf(Array);
+  });
+
+  it('warns when platform extension is missing from manifest', async () => {
+    // The scaffolded manifest should not have cursor extensions
+    const manifestPath = path.join(FIXTURE_DIR, 'compliance-auditor/manifest.ossa.yaml');
+    const result = await client.callTool({
+      name: 'ossa_validate',
+      arguments: { path: manifestPath, platform: 'cursor' },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(data.platform).toBe('cursor');
+    expect(data.platform_validation).toBeDefined();
+    // Should have a warning about missing extensions.cursor
+    const allWarnings = [...data.warnings, ...data.platform_validation.warnings];
+    const hasMissingExtWarning = allWarnings.some(
+      (w: string) => w.includes('cursor') && w.includes('extensions'),
+    );
+    expect(hasMissingExtWarning).toBe(true);
   });
 });
 
@@ -105,9 +118,7 @@ describe('ossa_scaffold', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.success).toBe(true);
     expect(data.files_created).toContain('manifest.ossa.yaml');
     expect(data.files_created).toContain('AGENTS.md');
@@ -130,9 +141,7 @@ describe('ossa_scaffold', () => {
     });
 
     expect(result.isError).toBe(true);
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.error).toContain('already exists');
   });
 
@@ -156,32 +165,25 @@ describe('ossa_generate', () => {
     });
 
     // Agent card generation may fail for minimal manifests — that's OK
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data).toBeDefined();
   });
 
   it('returns structured error for manifests missing capabilities', async () => {
-    const manifestPath = path.join(
-      FIXTURE_DIR,
-      'compliance-auditor/manifest.ossa.yaml'
-    );
+    const manifestPath = path.join(FIXTURE_DIR, 'compliance-auditor/manifest.ossa.yaml');
     const result = await client.callTool({
       name: 'ossa_generate',
       arguments: { path: manifestPath },
     });
 
     // Should return error (not crash) when manifest lacks spec.capabilities
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data).toBeDefined();
   });
 });
 
 describe('ossa_publish', () => {
-  it('dry-run returns payload without sending', async () => {
+  it('dry-run returns payload with local and remote info', async () => {
     // Use scaffolded manifest
     const manifestPath = path.join(tmpDir, 'test-agent/manifest.ossa.yaml');
     const result = await client.callTool({
@@ -190,15 +192,16 @@ describe('ossa_publish', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.dry_run).toBe(true);
     expect(data.payload).toBeDefined();
     expect(data.payload.manifest).toBeDefined();
+    expect(data.local_publish).toBeDefined();
+    expect(data.local_publish.agent_id).toBeDefined();
+    expect(data.local_publish.version).toBeDefined();
   });
 
-  it('returns instructions when no registry configured', async () => {
+  it('publishes to local registry when no remote configured', async () => {
     const manifestPath = path.join(tmpDir, 'test-agent/manifest.ossa.yaml');
     const result = await client.callTool({
       name: 'ossa_publish',
@@ -206,11 +209,13 @@ describe('ossa_publish', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
-    expect(data.next_steps).toBeDefined();
-    expect(data.next_steps.length).toBeGreaterThan(0);
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(data.local).toBeDefined();
+    expect(data.local.success).toBe(true);
+    expect(data.local.agent_id).toBeDefined();
+    expect(data.local.version).toBeDefined();
+    expect(data.local.published_at).toBeDefined();
+    expect(data.remote).toBeNull();
   });
 });
 
@@ -222,9 +227,7 @@ describe('ossa_list', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.count).toBeGreaterThanOrEqual(1);
     expect(data.agents).toBeInstanceOf(Array);
     expect(data.agents[0]).toHaveProperty('name');
@@ -238,9 +241,7 @@ describe('ossa_list', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.count).toBeGreaterThanOrEqual(1);
     // Summary format returns strings, not objects
     expect(typeof data.agents[0]).toBe('string');
@@ -249,19 +250,14 @@ describe('ossa_list', () => {
 
 describe('ossa_inspect', () => {
   it('deep-inspects a manifest', async () => {
-    const manifestPath = path.join(
-      FIXTURE_DIR,
-      'compliance-auditor/manifest.ossa.yaml'
-    );
+    const manifestPath = path.join(FIXTURE_DIR, 'compliance-auditor/manifest.ossa.yaml');
     const result = await client.callTool({
       name: 'ossa_inspect',
       arguments: { path: manifestPath },
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.name).toBeDefined();
     expect(data.kind).toBeDefined();
     expect(data.apiVersion).toBeDefined();
@@ -272,10 +268,7 @@ describe('ossa_inspect', () => {
 });
 
 describe('ossa_convert', () => {
-  const manifestPath = path.join(
-    FIXTURE_DIR,
-    'compliance-auditor/manifest.ossa.yaml'
-  );
+  const manifestPath = path.join(FIXTURE_DIR, 'compliance-auditor/manifest.ossa.yaml');
 
   it('converts to kagent v1alpha2 format with Agent + ModelConfig', async () => {
     const result = await client.callTool({
@@ -284,9 +277,7 @@ describe('ossa_convert', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.target).toBe('kagent');
     // v1alpha2 multi-resource output: Agent + ModelConfig
     expect(data.content._ossa_multi_resource).toBe(true);
@@ -312,9 +303,7 @@ describe('ossa_convert', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.target).toBe('docker');
     expect(data.content.version).toBe('3.8');
     expect(data.content.services).toBeDefined();
@@ -327,9 +316,7 @@ describe('ossa_convert', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.target).toBe('langchain');
     expect(data.content._type).toBe('agent');
   });
@@ -341,9 +328,7 @@ describe('ossa_convert', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.target).toBe('crewai');
     expect(data.content.agents).toBeInstanceOf(Array);
   });
@@ -355,9 +340,7 @@ describe('ossa_convert', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.target).toBe('anthropic');
     expect(data.content.model).toBeDefined();
     expect(data.content.system).toBeDefined();
@@ -370,9 +353,7 @@ describe('ossa_convert', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.target).toBe('agent-card');
     expect(data.content.name).toBeDefined();
     expect(data.content.description).toBeDefined();
@@ -388,9 +369,7 @@ describe('ossa_convert', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.target).toBe('openai');
     expect(data.content.model).toBeDefined();
     expect(data.content.instructions).toBeDefined();
@@ -408,9 +387,7 @@ describe('ossa_convert', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.target).toBe('autogen');
     expect(data.content.name).toBeDefined();
     expect(data.content.system_message).toBeDefined();
@@ -425,9 +402,7 @@ describe('ossa_convert', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.target).toBe('semantic-kernel');
     expect(data.content.name).toBeDefined();
     expect(data.content.instructions).toBeDefined();
@@ -442,26 +417,15 @@ describe('ossa_convert', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     const adapters = data.content.adapters;
     expect(adapters).toBeDefined();
 
     // All 12 platforms present
     const expectedPlatforms = [
-      'openai',
-      'anthropic',
-      'google_genai',
-      'langchain',
-      'langflow',
-      'crewai',
-      'autogen',
-      'semantic_kernel',
-      'llamaindex',
-      'dspy',
-      'kagent',
-      'gitlab_duo',
+      'openai', 'anthropic', 'google_genai', 'langchain', 'langflow',
+      'crewai', 'autogen', 'semantic_kernel', 'llamaindex', 'dspy',
+      'kagent', 'gitlab_duo',
     ];
     for (const platform of expectedPlatforms) {
       expect(adapters[platform]).toBeDefined();
@@ -495,9 +459,7 @@ describe('ossa_convert', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.target).toBe('gitlab-duo');
     expect(data.content.name).toBeDefined();
   });
@@ -510,9 +472,7 @@ describe('ossa_convert', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.written_to).toBeDefined();
     expect(fs.existsSync(data.written_to)).toBe(true);
   });
@@ -528,9 +488,7 @@ describe('ossa_workspace', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.action).toBe('init');
     expect(data.status).toBe('created');
     expect(fs.existsSync(path.join(wsDir, '.agents-workspace'))).toBe(true);
@@ -543,9 +501,7 @@ describe('ossa_workspace', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.action).toBe('discover');
     expect(data.count).toBeGreaterThanOrEqual(1);
     expect(data.agents).toBeInstanceOf(Array);
@@ -560,9 +516,7 @@ describe('ossa_workspace', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.action).toBe('status');
     expect(data.initialized).toBe(true);
   });
@@ -575,27 +529,16 @@ describe('ossa_diff', () => {
     const dirB = path.join(tmpDir, 'diff-b');
     fs.mkdirSync(dirA, { recursive: true });
     fs.mkdirSync(dirB, { recursive: true });
-    fs.writeFileSync(
-      path.join(dirA, 'manifest.ossa.yaml'),
-      `apiVersion: ossa/v0.4\nkind: Agent\nmetadata:\n  name: agent-a\n  version: 1.0.0\nspec:\n  role: Agent A\n  tools:\n    - name: tool-one\n`
-    );
-    fs.writeFileSync(
-      path.join(dirB, 'manifest.ossa.yaml'),
-      `apiVersion: ossa/v0.4\nkind: Agent\nmetadata:\n  name: agent-b\n  version: 2.0.0\nspec:\n  role: Agent B\n  tools:\n    - name: tool-two\n`
-    );
+    fs.writeFileSync(path.join(dirA, 'manifest.ossa.yaml'), `apiVersion: ossa/v0.4\nkind: Agent\nmetadata:\n  name: agent-a\n  version: 1.0.0\nspec:\n  role: Agent A\n  tools:\n    - name: tool-one\n`);
+    fs.writeFileSync(path.join(dirB, 'manifest.ossa.yaml'), `apiVersion: ossa/v0.4\nkind: Agent\nmetadata:\n  name: agent-b\n  version: 2.0.0\nspec:\n  role: Agent B\n  tools:\n    - name: tool-two\n`);
 
     const result = await client.callTool({
       name: 'ossa_diff',
-      arguments: {
-        path_a: path.join(dirA, 'manifest.ossa.yaml'),
-        path_b: path.join(dirB, 'manifest.ossa.yaml'),
-      },
+      arguments: { path_a: path.join(dirA, 'manifest.ossa.yaml'), path_b: path.join(dirB, 'manifest.ossa.yaml') },
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.total_changes).toBeGreaterThanOrEqual(1);
     expect(data.changes).toBeInstanceOf(Array);
     expect(data.breaking_changes).toBeInstanceOf(Array);
@@ -614,9 +557,7 @@ describe('ossa_migrate', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(data.migrated).toBeDefined();
   });
 
@@ -629,9 +570,7 @@ describe('ossa_migrate', () => {
     });
 
     expect(result.isError).toBeFalsy();
-    const data = JSON.parse(
-      (result.content as Array<{ text: string }>)[0].text
-    );
+    const data = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     if (data.written_to) {
       expect(fs.existsSync(data.written_to)).toBe(true);
     }
@@ -651,46 +590,34 @@ describe('MCP resources', () => {
   });
 
   it('reads minimal template', async () => {
-    const result = await client.readResource({
-      uri: 'ossa://template/minimal',
-    });
+    const result = await client.readResource({ uri: 'ossa://template/minimal' });
     expect(result.contents.length).toBe(1);
-    expect(readTextResource(result.contents[0])).toContain(
-      'apiVersion: ossa/v0.4'
-    );
-    expect(readTextResource(result.contents[0])).toContain('kind: Agent');
+    expect(result.contents[0].text).toContain('apiVersion: ossa/v0.4');
+    expect(result.contents[0].text).toContain('kind: Agent');
   });
 
   it('reads full template with all sections', async () => {
     const result = await client.readResource({ uri: 'ossa://template/full' });
-    expect(readTextResource(result.contents[0])).toContain('spec:');
-    expect(readTextResource(result.contents[0])).toContain('tools:');
-    expect(readTextResource(result.contents[0])).toContain('autonomy:');
-    expect(readTextResource(result.contents[0])).toContain('extensions:');
-    expect(readTextResource(result.contents[0])).toContain('token_efficiency:');
+    expect(result.contents[0].text).toContain('spec:');
+    expect(result.contents[0].text).toContain('tools:');
+    expect(result.contents[0].text).toContain('autonomy:');
+    expect(result.contents[0].text).toContain('extensions:');
+    expect(result.contents[0].text).toContain('token_efficiency:');
   });
 
   it('reads MCP→OSSA→A2A guide', async () => {
-    const result = await client.readResource({
-      uri: 'ossa://guide/mcp-ossa-a2a',
-    });
-    expect(readTextResource(result.contents[0])).toContain('MCP');
-    expect(readTextResource(result.contents[0])).toContain('OSSA');
-    expect(readTextResource(result.contents[0])).toContain('A2A');
+    const result = await client.readResource({ uri: 'ossa://guide/mcp-ossa-a2a' });
+    expect(result.contents[0].text).toContain('MCP');
+    expect(result.contents[0].text).toContain('OSSA');
+    expect(result.contents[0].text).toContain('A2A');
   });
 
   it('reads supported platforms with SDK references', async () => {
-    const result = await client.readResource({
-      uri: 'ossa://platforms/supported',
-    });
-    const platforms = JSON.parse(
-      readTextResource(result.contents[0]) as string
-    );
+    const result = await client.readResource({ uri: 'ossa://platforms/supported' });
+    const platforms = JSON.parse(result.contents[0].text as string);
     expect(platforms.total).toBeGreaterThanOrEqual(14);
     expect(platforms.platforms).toBeInstanceOf(Array);
-    const openai = platforms.platforms.find(
-      (p: Record<string, unknown>) => p.id === 'openai'
-    );
+    const openai = platforms.platforms.find((p: Record<string, unknown>) => p.id === 'openai');
     expect(openai.sdk.npm).toBe('openai');
     expect(openai.sdk.pip).toBe('openai');
   });
@@ -713,9 +640,7 @@ describe('MCP prompts', () => {
       arguments: { description: 'a code review bot' },
     });
     expect(result.messages.length).toBeGreaterThanOrEqual(1);
-    expect(JSON.stringify(result.messages[0].content)).toContain(
-      'code review bot'
-    );
+    expect(JSON.stringify(result.messages[0].content)).toContain('code review bot');
   });
 
   it('gets what-is-ossa prompt', async () => {

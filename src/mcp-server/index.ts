@@ -25,56 +25,51 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
   CallToolRequestSchema,
-  GetPromptRequestSchema,
-  ListPromptsRequestSchema,
-  ListResourcesRequestSchema,
   ListToolsRequestSchema,
+  ListResourcesRequestSchema,
   ReadResourceRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
   type Tool,
 } from '@modelcontextprotocol/sdk/types.js';
-import axios from 'axios';
+import { z } from 'zod';
+import pino from 'pino';
 import fg from 'fast-glob';
 import yaml from 'js-yaml';
-import { spawnSync } from 'node:child_process';
+import axios from 'axios';
+import semver from 'semver';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import pino from 'pino';
-import semver from 'semver';
-import { z } from 'zod';
 
-import {
-  registry as convertRegistry,
-  initializeAdapters,
-} from '../adapters/index.js';
-import {
-  getAgentTypeConfigs,
-  getDefaultAgentKind,
-  getDefaultAgentVersion,
-  getDefaultDescriptionTemplate,
-  getDefaultRoleTemplate,
-} from '../config/defaults.js';
+
 import { container } from '../di-container.js';
 import { ManifestRepository } from '../repositories/manifest.repository.js';
-import { AgentCardGenerator } from '../services/agent-card-generator.js';
-import { MigrationTransformService } from '../services/migration-transform.service.js';
-import type { PublishRequest } from '../services/registry.service.js';
-import { RegistryService } from '../services/registry.service.js';
 import { ValidationService } from '../services/validation.service.js';
-import { AnthropicValidator } from '../services/validators/anthropic.validator.js';
-import { AutoGenValidator } from '../services/validators/autogen.validator.js';
-import { CrewAIValidator } from '../services/validators/crewai.validator.js';
-import { CursorValidator } from '../services/validators/cursor.validator.js';
-import { KagentValidator } from '../services/validators/kagent.validator.js';
-import { LangChainValidator } from '../services/validators/langchain.validator.js';
-import { LangflowValidator } from '../services/validators/langflow.validator.js';
-import { LangGraphValidator } from '../services/validators/langgraph.validator.js';
-import { LlamaIndexValidator } from '../services/validators/llamaindex.validator.js';
-import { OpenAIValidator } from '../services/validators/openai.validator.js';
-import { VercelAIValidator } from '../services/validators/vercel-ai.validator.js';
+import { MigrationTransformService } from '../services/migration-transform.service.js';
 import { VersionDetectionService } from '../services/version-detection.service.js';
-import type { OssaAgent, ValidationResult } from '../types/index.js';
-import { scanManifests } from '../utils/manifest-scanner.js';
+import { AgentCardGenerator } from '../services/agent-card-generator.js';
+import { RegistryService } from '../services/registry.service.js';
+import type { PublishRequest } from '../services/registry.service.js';
 import { getApiVersion, getVersion } from '../utils/version.js';
+import {
+  getDefaultAgentVersion,
+  getDefaultAgentKind,
+  getDefaultRoleTemplate,
+  getDefaultDescriptionTemplate,
+  getAgentTypeConfigs,
+} from '../config/defaults.js';
+import type { OssaAgent, ValidationResult } from '../types/index.js';
+import { CursorValidator } from '../services/validators/cursor.validator.js';
+import { OpenAIValidator } from '../services/validators/openai.validator.js';
+import { CrewAIValidator } from '../services/validators/crewai.validator.js';
+import { LangChainValidator } from '../services/validators/langchain.validator.js';
+import { AnthropicValidator } from '../services/validators/anthropic.validator.js';
+import { LangflowValidator } from '../services/validators/langflow.validator.js';
+import { AutoGenValidator } from '../services/validators/autogen.validator.js';
+import { VercelAIValidator } from '../services/validators/vercel-ai.validator.js';
+import { LlamaIndexValidator } from '../services/validators/llamaindex.validator.js';
+import { LangGraphValidator } from '../services/validators/langgraph.validator.js';
+import { KagentValidator } from '../services/validators/kagent.validator.js';
 
 // ---------------------------------------------------------------------------
 // Logging — pino (structured JSON to stderr so MCP stdio stays clean)
@@ -95,40 +90,24 @@ const ValidateInput = z.object({
   path: z.string().min(1, 'path is required'),
   platform: z
     .enum([
-      'kagent',
-      'langchain',
-      'crewai',
-      'docker',
-      'kubernetes',
-      'gitlab-duo',
-      'anthropic',
+      'kagent', 'langchain', 'crewai', 'docker', 'kubernetes', 'gitlab-duo',
+      'anthropic', 'cursor', 'openai_agents', 'langflow', 'autogen',
+      'vercel_ai', 'llamaindex', 'langgraph',
     ])
     .optional(),
   strict: z.boolean().optional().default(false),
 });
 
 const ScaffoldInput = z.object({
-  name: z
-    .string()
-    .min(1)
-    .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/, 'Must be DNS-1123 format'),
+  name: z.string().min(1).regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/, 'Must be DNS-1123 format'),
   output_dir: z.string().optional().default('.agents'),
   description: z.string().optional(),
   role: z.string().optional(),
   type: z
-    .enum([
-      'worker',
-      'orchestrator',
-      'reviewer',
-      'analyzer',
-      'executor',
-      'approver',
-    ])
+    .enum(['worker', 'orchestrator', 'reviewer', 'analyzer', 'executor', 'approver'])
     .optional()
     .default('worker'),
   version: z.string().optional(),
-  source_project_id: z.string().optional(),
-  execution_node_id: z.string().optional(),
 });
 
 const GenerateInput = z.object({
@@ -166,7 +145,6 @@ const ConvertInput = z.object({
     'semantic-kernel',
     'a2a',
     'agent-card',
-    'claude-agent-sdk',
   ]),
   output_dir: z.string().optional(),
 });
@@ -198,9 +176,6 @@ const versionDetectionService = container.get(VersionDetectionService);
 const registryService = container.get(RegistryService);
 const agentCardGenerator = new AgentCardGenerator();
 
-// Initialize adapter registry (config-only adapters for MCP convert)
-initializeAdapters();
-
 // ---------------------------------------------------------------------------
 // MCP Server
 // ---------------------------------------------------------------------------
@@ -227,28 +202,17 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        path: {
-          type: 'string',
-          description: 'Path to manifest file (.ossa.yaml, .ossa.yml, .json)',
-        },
+        path: { type: 'string', description: 'Path to manifest file (.ossa.yaml, .ossa.yml, .json)' },
         platform: {
           type: 'string',
           enum: [
-            'kagent',
-            'langchain',
-            'crewai',
-            'docker',
-            'kubernetes',
-            'gitlab-duo',
-            'anthropic',
+            'kagent', 'langchain', 'crewai', 'docker', 'kubernetes', 'gitlab-duo',
+            'anthropic', 'cursor', 'openai_agents', 'langflow', 'autogen',
+            'vercel_ai', 'llamaindex', 'langgraph',
           ],
-          description: 'Optional platform-specific validation',
+          description: 'Optional platform-specific validation (runs targeted validator for this platform)',
         },
-        strict: {
-          type: 'boolean',
-          description: 'Enable strict mode (warnings become errors)',
-          default: false,
-        },
+        strict: { type: 'boolean', description: 'Enable strict mode (warnings become errors)', default: false },
       },
       required: ['path'],
     },
@@ -260,34 +224,16 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        name: {
-          type: 'string',
-          description:
-            'Agent name (DNS-1123: lowercase alphanumeric + hyphens)',
-        },
-        output_dir: {
-          type: 'string',
-          description: 'Parent directory (default: .agents)',
-          default: '.agents',
-        },
+        name: { type: 'string', description: 'Agent name (DNS-1123: lowercase alphanumeric + hyphens)' },
+        output_dir: { type: 'string', description: 'Parent directory (default: .agents)', default: '.agents' },
         description: { type: 'string', description: 'Short description' },
         role: { type: 'string', description: 'System prompt / role' },
         type: {
           type: 'string',
-          enum: [
-            'worker',
-            'orchestrator',
-            'reviewer',
-            'analyzer',
-            'executor',
-            'approver',
-          ],
+          enum: ['worker', 'orchestrator', 'reviewer', 'analyzer', 'executor', 'approver'],
           default: 'worker',
         },
-        version: {
-          type: 'string',
-          description: 'Initial version (default: 1.0.0)',
-        },
+        version: { type: 'string', description: 'Initial version (default: 1.0.0)' },
       },
       required: ['name'],
     },
@@ -300,10 +246,7 @@ const tools: Tool[] = [
       type: 'object',
       properties: {
         path: { type: 'string', description: 'Path to OSSA manifest file' },
-        output_dir: {
-          type: 'string',
-          description: 'Optional directory to write agent-card.json',
-        },
+        output_dir: { type: 'string', description: 'Optional directory to write agent-card.json' },
       },
       required: ['path'],
     },
@@ -316,16 +259,8 @@ const tools: Tool[] = [
       type: 'object',
       properties: {
         path: { type: 'string', description: 'Path to OSSA manifest file' },
-        registry_url: {
-          type: 'string',
-          description:
-            'Registry base URL (or set REGISTRY_URL / AGENT_REGISTRY_URL env)',
-        },
-        dry_run: {
-          type: 'boolean',
-          description: 'Preview publish payload without sending',
-          default: false,
-        },
+        registry_url: { type: 'string', description: 'Registry base URL (or set REGISTRY_URL / AGENT_REGISTRY_URL env)' },
+        dry_run: { type: 'boolean', description: 'Preview publish payload without sending', default: false },
       },
       required: ['path'],
     },
@@ -337,16 +272,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        directory: {
-          type: 'string',
-          description: 'Root directory to scan (default: cwd)',
-          default: '.',
-        },
-        recursive: {
-          type: 'boolean',
-          description: 'Scan subdirectories',
-          default: true,
-        },
+        directory: { type: 'string', description: 'Root directory to scan (default: cwd)', default: '.' },
+        recursive: { type: 'boolean', description: 'Scan subdirectories', default: true },
         format: {
           type: 'string',
           enum: ['summary', 'detailed', 'json'],
@@ -378,25 +305,10 @@ const tools: Tool[] = [
         path: { type: 'string', description: 'Path to OSSA manifest file' },
         target: {
           type: 'string',
-          enum: [
-            'kagent',
-            'docker',
-            'langchain',
-            'crewai',
-            'gitlab-duo',
-            'anthropic',
-            'openai',
-            'autogen',
-            'semantic-kernel',
-            'a2a',
-            'agent-card',
-          ],
+          enum: ['kagent', 'docker', 'langchain', 'crewai', 'gitlab-duo', 'anthropic', 'openai', 'autogen', 'semantic-kernel', 'a2a', 'agent-card'],
           description: 'Target format',
         },
-        output_dir: {
-          type: 'string',
-          description: 'Optional directory to write converted output',
-        },
+        output_dir: { type: 'string', description: 'Optional directory to write converted output' },
       },
       required: ['path', 'target'],
     },
@@ -413,10 +325,7 @@ const tools: Tool[] = [
           enum: ['init', 'discover', 'status'],
           description: 'Workspace action',
         },
-        directory: {
-          type: 'string',
-          description: 'Root directory to scan (default: current dir)',
-        },
+        directory: { type: 'string', description: 'Root directory to scan (default: current dir)' },
         name: { type: 'string', description: 'Workspace name (for init)' },
       },
       required: ['action'],
@@ -448,10 +357,7 @@ const tools: Tool[] = [
           description: 'Target OSSA version (default: ossa/v0.4)',
           default: 'ossa/v0.4',
         },
-        output_dir: {
-          type: 'string',
-          description: 'Optional directory to write migrated manifest',
-        },
+        output_dir: { type: 'string', description: 'Optional directory to write migrated manifest' },
       },
       required: ['path'],
     },
@@ -481,58 +387,42 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => ({
     {
       uri: 'ossa://template/full',
       name: 'Full OSSA Manifest Template',
-      description:
-        'Complete OSSA manifest with all fields (identity, tools, llm, autonomy, safety, observability, a2a, mcp)',
+      description: 'Complete OSSA manifest with all fields (identity, tools, llm, autonomy, safety, observability, a2a, mcp)',
       mimeType: 'text/yaml',
     },
     {
       uri: 'ossa://guide/mcp-ossa-a2a',
       name: 'MCP → OSSA → A2A Guide',
-      description:
-        'How OSSA bridges MCP (tools) and A2A (communication) — the missing agent contract',
+      description: 'How OSSA bridges MCP (tools) and A2A (communication) — the missing agent contract',
       mimeType: 'text/markdown',
     },
     {
       uri: 'ossa://platforms/supported',
       name: 'Supported Platforms',
-      description:
-        'All platforms OSSA converts to with SDK package references (npm/pip)',
+      description: 'All platforms OSSA converts to with SDK package references (npm/pip)',
       mimeType: 'application/json',
     },
   ],
 }));
 
 server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-  const baseDir =
-    import.meta.dirname ?? path.dirname(new URL(import.meta.url).pathname);
+  const baseDir = import.meta.dirname ?? path.dirname(new URL(import.meta.url).pathname);
 
   switch (request.params.uri) {
     case 'ossa://schema/v0.4/agent': {
-      const schemaPath = path.resolve(
-        baseDir,
-        '../../spec/v0.4/agent.schema.json'
-      );
+      const schemaPath = path.resolve(baseDir, '../../spec/v0.4/agent.schema.json');
       const schemaContent = fs.existsSync(schemaPath)
         ? fs.readFileSync(schemaPath, 'utf8')
         : JSON.stringify({ error: 'Schema file not found', path: schemaPath });
-      return {
-        contents: [
-          {
-            uri: request.params.uri,
-            mimeType: 'application/schema+json',
-            text: schemaContent,
-          },
-        ],
-      };
+      return { contents: [{ uri: request.params.uri, mimeType: 'application/schema+json', text: schemaContent }] };
     }
 
     case 'ossa://template/minimal':
       return {
-        contents: [
-          {
-            uri: request.params.uri,
-            mimeType: 'text/yaml',
-            text: `apiVersion: ossa/v0.4
+        contents: [{
+          uri: request.params.uri,
+          mimeType: 'text/yaml',
+          text: `apiVersion: ossa/v0.4
 kind: Agent
 metadata:
   name: my-agent
@@ -541,17 +431,15 @@ metadata:
 spec:
   role: You are a helpful assistant.
 `,
-          },
-        ],
+        }],
       };
 
     case 'ossa://template/full':
       return {
-        contents: [
-          {
-            uri: request.params.uri,
-            mimeType: 'text/yaml',
-            text: `apiVersion: ossa/v0.4
+        contents: [{
+          uri: request.params.uri,
+          mimeType: 'text/yaml',
+          text: `apiVersion: ossa/v0.4
 kind: Agent
 metadata:
   name: my-agent
@@ -642,17 +530,15 @@ token_efficiency:
       - model: claude-sonnet-4-20250514
         max_tokens: 4096
 `,
-          },
-        ],
+        }],
       };
 
     case 'ossa://guide/mcp-ossa-a2a':
       return {
-        contents: [
-          {
-            uri: request.params.uri,
-            mimeType: 'text/markdown',
-            text: `# MCP → OSSA → A2A: The Agent Stack
+        contents: [{
+          uri: request.params.uri,
+          mimeType: 'text/markdown',
+          text: `# MCP → OSSA → A2A: The Agent Stack
 
 ## The Problem
 Agent ecosystems have **tools** (MCP) and **communication** (A2A/Google), but no standard way to define **what an agent IS**.
@@ -717,155 +603,35 @@ npx ossa convert .agents/my-agent/manifest.ossa.yaml --target agent-card
 - npm: https://www.npmjs.com/package/@bluefly/openstandardagents
 - MCP Server: \`npx ossa-mcp\` (this server)
 `,
-          },
-        ],
+        }],
       };
 
     case 'ossa://platforms/supported':
       return {
-        contents: [
-          {
-            uri: request.params.uri,
-            mimeType: 'application/json',
-            text: JSON.stringify(
-              {
-                platforms: [
-                  {
-                    id: 'kagent',
-                    name: 'kagent.dev',
-                    type: 'kubernetes',
-                    docs: 'https://kagent.dev',
-                    format: 'v1alpha2 CRD (Agent + ModelConfig)',
-                  },
-                  {
-                    id: 'docker',
-                    name: 'Docker',
-                    type: 'container',
-                    docs: 'https://docs.docker.com',
-                    format: 'docker-compose.yml',
-                  },
-                  {
-                    id: 'openai',
-                    name: 'OpenAI',
-                    type: 'llm',
-                    sdk: { npm: 'openai', pip: 'openai' },
-                    docs: 'https://platform.openai.com/docs',
-                    format: 'Assistants / function_calling',
-                  },
-                  {
-                    id: 'anthropic',
-                    name: 'Anthropic',
-                    type: 'llm',
-                    sdk: { npm: '@anthropic-ai/sdk', pip: 'anthropic' },
-                    docs: 'https://docs.anthropic.com',
-                    format: 'Messages API + tool_use',
-                  },
-                  {
-                    id: 'google_genai',
-                    name: 'Google Gemini',
-                    type: 'llm',
-                    sdk: {
-                      npm: '@google/generative-ai',
-                      pip: 'google-generativeai',
-                    },
-                    docs: 'https://ai.google.dev',
-                    format: 'GenerativeAI',
-                  },
-                  {
-                    id: 'langchain',
-                    name: 'LangChain',
-                    type: 'framework',
-                    sdk: {
-                      npm: ['langchain', '@langchain/core'],
-                      pip: ['langchain', 'langchain-openai'],
-                    },
-                    docs: 'https://js.langchain.com',
-                    format: 'Agent + StructuredTool',
-                  },
-                  {
-                    id: 'langflow',
-                    name: 'LangFlow',
-                    type: 'visual',
-                    sdk: { pip: 'langflow' },
-                    docs: 'https://docs.langflow.org',
-                    format: 'Custom component',
-                  },
-                  {
-                    id: 'crewai',
-                    name: 'CrewAI',
-                    type: 'framework',
-                    sdk: { pip: 'crewai' },
-                    docs: 'https://docs.crewai.com',
-                    format: 'Agent YAML',
-                  },
-                  {
-                    id: 'autogen',
-                    name: 'AutoGen',
-                    type: 'framework',
-                    sdk: { pip: 'autogen-agentchat' },
-                    docs: 'https://microsoft.github.io/autogen',
-                    format: 'ConversableAgent',
-                  },
-                  {
-                    id: 'semantic-kernel',
-                    name: 'Semantic Kernel',
-                    type: 'framework',
-                    sdk: { npm: 'semantic-kernel', pip: 'semantic-kernel' },
-                    docs: 'https://learn.microsoft.com/en-us/semantic-kernel',
-                    format: 'Agent + Plugins',
-                  },
-                  {
-                    id: 'llamaindex',
-                    name: 'LlamaIndex',
-                    type: 'framework',
-                    sdk: { npm: 'llamaindex', pip: 'llama-index' },
-                    docs: 'https://docs.llamaindex.ai',
-                    format: 'Agent config',
-                  },
-                  {
-                    id: 'dspy',
-                    name: 'DSPy',
-                    type: 'framework',
-                    sdk: { pip: 'dspy' },
-                    docs: 'https://dspy.ai',
-                    format: 'Module config',
-                  },
-                  {
-                    id: 'gitlab-duo',
-                    name: 'GitLab Duo',
-                    type: 'devops',
-                    docs: 'https://docs.gitlab.com/ee/user/gitlab_duo',
-                    format: 'Duo agent YAML',
-                  },
-                  {
-                    id: 'agent-card',
-                    name: 'Universal Agent Card',
-                    type: 'universal',
-                    docs: 'https://openstandardagents.org',
-                    format: 'Cross-platform JSON with all 12 adapters',
-                  },
-                  {
-                    id: 'claude-agent-sdk',
-                    name: 'Claude Agent SDK',
-                    type: 'agent-sdk',
-                    sdk: {
-                      npm: '@anthropic-ai/claude-agent-sdk',
-                      pip: 'claude-agent-sdk',
-                      go: 'github.com/M1n9X/claude-agent-sdk-go',
-                      rust: 'claude_agent',
-                    },
-                    docs: 'https://docs.claude.com/en/api/agent-sdk/overview',
-                    format: 'Runnable Agent SDK app (TS/PY/Go/Rust)',
-                  },
-                ],
-                total: 15,
-                ossa_version: 'ossa/v0.4',
-              },
-              null,
-              2
-            ),
-          },
-        ],
+        contents: [{
+          uri: request.params.uri,
+          mimeType: 'application/json',
+          text: JSON.stringify({
+            platforms: [
+              { id: 'kagent', name: 'kagent.dev', type: 'kubernetes', docs: 'https://kagent.dev', format: 'v1alpha2 CRD (Agent + ModelConfig)' },
+              { id: 'docker', name: 'Docker', type: 'container', docs: 'https://docs.docker.com', format: 'docker-compose.yml' },
+              { id: 'openai', name: 'OpenAI', type: 'llm', sdk: { npm: 'openai', pip: 'openai' }, docs: 'https://platform.openai.com/docs', format: 'Assistants / function_calling' },
+              { id: 'anthropic', name: 'Anthropic', type: 'llm', sdk: { npm: '@anthropic-ai/sdk', pip: 'anthropic' }, docs: 'https://docs.anthropic.com', format: 'Messages API + tool_use' },
+              { id: 'google_genai', name: 'Google Gemini', type: 'llm', sdk: { npm: '@google/generative-ai', pip: 'google-generativeai' }, docs: 'https://ai.google.dev', format: 'GenerativeAI' },
+              { id: 'langchain', name: 'LangChain', type: 'framework', sdk: { npm: ['langchain', '@langchain/core'], pip: ['langchain', 'langchain-openai'] }, docs: 'https://js.langchain.com', format: 'Agent + StructuredTool' },
+              { id: 'langflow', name: 'LangFlow', type: 'visual', sdk: { pip: 'langflow' }, docs: 'https://docs.langflow.org', format: 'Custom component' },
+              { id: 'crewai', name: 'CrewAI', type: 'framework', sdk: { pip: 'crewai' }, docs: 'https://docs.crewai.com', format: 'Agent YAML' },
+              { id: 'autogen', name: 'AutoGen', type: 'framework', sdk: { pip: 'autogen-agentchat' }, docs: 'https://microsoft.github.io/autogen', format: 'ConversableAgent' },
+              { id: 'semantic-kernel', name: 'Semantic Kernel', type: 'framework', sdk: { npm: 'semantic-kernel', pip: 'semantic-kernel' }, docs: 'https://learn.microsoft.com/en-us/semantic-kernel', format: 'Agent + Plugins' },
+              { id: 'llamaindex', name: 'LlamaIndex', type: 'framework', sdk: { npm: 'llamaindex', pip: 'llama-index' }, docs: 'https://docs.llamaindex.ai', format: 'Agent config' },
+              { id: 'dspy', name: 'DSPy', type: 'framework', sdk: { pip: 'dspy' }, docs: 'https://dspy.ai', format: 'Module config' },
+              { id: 'gitlab-duo', name: 'GitLab Duo', type: 'devops', docs: 'https://docs.gitlab.com/ee/user/gitlab_duo', format: 'Duo agent YAML' },
+              { id: 'agent-card', name: 'Universal Agent Card', type: 'universal', docs: 'https://openstandardagents.org', format: 'Cross-platform JSON with all 12 adapters' },
+            ],
+            total: 14,
+            ossa_version: 'ossa/v0.4',
+          }, null, 2),
+        }],
       };
 
     default:
@@ -880,19 +646,10 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => ({
   prompts: [
     {
       name: 'create-agent',
-      description:
-        'Create a new OSSA agent from a description of what it should do',
+      description: 'Create a new OSSA agent from a description of what it should do',
       arguments: [
-        {
-          name: 'description',
-          description: 'What the agent should do',
-          required: true,
-        },
-        {
-          name: 'name',
-          description: 'Agent name (DNS-1123 format)',
-          required: false,
-        },
+        { name: 'description', description: 'What the agent should do', required: true },
+        { name: 'name', description: 'Agent name (DNS-1123 format)', required: false },
       ],
     },
     {
@@ -922,65 +679,58 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     case 'create-agent':
       return {
         description: 'Create a new OSSA agent',
-        messages: [
-          {
-            role: 'user',
-            content: {
-              type: 'text',
-              text: `Create a new OSSA agent that does the following: ${request.params.arguments?.description || 'a helpful assistant'}.
+        messages: [{
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `Create a new OSSA agent that does the following: ${request.params.arguments?.description || 'a helpful assistant'}.
 
 Use the ossa_scaffold tool to create the directory structure, then customize the manifest. The agent name should be: ${request.params.arguments?.name || 'auto-detect from description'}.
 
 After scaffolding, read the manifest, customize it with appropriate tools, capabilities, and LLM config, then validate it with ossa_validate.`,
-            },
           },
-        ],
+        }],
       };
 
     case 'convert-for-platform':
       return {
         description: 'Convert manifest to target platform',
-        messages: [
-          {
-            role: 'user',
-            content: {
-              type: 'text',
-              text: `Convert the OSSA manifest at ${request.params.arguments?.path || './manifest.ossa.yaml'} to ${request.params.arguments?.platform || 'agent-card'} format.
+        messages: [{
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `Convert the OSSA manifest at ${request.params.arguments?.path || './manifest.ossa.yaml'} to ${request.params.arguments?.platform || 'agent-card'} format.
 
 Use ossa_convert with the target platform. If converting to agent-card, explain the cross-platform adapters available (OpenAI, Anthropic, LangChain, CrewAI, etc.) and the SDK packages needed.`,
-            },
           },
-        ],
+        }],
       };
 
     case 'explain-manifest':
       return {
         description: 'Explain an OSSA manifest',
-        messages: [
-          {
-            role: 'user',
-            content: {
-              type: 'text',
-              text: `Inspect the OSSA manifest at ${request.params.arguments?.path || './manifest.ossa.yaml'} using ossa_inspect and explain:
+        messages: [{
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `Inspect the OSSA manifest at ${request.params.arguments?.path || './manifest.ossa.yaml'} using ossa_inspect and explain:
 1. What this agent does (role and capabilities)
 2. What tools it has access to
 3. What LLM it uses
 4. Its autonomy level and safety constraints
 5. How it can be deployed (platforms it supports)`,
-            },
           },
-        ],
+        }],
       };
 
     case 'what-is-ossa':
       return {
         description: 'Explain OSSA',
-        messages: [
-          {
-            role: 'user',
-            content: {
-              type: 'text',
-              text: `Explain OSSA (Open Standard for Software Agents) and how it bridges MCP and A2A.
+        messages: [{
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `Explain OSSA (Open Standard for Software Agents) and how it bridges MCP and A2A.
 
 Read the ossa://guide/mcp-ossa-a2a resource for the full explanation. Key points:
 - MCP defines tools (what agents CAN DO)
@@ -988,9 +738,8 @@ Read the ossa://guide/mcp-ossa-a2a resource for the full explanation. Key points
 - OSSA defines the agent contract (what the agent IS)
 
 Show the supported platforms using the ossa://platforms/supported resource.`,
-            },
           },
-        ],
+        }],
       };
 
     default:
@@ -1089,22 +838,17 @@ async function handleValidate(args: Record<string, unknown>) {
       platformWarnings = platformResult.warnings || [];
 
       // If no extension exists for this platform, add a warning
-      const extensions = (manifest as Record<string, unknown>).extensions as
-        | Record<string, unknown>
-        | undefined;
+      const extensions = (manifest as Record<string, unknown>).extensions as Record<string, unknown> | undefined;
       if (!extensions?.[input.platform]) {
         platformWarnings.push(
           `Platform '${input.platform}': No extensions.${input.platform} section found in manifest. ` +
-            `Add extensions.${input.platform} to enable platform-specific features.`
+          `Add extensions.${input.platform} to enable platform-specific features.`,
         );
       }
 
       // Merge platform results into base results
       if (platformErrors.length) {
-        result.errors = [
-          ...(result.errors || []),
-          ...platformErrors,
-        ] as typeof result.errors;
+        result.errors = [...(result.errors || []), ...platformErrors] as typeof result.errors;
         result.valid = false;
       }
       if (platformWarnings.length) {
@@ -1116,10 +860,7 @@ async function handleValidate(args: Record<string, unknown>) {
   // Strict mode: promote warnings to errors
   if (input.strict && result.warnings?.length) {
     const promoted = result.warnings.map((w: string) => `[strict] ${w}`);
-    result.errors = [
-      ...(result.errors || []),
-      ...promoted,
-    ] as typeof result.errors;
+    result.errors = [...(result.errors || []), ...promoted] as typeof result.errors;
     result.valid = !result.errors?.length;
   }
 
@@ -1129,13 +870,11 @@ async function handleValidate(args: Record<string, unknown>) {
     warnings: result.warnings || [],
     manifest_path: manifestPath,
     platform: input.platform || null,
-    platform_validation: input.platform
-      ? {
-          platform: input.platform,
-          errors: platformErrors,
-          warnings: platformWarnings,
-        }
-      : undefined,
+    platform_validation: input.platform ? {
+      platform: input.platform,
+      errors: platformErrors,
+      warnings: platformWarnings,
+    } : undefined,
   });
 }
 
@@ -1160,25 +899,12 @@ async function handleScaffold(args: Record<string, unknown>) {
     metadata: {
       name: input.name,
       version: input.version || getDefaultAgentVersion(),
-      description:
-        input.description || getDefaultDescriptionTemplate(input.name),
-      mesh_bindings: {
-        source_project_id:
-          input.source_project_id ||
-          process.env.OSSA_DEFAULT_SOURCE_PROJECT_ID ||
-          '',
-        execution_node_id:
-          input.execution_node_id ||
-          process.env.OSSA_DEFAULT_EXECUTION_NODE_ID ||
-          '',
-      },
+      description: input.description || getDefaultDescriptionTemplate(input.name),
     },
     spec: {
       role: input.role || getDefaultRoleTemplate(input.name),
       llm: { provider: 'openai', model: '${LLM_MODEL:-gpt-4}' },
-      tools: typeConfig.capabilityName
-        ? [{ type: 'capability', name: typeConfig.capabilityName }]
-        : [],
+      tools: typeConfig.capabilityName ? [{ type: 'capability', name: typeConfig.capabilityName }] : [],
     },
   };
 
@@ -1214,7 +940,7 @@ async function handleGenerate(args: Record<string, unknown>) {
 
   if (!result.success) {
     return errResponse(
-      JSON.stringify({ errors: result.errors, warnings: result.warnings })
+      JSON.stringify({ errors: result.errors, warnings: result.warnings }),
     );
   }
 
@@ -1224,16 +950,8 @@ async function handleGenerate(args: Record<string, unknown>) {
     const wellKnown = path.join(outDir, '.well-known');
     fs.mkdirSync(wellKnown, { recursive: true });
     const cardPath = path.join(wellKnown, 'agent-card.json');
-    fs.writeFileSync(
-      cardPath,
-      result.json ?? JSON.stringify(result.card, null, 2),
-      'utf8'
-    );
-    return okResponse({
-      success: true,
-      agent_card: result.card,
-      written_to: cardPath,
-    });
+    fs.writeFileSync(cardPath, result.json ?? JSON.stringify(result.card, null, 2), 'utf8');
+    return okResponse({ success: true, agent_card: result.card, written_to: cardPath });
   }
 
   return okResponse({ success: true, agent_card: result.card });
@@ -1257,9 +975,7 @@ async function handlePublish(args: Record<string, unknown>) {
   // Dry run — show what would happen for both local and remote
   if (input.dry_run) {
     const registryUrl =
-      input.registry_url ||
-      process.env.REGISTRY_URL ||
-      process.env.AGENT_REGISTRY_URL;
+      input.registry_url || process.env.REGISTRY_URL || process.env.AGENT_REGISTRY_URL;
     return okResponse({
       dry_run: true,
       payload,
@@ -1269,10 +985,7 @@ async function handlePublish(args: Record<string, unknown>) {
         version: manifest.metadata?.version || '1.0.0',
       },
       remote_publish: registryUrl
-        ? {
-            registry_url: registryUrl,
-            url: registryUrl.replace(/\/?$/, '/api/v1/agents'),
-          }
+        ? { registry_url: registryUrl, url: registryUrl.replace(/\/?$/, '/api/v1/agents') }
         : null,
       message: 'Payload that would be sent to local and/or remote registry',
     });
@@ -1301,9 +1014,7 @@ async function handlePublish(args: Record<string, unknown>) {
   }
 
   const registryUrl =
-    input.registry_url ||
-    process.env.REGISTRY_URL ||
-    process.env.AGENT_REGISTRY_URL;
+    input.registry_url || process.env.REGISTRY_URL || process.env.AGENT_REGISTRY_URL;
 
   // Remote HTTP registry (if configured)
   if (registryUrl) {
@@ -1315,85 +1026,72 @@ async function handlePublish(args: Record<string, unknown>) {
     });
     return okResponse({
       success: res.status >= 200 && res.status < 300,
-      status: res.status,
-      registry_url: registryUrl,
-      data: res.data,
-      local_publish: localResult,
+      local: localResult,
+      remote: {
+        success: res.status >= 200 && res.status < 300,
+        status: res.status,
+        registry_url: registryUrl,
+        data: res.data,
+      },
     });
   }
 
-  // arctl CLI fallback
-  const arctl = spawnSync('arctl', ['publish', manifestPath], {
-    encoding: 'utf8',
-    timeout: 30000,
-  });
-  if (arctl.status === 0) {
-    return okResponse({
-      success: true,
-      method: 'arctl',
-      stdout: arctl.stdout?.trim(),
-      local_publish: localResult,
-    });
-  }
-
-  // No remote configured — return local result
-  if (localResult?.success) {
-    return okResponse({
-      success: true,
-      method: 'local',
-      local_publish: localResult,
-      message:
-        'Published to local registry. Set REGISTRY_URL for remote publish.',
-    });
-  }
-
+  // No remote registry — return local result only
   return okResponse({
-    published: false,
-    message: 'No registry configured. Set REGISTRY_URL or install arctl.',
-    local_publish: localResult,
-    next_steps: [
-      'Set REGISTRY_URL or AGENT_REGISTRY_URL environment variable',
-      'Or install arctl: npm install -g @agentregistry/arctl',
-      'Then: arctl publish ' + manifestPath,
-    ],
+    success: localResult?.success === true,
+    local: localResult,
+    remote: null,
+    message: localResult?.success
+      ? 'Published to local registry. Set REGISTRY_URL for remote publishing.'
+      : 'Local publish failed. Set REGISTRY_URL for remote publishing.',
   });
 }
 
 // ---------------------------------------------------------------------------
-// ossa_list — workspace discovery via shared manifest scanner
-// Uses src/utils/manifest-scanner.ts for consistent glob patterns and parsing.
+// ossa_list — workspace discovery via fast-glob
+// HACK: Inline fast-glob scan instead of AgentsMdDiscoveryService.
+// The DI service does heavier work (repo analysis, AGENTS.md generation)
+// that we don't need for a simple MCP list response.
+// TODO(#443): Extract lightweight scan into a shared utility.
 // ---------------------------------------------------------------------------
 async function handleList(args: Record<string, unknown>) {
   const input = ListInput.parse(args);
   const baseDir = resolvePath(input.directory);
 
-  const results = await scanManifests(baseDir, {
-    recursive: input.recursive,
-    includeAgentsDirs: true,
+  const patterns = input.recursive
+    ? ['**/*.ossa.yaml', '**/*.ossa.yml', '**/.agents/*/manifest.ossa.yaml']
+    : ['*.ossa.yaml', '*.ossa.yml', '.agents/*/manifest.ossa.yaml'];
+
+  const files = await fg(patterns, {
+    cwd: baseDir,
     absolute: true,
+    ignore: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
   });
 
-  const agents: Array<Record<string, unknown>> = results.map((r) =>
-    r.error
-      ? { name: r.name, path: r.path, error: r.error }
-      : {
-          name: r.name,
-          version: r.version,
-          path: r.path,
-          kind: r.kind,
-          apiVersion: r.apiVersion,
-          description: r.description,
-        }
-  );
+  const agents: Array<Record<string, unknown>> = [];
+  for (const file of files) {
+    try {
+      const raw = fs.readFileSync(file, 'utf8');
+      const doc = yaml.load(raw) as Record<string, unknown>;
+      const meta = doc.metadata as Record<string, unknown> | undefined;
+      agents.push({
+        name: meta?.name || path.basename(path.dirname(file)),
+        version: meta?.version || 'unknown',
+        path: file,
+        kind: doc.kind || 'Agent',
+        apiVersion: doc.apiVersion || 'unknown',
+        description: meta?.description || '',
+      });
+    } catch {
+      agents.push({ name: path.basename(file), path: file, error: 'Failed to parse' });
+    }
+  }
 
   if (input.format === 'json') {
     return okResponse({ count: agents.length, agents });
   }
 
   if (input.format === 'detailed') {
-    const patterns = input.recursive
-      ? ['**/*.ossa.yaml', '**/*.ossa.yml', '**/.agents/*/manifest.ossa.yaml']
-      : ['*.ossa.yaml', '*.ossa.yml', '.agents/*/manifest.ossa.yaml'];
     return okResponse({
       count: agents.length,
       agents,
@@ -1404,7 +1102,7 @@ async function handleList(args: Record<string, unknown>) {
 
   // summary
   const summary = agents.map(
-    (a) => `${a.name}@${a.version} [${a.kind}] — ${a.path}`
+    (a) => `${a.name}@${a.version} [${a.kind}] — ${a.path}`,
   );
   return okResponse({ count: agents.length, agents: summary });
 }
@@ -1423,9 +1121,7 @@ async function handleInspect(args: Record<string, unknown>) {
 
   const meta = manifest.metadata;
   const spec = manifest.spec as Record<string, unknown> | undefined;
-  const extensions = (manifest as Record<string, unknown>).extensions as
-    | Record<string, unknown>
-    | undefined;
+  const extensions = (manifest as Record<string, unknown>).extensions as Record<string, unknown> | undefined;
 
   // Version analysis with semver
   const versionStr = (meta?.version as string) || '0.0.0';
@@ -1454,21 +1150,12 @@ async function handleInspect(args: Record<string, unknown>) {
     name: meta?.name,
     version: versionStr,
     version_analysis: parsed
-      ? {
-          major: parsed.major,
-          minor: parsed.minor,
-          patch: parsed.patch,
-          prerelease: parsed.prerelease,
-        }
+      ? { major: parsed.major, minor: parsed.minor, patch: parsed.patch, prerelease: parsed.prerelease }
       : null,
     kind: manifest.kind,
     apiVersion: manifest.apiVersion,
-    mesh_bindings: meta?.mesh_bindings || null,
     description: meta?.description,
-    role: spec?.role
-      ? String(spec.role).substring(0, 200) +
-        (String(spec.role).length > 200 ? '...' : '')
-      : null,
+    role: spec?.role ? String(spec.role).substring(0, 200) + (String(spec.role).length > 200 ? '...' : '') : null,
     llm: spec?.llm || null,
     tools: toolSummary,
     tool_count: specTools.length,
@@ -1490,570 +1177,587 @@ async function handleInspect(args: Record<string, unknown>) {
 // ---------------------------------------------------------------------------
 // ossa_convert — export to target platform format
 //
-// Most targets delegate to the adapter registry's toConfig() method (#442).
-// a2a/agent-card and claude-agent-sdk remain inline due to their complexity
-// (cross-platform card generation and SDK-specific config respectively).
+// HACK: These inline adapters produce lightweight JSON configs suitable for
+// MCP tool responses. The CLI export adapters (src/adapters/) generate full
+// multi-file project scaffolds (Dockerfile, docker-compose, Python packages,
+// etc.) which are too heavy for MCP responses. This is intentional divergence.
+// TODO(#442): Create a shared "config-only" export mode in the adapter classes
+// so both CLI and MCP can use the same code path.
 // ---------------------------------------------------------------------------
 async function handleConvert(args: Record<string, unknown>) {
   const input = ConvertInput.parse(args);
   const manifestPath = resolvePath(input.path);
   const manifest = await manifestRepo.load(manifestPath);
-  const meta = manifest.metadata || {
-    name: path.basename(manifestPath, '.ossa.yaml'),
-    version: '0.0.0',
-  };
+  const meta = manifest.metadata || { name: path.basename(manifestPath, '.ossa.yaml'), version: '0.0.0' };
 
   let converted: Record<string, unknown>;
   let filename: string;
 
-  // a2a/agent-card is special: complex cross-platform card stays inline
-  if (input.target === 'a2a' || input.target === 'agent-card') {
-    // Build comprehensive cross-platform agent card
-    // This is THE universal discovery format: MCP → OSSA → A2A
-    let cardResult: { success: boolean; card?: unknown; errors: string[] } = {
-      success: false,
-      errors: [],
-    };
-    try {
-      cardResult = agentCardGenerator.generate(manifest);
-    } catch {
-      // AgentCardGenerator may fail on some manifests — continue building the card
+  switch (input.target) {
+    case 'kagent': {
+      // Generate kagent.dev v1alpha2 format (actual CRD that kagent controller understands)
+      const kagentExtensions = (manifest as Record<string, unknown>).extensions as Record<string, unknown> | undefined;
+      const kagentExt = kagentExtensions?.kagent as Record<string, unknown> | undefined;
+      const kagentNs = (kagentExt?.kubernetes as Record<string, unknown>)?.namespace || 'kagent';
+      const a2aConfig = kagentExt?.a2aConfig as Record<string, unknown> | undefined;
+
+      // Map OSSA tools to kagent McpServer tool format
+      const ossaTools = (manifest.spec?.tools || []) as Array<Record<string, unknown>>;
+      const kagentTools = ossaTools.map((t) => {
+        if (t.type === 'mcp') {
+          return {
+            type: 'McpServer',
+            mcpServer: {
+              name: t.server || t.name || 'tool-server',
+              kind: 'RemoteMCPServer',
+              ...(t.toolNames ? { toolNames: t.toolNames } : {}),
+            },
+          };
+        }
+        return {
+          type: 'McpServer',
+          mcpServer: {
+            name: t.name || 'tool-server',
+            kind: 'RemoteMCPServer',
+          },
+        };
+      });
+
+      // Build the v1alpha2 Agent CRD
+      converted = {
+        apiVersion: 'kagent.dev/v1alpha2',
+        kind: 'Agent',
+        metadata: {
+          name: meta.name,
+          namespace: kagentNs,
+          labels: {
+            'ossa.dev/name': meta.name,
+            'ossa.dev/version': meta.version || '0.0.0',
+            'app.kubernetes.io/managed-by': 'ossa',
+          },
+        },
+        spec: {
+          description: meta.description || '',
+          type: 'Declarative',
+          declarative: {
+            modelConfig: `${meta.name}-model-config`,
+            systemMessage: manifest.spec?.role || '',
+            tools: kagentTools,
+            ...(a2aConfig ? { a2aConfig } : {}),
+          },
+        },
+      };
+
+      // Also generate the ModelConfig companion resource
+      const modelConfig = {
+        apiVersion: 'kagent.dev/v1alpha2',
+        kind: 'ModelConfig',
+        metadata: {
+          name: `${meta.name}-model-config`,
+          namespace: kagentNs,
+        },
+        spec: {
+          provider: manifest.spec?.llm?.provider || 'openai',
+          model: manifest.spec?.llm?.model || 'gpt-4',
+          ...(manifest.spec?.llm?.temperature != null ? { temperature: manifest.spec.llm.temperature } : {}),
+          ...(manifest.spec?.llm?.maxTokens != null ? { maxTokens: manifest.spec.llm.maxTokens } : {}),
+        },
+      };
+
+      // Return both resources in a multi-document YAML
+      converted = {
+        _ossa_multi_resource: true,
+        resources: [converted, modelConfig],
+        agent: converted,
+        modelConfig,
+      };
+      filename = `${meta.name}.kagent.yaml`;
+      break;
     }
 
-    const tools = (manifest.spec?.tools || []) as Array<
-      Record<string, unknown>
-    >;
-    const role = manifest.spec?.role || '';
-    const llm = manifest.spec?.llm as Record<string, unknown> | undefined;
-    const provider = (llm?.provider as string) || 'openai';
-    const model = (llm?.model as string) || 'gpt-4';
-    const description = meta.description || '';
+    case 'docker': {
+      converted = {
+        version: '3.8',
+        services: {
+          [meta.name]: {
+            image: `ossa/${meta.name}:${meta.version || 'latest'}`,
+            environment: {
+              AGENT_NAME: meta.name,
+              LLM_PROVIDER: manifest.spec?.llm?.provider || 'openai',
+              LLM_MODEL: manifest.spec?.llm?.model || 'gpt-4',
+            },
+            labels: {
+              'ossa.name': meta.name,
+              'ossa.version': meta.version || '0.0.0',
+              'ossa.kind': manifest.kind || 'Agent',
+            },
+          },
+        },
+      };
+      filename = `docker-compose.${meta.name}.yml`;
+      break;
+    }
 
-    // Build universal tool schemas for cross-platform use
-    const universalTools = tools.map((t) => ({
-      name: t.name || 'unnamed',
-      description: (t.description as string) || '',
-      inputSchema: (t.inputSchema ||
-        t.input_schema ||
-        t.parameters || { type: 'object', properties: {} }) as Record<
-        string,
-        unknown
-      >,
-      ...(t.outputSchema || t.output_schema
-        ? { outputSchema: t.outputSchema || t.output_schema }
-        : {}),
-      ...(t.type ? { type: t.type } : {}),
-      ...(t.server ? { mcpServer: t.server } : {}),
-    }));
+    case 'langchain': {
+      converted = {
+        _type: 'agent',
+        name: meta.name,
+        description: meta.description || '',
+        llm: {
+          _type: manifest.spec?.llm?.provider === 'anthropic' ? 'ChatAnthropic' : 'ChatOpenAI',
+          model_name: manifest.spec?.llm?.model || 'gpt-4',
+        },
+        system_message: manifest.spec?.role || '',
+        tools: (manifest.spec?.tools || []).map((t: Record<string, unknown>) => ({
+          name: t.name,
+          type: t.type,
+        })),
+      };
+      filename = `${meta.name}.langchain.json`;
+      break;
+    }
 
-    // A2A skills from tools (Google A2A agent card format)
-    const a2aSkills = universalTools.map((t) => ({
-      id: t.name,
-      name: t.name,
-      description: t.description,
-      ...(t.inputSchema ? { inputModes: ['application/json'] } : {}),
-      outputModes: ['application/json', 'text/plain'],
-    }));
-
-    // MCP tool format (Model Context Protocol)
-    const mcpTools = universalTools.map((t) => ({
-      name: t.name,
-      description: t.description,
-      inputSchema: t.inputSchema,
-    }));
-
-    // OpenAI function_calling format
-    const openaiTools = universalTools.map((t) => ({
-      type: 'function' as const,
-      function: {
-        name: t.name,
-        description: t.description,
-        parameters: t.inputSchema,
-      },
-    }));
-
-    // Anthropic tool_use format
-    const anthropicTools = universalTools.map((t) => ({
-      name: t.name,
-      description: t.description,
-      input_schema: t.inputSchema,
-    }));
-
-    // LangChain StructuredTool format
-    const langchainTools = universalTools.map((t) => ({
-      _type: 'structured_tool',
-      name: t.name,
-      description: t.description,
-      args_schema: t.inputSchema,
-    }));
-
-    // CrewAI tool format
-    const crewaiTools = universalTools.map((t) => ({
-      name: t.name,
-      description: t.description,
-      ...(t.inputSchema ? { args_schema: t.inputSchema } : {}),
-    }));
-
-    // LangFlow component format
-    const langflowComponent = {
-      display_name: meta.name,
-      description,
-      documentation: `https://openstandardagents.org/agents/${meta.name}`,
-      template: {
-        system_message: { type: 'str', value: role },
-        model_name: { type: 'str', value: model },
-        provider: { type: 'str', value: provider },
-        tools: { type: 'list', value: universalTools.map((t) => t.name) },
-      },
-    };
-
-    // AutoGen agent format
-    const autogenConfig = {
-      name: meta.name,
-      description,
-      system_message: role,
-      llm_config: {
-        config_list: [
+    case 'crewai': {
+      converted = {
+        agents: [
           {
-            model,
-            api_type: provider === 'anthropic' ? 'anthropic' : 'openai',
+            role: meta.name,
+            goal: meta.description || '',
+            backstory: manifest.spec?.role || '',
+            llm: manifest.spec?.llm?.model || 'gpt-4',
+            tools: (manifest.spec?.tools || []).map((t: Record<string, unknown>) => t.name),
           },
         ],
-      },
-      ...(universalTools.length > 0
-        ? {
-            tools: universalTools.map((t) => ({
-              name: t.name,
-              description: t.description,
-            })),
-          }
-        : {}),
-    };
+      };
+      filename = `${meta.name}.crewai.yaml`;
+      break;
+    }
 
-    // Semantic Kernel agent format
-    const semanticKernelConfig = {
-      name: meta.name,
-      description,
-      instructions: role,
-      model: { id: model, provider },
-      plugins: universalTools.map((t) => ({
+    case 'gitlab-duo': {
+      converted = {
+        name: meta.name,
+        description: meta.description || '',
+        system_prompt: manifest.spec?.role || '',
+        model: manifest.spec?.llm?.model || 'claude-sonnet-4-20250514',
+        tools: (manifest.spec?.tools || []).map((t: Record<string, unknown>) => ({
+          name: t.name,
+        })),
+      };
+      filename = `${meta.name}.duo-agent.yaml`;
+      break;
+    }
+
+    case 'anthropic': {
+      converted = {
+        name: meta.name,
+        description: meta.description || '',
+        model: manifest.spec?.llm?.model || 'claude-sonnet-4-20250514',
+        system: manifest.spec?.role || '',
+        tools: (manifest.spec?.tools || []).map((t: Record<string, unknown>) => ({
+          name: t.name,
+          description: '',
+          input_schema: { type: 'object', properties: {} },
+        })),
+        max_tokens: 4096,
+      };
+      filename = `${meta.name}.anthropic.json`;
+      break;
+    }
+
+    case 'openai': {
+      // OpenAI Assistants / function_calling format
+      const oaiTools = (manifest.spec?.tools || []) as Array<Record<string, unknown>>;
+      converted = {
+        model: manifest.spec?.llm?.model || 'gpt-4',
+        name: meta.name,
+        description: meta.description || '',
+        instructions: manifest.spec?.role || '',
+        tools: oaiTools.map((t) => ({
+          type: 'function',
+          function: {
+            name: t.name || 'unnamed',
+            description: (t.description as string) || '',
+            parameters: t.inputSchema || t.input_schema || t.parameters || { type: 'object', properties: {} },
+          },
+        })),
+        metadata: {
+          ossa_version: manifest.apiVersion || 'ossa/v0.4',
+          ossa_name: meta.name,
+        },
+      };
+      filename = `${meta.name}.openai.json`;
+      break;
+    }
+
+    case 'autogen': {
+      // Microsoft AutoGen agent config
+      const autogenTools = (manifest.spec?.tools || []) as Array<Record<string, unknown>>;
+      converted = {
+        name: meta.name,
+        description: meta.description || '',
+        system_message: manifest.spec?.role || '',
+        llm_config: {
+          config_list: [
+            {
+              model: manifest.spec?.llm?.model || 'gpt-4',
+              api_type: manifest.spec?.llm?.provider === 'anthropic' ? 'anthropic' : 'openai',
+            },
+          ],
+          ...(manifest.spec?.llm?.temperature != null ? { temperature: manifest.spec.llm.temperature } : {}),
+          ...(manifest.spec?.llm?.maxTokens != null ? { max_tokens: manifest.spec.llm.maxTokens } : {}),
+        },
+        ...(autogenTools.length > 0
+          ? {
+              tools: autogenTools.map((t) => ({
+                name: t.name || 'unnamed',
+                description: (t.description as string) || '',
+                ...(t.inputSchema || t.input_schema ? { parameters: t.inputSchema || t.input_schema } : {}),
+              })),
+            }
+          : {}),
+        metadata: {
+          ossa_version: manifest.apiVersion || 'ossa/v0.4',
+        },
+      };
+      filename = `${meta.name}.autogen.json`;
+      break;
+    }
+
+    case 'semantic-kernel': {
+      // Microsoft Semantic Kernel agent config
+      const skTools = (manifest.spec?.tools || []) as Array<Record<string, unknown>>;
+      converted = {
+        name: meta.name,
+        description: meta.description || '',
+        instructions: manifest.spec?.role || '',
+        execution_settings: {
+          default: {
+            model_id: manifest.spec?.llm?.model || 'gpt-4',
+            service_id: manifest.spec?.llm?.provider || 'openai',
+            ...(manifest.spec?.llm?.temperature != null ? { temperature: manifest.spec.llm.temperature } : {}),
+            ...(manifest.spec?.llm?.maxTokens != null ? { max_tokens: manifest.spec.llm.maxTokens } : {}),
+          },
+        },
+        plugins: skTools.map((t) => ({
+          name: t.name || 'unnamed',
+          description: (t.description as string) || '',
+          parameters: t.inputSchema || t.input_schema || t.parameters || { type: 'object', properties: {} },
+        })),
+        metadata: {
+          ossa_version: manifest.apiVersion || 'ossa/v0.4',
+        },
+      };
+      filename = `${meta.name}.semantic-kernel.json`;
+      break;
+    }
+
+    case 'a2a':
+    case 'agent-card': {
+      // Build comprehensive cross-platform agent card
+      // This is THE universal discovery format: MCP → OSSA → A2A
+      let cardResult: { success: boolean; card?: unknown; errors: string[] } = { success: false, errors: [] };
+      try {
+        cardResult = agentCardGenerator.generate(manifest);
+      } catch {
+        // AgentCardGenerator may fail on some manifests — continue building the card
+      }
+
+      const tools = (manifest.spec?.tools || []) as Array<Record<string, unknown>>;
+      const role = manifest.spec?.role || '';
+      const llm = manifest.spec?.llm as Record<string, unknown> | undefined;
+      const provider = (llm?.provider as string) || 'openai';
+      const model = (llm?.model as string) || 'gpt-4';
+      const description = meta.description || '';
+
+      // Build universal tool schemas for cross-platform use
+      const universalTools = tools.map((t) => ({
+        name: t.name || 'unnamed',
+        description: (t.description as string) || '',
+        inputSchema: (t.inputSchema || t.input_schema || t.parameters || { type: 'object', properties: {} }) as Record<string, unknown>,
+        ...(t.outputSchema || t.output_schema ? { outputSchema: t.outputSchema || t.output_schema } : {}),
+        ...(t.type ? { type: t.type } : {}),
+        ...(t.server ? { mcpServer: t.server } : {}),
+      }));
+
+      // A2A skills from tools (Google A2A agent card format)
+      const a2aSkills = universalTools.map((t) => ({
+        id: t.name,
         name: t.name,
         description: t.description,
-        parameters: t.inputSchema,
-      })),
-    };
+        ...(t.inputSchema ? { inputModes: ['application/json'] } : {}),
+        outputModes: ['application/json', 'text/plain'],
+      }));
 
-    // kagent.dev CRD reference (not full CRD — use target: kagent for that)
-    const kagentRef = {
-      apiVersion: 'kagent.dev/v1alpha2',
-      kind: 'Agent',
-      metadata: { name: meta.name },
-      spec: {
-        type: 'Declarative',
-        declarative: {
-          modelConfig: `${meta.name}-model-config`,
-          systemMessage: role,
+      // MCP tool format (Model Context Protocol)
+      const mcpTools = universalTools.map((t) => ({
+        name: t.name,
+        description: t.description,
+        inputSchema: t.inputSchema,
+      }));
+
+      // OpenAI function_calling format
+      const openaiTools = universalTools.map((t) => ({
+        type: 'function' as const,
+        function: {
+          name: t.name,
+          description: t.description,
+          parameters: t.inputSchema,
         },
-      },
-    };
+      }));
 
-    // Extensions from OSSA manifest
-    const extensions = (manifest as Record<string, unknown>).extensions as
-      | Record<string, unknown>
-      | undefined;
-    const a2aExt = extensions?.a2a as Record<string, unknown> | undefined;
-    const mcpExt = extensions?.mcp as Record<string, unknown> | undefined;
+      // Anthropic tool_use format
+      const anthropicTools = universalTools.map((t) => ({
+        name: t.name,
+        description: t.description,
+        input_schema: t.inputSchema,
+      }));
 
-    // Build the comprehensive agent card
-    converted = {
-      // --- Core identity (OSSA source of truth) ---
-      name: meta.name,
-      version: meta.version || '1.0.0',
-      description,
-      url: `https://openstandardagents.org/agents/${meta.name}`,
-      ossaVersion: manifest.apiVersion || 'ossa/v0.4',
-      kind: manifest.kind || 'Agent',
+      // LangChain StructuredTool format
+      const langchainTools = universalTools.map((t) => ({
+        _type: 'structured_tool',
+        name: t.name,
+        description: t.description,
+        args_schema: t.inputSchema,
+      }));
 
-      // --- The OSSA contract (identity + capabilities + constraints) ---
-      ossa: {
-        role,
-        capabilities: (manifest.spec?.capabilities || []) as unknown[],
-        ...(manifest.spec?.autonomy
-          ? { autonomy: manifest.spec.autonomy }
-          : {}),
-        ...(manifest.spec?.safety ? { safety: manifest.spec.safety } : {}),
-        ...(manifest.spec?.observability
-          ? { observability: manifest.spec.observability }
-          : {}),
-        ...((manifest.spec as Record<string, unknown>)?.access
-          ? { access: (manifest.spec as Record<string, unknown>).access }
-          : {}),
-      },
+      // CrewAI tool format
+      const crewaiTools = universalTools.map((t) => ({
+        name: t.name,
+        description: t.description,
+        ...(t.inputSchema ? { args_schema: t.inputSchema } : {}),
+      }));
 
-      // --- A2A discovery (Google Agent-to-Agent protocol) ---
-      capabilities: {
-        streaming: true,
-        pushNotifications: false,
-        stateTransitionHistory: true,
-      },
-      skills: a2aSkills,
-      defaultInputModes: ['application/json', 'text/plain'],
-      defaultOutputModes: ['application/json', 'text/plain'],
-
-      // --- MCP tools (Model Context Protocol) ---
-      mcp: {
-        tools: mcpTools,
-        ...(mcpExt?.servers ? { servers: mcpExt.servers } : {}),
-        ...(mcpExt?.resources ? { resources: mcpExt.resources } : {}),
-      },
-
-      // --- Platform adapters (use these directly in your framework) ---
-      // Each adapter includes: sdk (npm/pip packages), config (ready-to-use), usage (code snippet)
-      adapters: {
-        openai: {
-          sdk: {
-            npm: 'openai',
-            pip: 'openai',
-            docs: 'https://platform.openai.com/docs/api-reference',
-          },
-          config: {
-            model,
-            messages: [{ role: 'system', content: role }],
-            tools: openaiTools,
-            tool_choice: 'auto',
-          },
-          usage: `import OpenAI from 'openai';\nconst client = new OpenAI();\nconst response = await client.chat.completions.create(config);`,
+      // LangFlow component format
+      const langflowComponent = {
+        display_name: meta.name,
+        description,
+        documentation: `https://openstandardagents.org/agents/${meta.name}`,
+        template: {
+          system_message: { type: 'str', value: role },
+          model_name: { type: 'str', value: model },
+          provider: { type: 'str', value: provider },
+          tools: { type: 'list', value: universalTools.map((t) => t.name) },
         },
-        anthropic: {
-          sdk: {
-            npm: '@anthropic-ai/sdk',
-            pip: 'anthropic',
-            docs: 'https://docs.anthropic.com/en/api',
-          },
-          config: {
-            model:
-              provider === 'anthropic' ? model : 'claude-sonnet-4-20250514',
-            system: role,
-            tools: anthropicTools,
-            max_tokens: (llm?.maxTokens as number) || 4096,
-          },
-          usage: `import Anthropic from '@anthropic-ai/sdk';\nconst client = new Anthropic();\nconst response = await client.messages.create(config);`,
+      };
+
+      // AutoGen agent format
+      const autogenConfig = {
+        name: meta.name,
+        description,
+        system_message: role,
+        llm_config: {
+          config_list: [{ model, api_type: provider === 'anthropic' ? 'anthropic' : 'openai' }],
         },
-        google_genai: {
-          sdk: {
-            npm: '@google/generative-ai',
-            pip: 'google-generativeai',
-            docs: 'https://ai.google.dev/docs',
+        ...(universalTools.length > 0 ? { tools: universalTools.map((t) => ({ name: t.name, description: t.description })) } : {}),
+      };
+
+      // Semantic Kernel agent format
+      const semanticKernelConfig = {
+        name: meta.name,
+        description,
+        instructions: role,
+        model: { id: model, provider },
+        plugins: universalTools.map((t) => ({
+          name: t.name,
+          description: t.description,
+          parameters: t.inputSchema,
+        })),
+      };
+
+      // kagent.dev CRD reference (not full CRD — use target: kagent for that)
+      const kagentRef = {
+        apiVersion: 'kagent.dev/v1alpha2',
+        kind: 'Agent',
+        metadata: { name: meta.name },
+        spec: {
+          type: 'Declarative',
+          declarative: {
+            modelConfig: `${meta.name}-model-config`,
+            systemMessage: role,
           },
-          config: {
-            model: 'gemini-2.0-flash',
-            systemInstruction: role,
-            tools: [
-              { functionDeclarations: openaiTools.map((t) => t.function) },
-            ],
-          },
-          usage: `import { GoogleGenerativeAI } from '@google/generative-ai';\nconst genAI = new GoogleGenerativeAI(apiKey);\nconst model = genAI.getGenerativeModel(config);`,
         },
-        langchain: {
-          sdk: {
-            npm: [
-              'langchain',
-              '@langchain/core',
-              '@langchain/openai',
-              '@langchain/anthropic',
-            ],
-            pip: ['langchain', 'langchain-openai', 'langchain-anthropic'],
-            docs: 'https://js.langchain.com/docs/',
-          },
-          config: {
-            _type: 'agent',
-            name: meta.name,
-            llm: {
-              _type: provider === 'anthropic' ? 'ChatAnthropic' : 'ChatOpenAI',
-              model_name: model,
+      };
+
+      // Extensions from OSSA manifest
+      const extensions = (manifest as Record<string, unknown>).extensions as Record<string, unknown> | undefined;
+      const a2aExt = extensions?.a2a as Record<string, unknown> | undefined;
+      const mcpExt = extensions?.mcp as Record<string, unknown> | undefined;
+
+      // Build the comprehensive agent card
+      converted = {
+        // --- Core identity (OSSA source of truth) ---
+        name: meta.name,
+        version: meta.version || '1.0.0',
+        description,
+        url: `https://openstandardagents.org/agents/${meta.name}`,
+        ossaVersion: manifest.apiVersion || 'ossa/v0.4',
+        kind: manifest.kind || 'Agent',
+
+        // --- The OSSA contract (identity + capabilities + constraints) ---
+        ossa: {
+          role,
+          capabilities: (manifest.spec?.capabilities || []) as unknown[],
+          ...(manifest.spec?.autonomy ? { autonomy: manifest.spec.autonomy } : {}),
+          ...(manifest.spec?.safety ? { safety: manifest.spec.safety } : {}),
+          ...(manifest.spec?.observability ? { observability: manifest.spec.observability } : {}),
+          ...((manifest.spec as Record<string, unknown>)?.access ? { access: (manifest.spec as Record<string, unknown>).access } : {}),
+        },
+
+        // --- A2A discovery (Google Agent-to-Agent protocol) ---
+        capabilities: {
+          streaming: true,
+          pushNotifications: false,
+          stateTransitionHistory: true,
+        },
+        skills: a2aSkills,
+        defaultInputModes: ['application/json', 'text/plain'],
+        defaultOutputModes: ['application/json', 'text/plain'],
+
+        // --- MCP tools (Model Context Protocol) ---
+        mcp: {
+          tools: mcpTools,
+          ...(mcpExt?.servers ? { servers: mcpExt.servers } : {}),
+          ...(mcpExt?.resources ? { resources: mcpExt.resources } : {}),
+        },
+
+        // --- Platform adapters (use these directly in your framework) ---
+        // Each adapter includes: sdk (npm/pip packages), config (ready-to-use), usage (code snippet)
+        adapters: {
+          openai: {
+            sdk: { npm: 'openai', pip: 'openai', docs: 'https://platform.openai.com/docs/api-reference' },
+            config: {
+              model,
+              messages: [{ role: 'system', content: role }],
+              tools: openaiTools,
+              tool_choice: 'auto',
             },
-            system_message: role,
-            tools: langchainTools,
+            usage: `import OpenAI from 'openai';\nconst client = new OpenAI();\nconst response = await client.chat.completions.create(config);`,
           },
-          usage: `from langchain.agents import create_tool_calling_agent\nagent = create_tool_calling_agent(llm, tools, prompt)`,
-        },
-        langflow: {
-          sdk: { pip: 'langflow', docs: 'https://docs.langflow.org/' },
-          config: langflowComponent,
-          usage:
-            'Import as custom component in LangFlow UI or use langflow CLI',
-        },
-        crewai: {
-          sdk: { pip: 'crewai', docs: 'https://docs.crewai.com/' },
-          config: {
-            agents: [
-              {
+          anthropic: {
+            sdk: { npm: '@anthropic-ai/sdk', pip: 'anthropic', docs: 'https://docs.anthropic.com/en/api' },
+            config: {
+              model: provider === 'anthropic' ? model : 'claude-sonnet-4-20250514',
+              system: role,
+              tools: anthropicTools,
+              max_tokens: (llm?.maxTokens as number) || 4096,
+            },
+            usage: `import Anthropic from '@anthropic-ai/sdk';\nconst client = new Anthropic();\nconst response = await client.messages.create(config);`,
+          },
+          google_genai: {
+            sdk: { npm: '@google/generative-ai', pip: 'google-generativeai', docs: 'https://ai.google.dev/docs' },
+            config: {
+              model: 'gemini-2.0-flash',
+              systemInstruction: role,
+              tools: [{ functionDeclarations: openaiTools.map((t) => t.function) }],
+            },
+            usage: `import { GoogleGenerativeAI } from '@google/generative-ai';\nconst genAI = new GoogleGenerativeAI(apiKey);\nconst model = genAI.getGenerativeModel(config);`,
+          },
+          langchain: {
+            sdk: {
+              npm: ['langchain', '@langchain/core', '@langchain/openai', '@langchain/anthropic'],
+              pip: ['langchain', 'langchain-openai', 'langchain-anthropic'],
+              docs: 'https://js.langchain.com/docs/',
+            },
+            config: {
+              _type: 'agent',
+              name: meta.name,
+              llm: {
+                _type: provider === 'anthropic' ? 'ChatAnthropic' : 'ChatOpenAI',
+                model_name: model,
+              },
+              system_message: role,
+              tools: langchainTools,
+            },
+            usage: `from langchain.agents import create_tool_calling_agent\nagent = create_tool_calling_agent(llm, tools, prompt)`,
+          },
+          langflow: {
+            sdk: { pip: 'langflow', docs: 'https://docs.langflow.org/' },
+            config: langflowComponent,
+            usage: 'Import as custom component in LangFlow UI or use langflow CLI',
+          },
+          crewai: {
+            sdk: { pip: 'crewai', docs: 'https://docs.crewai.com/' },
+            config: {
+              agents: [{
                 role: meta.name,
                 goal: description,
                 backstory: role,
                 llm: model,
                 tools: crewaiTools,
-              },
-            ],
-          },
-          usage: `from crewai import Agent\nagent = Agent(role=config['role'], goal=config['goal'], backstory=config['backstory'])`,
-        },
-        autogen: {
-          sdk: {
-            pip: 'autogen-agentchat',
-            docs: 'https://microsoft.github.io/autogen/',
-          },
-          config: autogenConfig,
-          usage: `from autogen import ConversableAgent\nagent = ConversableAgent(name=config['name'], system_message=config['system_message'], llm_config=config['llm_config'])`,
-        },
-        semantic_kernel: {
-          sdk: {
-            npm: 'semantic-kernel',
-            pip: 'semantic-kernel',
-            docs: 'https://learn.microsoft.com/en-us/semantic-kernel/',
-          },
-          config: semanticKernelConfig,
-          usage: `import semantic_kernel as sk\nkernel = sk.Kernel()\nkernel.add_chat_service("default", OpenAIChatCompletion(config['execution_settings']['default']['model_id']))`,
-        },
-        llamaindex: {
-          sdk: {
-            npm: 'llamaindex',
-            pip: 'llama-index',
-            docs: 'https://docs.llamaindex.ai/',
-          },
-          config: {
-            name: meta.name,
-            description,
-            system_prompt: role,
-            llm: { model, provider },
-            tools: universalTools.map((t) => ({
-              name: t.name,
-              description: t.description,
-              fn_schema: t.inputSchema,
-            })),
-          },
-          usage: `from llama_index.agent.openai import OpenAIAgent\nagent = OpenAIAgent.from_tools(tools, system_prompt=config['system_prompt'])`,
-        },
-        dspy: {
-          sdk: { pip: 'dspy', docs: 'https://dspy.ai/' },
-          config: {
-            name: meta.name,
-            instructions: role,
-            lm: `${provider}/${model}`,
-            tools: universalTools.map((t) => t.name),
-          },
-          usage: `import dspy\nlm = dspy.LM('${provider}/${model}')\ndspy.configure(lm=lm)`,
-        },
-        kagent: {
-          sdk: { docs: 'https://kagent.dev/docs' },
-          config: kagentRef,
-          usage:
-            'kubectl apply -f <converted>.kagent.yaml  # Use target: kagent for full CRD output',
-        },
-        gitlab_duo: {
-          sdk: { docs: 'https://docs.gitlab.com/ee/user/gitlab_duo/' },
-          config: {
-            name: meta.name,
-            description,
-            system_prompt: role,
-            model:
-              provider === 'anthropic' ? model : 'claude-sonnet-4-20250514',
-            tools: universalTools.map((t) => ({ name: t.name })),
-          },
-          usage: 'Place in .gitlab/duo/agents/ directory',
-        },
-        claude_agent_sdk: {
-          sdk: {
-            npm: '@anthropic-ai/claude-agent-sdk',
-            pip: 'claude-agent-sdk',
-            go: 'github.com/M1n9X/claude-agent-sdk-go',
-            rust: 'claude_agent',
-            docs: 'https://docs.claude.com/en/api/agent-sdk/overview',
-          },
-          config: {
-            systemPrompt: role,
-            model:
-              provider === 'anthropic' ? model : 'claude-sonnet-4-20250514',
-            allowedTools: universalTools.map((t) => t.name),
-          },
-          usage: `import { query } from '@anthropic-ai/claude-agent-sdk';\nconst conversation = query({ prompt, options: config });\nfor await (const msg of conversation) { /* handle */ }`,
-        },
-      },
-
-      // --- A2A protocol details (if defined in OSSA extensions) ---
-      ...(a2aExt
-        ? {
-            a2a: {
-              ...(a2aExt.protocol ? { protocol: a2aExt.protocol } : {}),
-              ...(a2aExt.endpoints ? { endpoints: a2aExt.endpoints } : {}),
-              ...(a2aExt.routing ? { routing: a2aExt.routing } : {}),
-              ...(a2aExt.delegation ? { delegation: a2aExt.delegation } : {}),
+              }],
             },
-          }
-        : {}),
+            usage: `from crewai import Agent\nagent = Agent(role=config['role'], goal=config['goal'], backstory=config['backstory'])`,
+          },
+          autogen: {
+            sdk: { pip: 'autogen-agentchat', docs: 'https://microsoft.github.io/autogen/' },
+            config: autogenConfig,
+            usage: `from autogen import ConversableAgent\nagent = ConversableAgent(name=config['name'], system_message=config['system_message'], llm_config=config['llm_config'])`,
+          },
+          semantic_kernel: {
+            sdk: { npm: 'semantic-kernel', pip: 'semantic-kernel', docs: 'https://learn.microsoft.com/en-us/semantic-kernel/' },
+            config: semanticKernelConfig,
+            usage: `import semantic_kernel as sk\nkernel = sk.Kernel()\nkernel.add_chat_service("default", OpenAIChatCompletion(config['execution_settings']['default']['model_id']))`,
+          },
+          llamaindex: {
+            sdk: { npm: 'llamaindex', pip: 'llama-index', docs: 'https://docs.llamaindex.ai/' },
+            config: {
+              name: meta.name,
+              description,
+              system_prompt: role,
+              llm: { model, provider },
+              tools: universalTools.map((t) => ({ name: t.name, description: t.description, fn_schema: t.inputSchema })),
+            },
+            usage: `from llama_index.agent.openai import OpenAIAgent\nagent = OpenAIAgent.from_tools(tools, system_prompt=config['system_prompt'])`,
+          },
+          dspy: {
+            sdk: { pip: 'dspy', docs: 'https://dspy.ai/' },
+            config: {
+              name: meta.name,
+              instructions: role,
+              lm: `${provider}/${model}`,
+              tools: universalTools.map((t) => t.name),
+            },
+            usage: `import dspy\nlm = dspy.LM('${provider}/${model}')\ndspy.configure(lm=lm)`,
+          },
+          kagent: {
+            sdk: { docs: 'https://kagent.dev/docs' },
+            config: kagentRef,
+            usage: 'kubectl apply -f <converted>.kagent.yaml  # Use target: kagent for full CRD output',
+          },
+          gitlab_duo: {
+            sdk: { docs: 'https://docs.gitlab.com/ee/user/gitlab_duo/' },
+            config: {
+              name: meta.name,
+              description,
+              system_prompt: role,
+              model: provider === 'anthropic' ? model : 'claude-sonnet-4-20250514',
+              tools: universalTools.map((t) => ({ name: t.name })),
+            },
+            usage: 'Place in .gitlab/duo/agents/ directory',
+          },
+        },
 
-      // --- Full OSSA agent card (from generator) ---
-      ...(cardResult.success && cardResult.card
-        ? {
-            _agentCard: cardResult.card as unknown as Record<string, unknown>,
-          }
-        : {}),
-    };
-    filename = 'agent-card.json';
-  } else if (input.target === 'claude-agent-sdk') {
-    // Generate Claude Agent SDK application config (TypeScript + Python)
-    const sdkTools = (manifest.spec?.tools || []) as Array<
-      Record<string, unknown>
-    >;
-    const sdkLlm = manifest.spec?.llm as Record<string, unknown> | undefined;
-    const sdkModel =
-      (typeof sdkLlm === 'string' ? sdkLlm : (sdkLlm?.model as string)) ||
-      'claude-sonnet-4-20250514';
-    const sdkRole = manifest.spec?.role || '';
-    const sdkCaps = (
-      (manifest.spec?.capabilities || []) as Array<
-        string | Record<string, unknown>
-      >
-    ).map((c) =>
-      typeof c === 'string' ? c : (c as Record<string, unknown>).name || ''
-    );
+        // --- A2A protocol details (if defined in OSSA extensions) ---
+        ...(a2aExt ? {
+          a2a: {
+            ...(a2aExt.protocol ? { protocol: a2aExt.protocol } : {}),
+            ...(a2aExt.endpoints ? { endpoints: a2aExt.endpoints } : {}),
+            ...(a2aExt.routing ? { routing: a2aExt.routing } : {}),
+            ...(a2aExt.delegation ? { delegation: a2aExt.delegation } : {}),
+          },
+        } : {}),
 
-    // Map capabilities to Claude Agent SDK built-in tools
-    const builtInTools: string[] = [];
-    const capToolMap: Record<string, string[]> = {
-      'web-search': ['WebSearch', 'WebFetch'],
-      'file-access': ['Read', 'Write', 'Edit', 'Glob', 'Grep'],
-      'file-read': ['Read', 'Glob', 'Grep'],
-      'file-write': ['Read', 'Write', 'Edit'],
-      'code-execution': ['Bash'],
-      shell: ['Bash'],
-      bash: ['Bash'],
-      'code-analysis': ['Read', 'Glob', 'Grep'],
-      explore: ['Read', 'Glob', 'Grep'],
-    };
-    for (const cap of sdkCaps) {
-      const mapped = capToolMap[cap as string];
-      if (mapped) {
-        for (const t of mapped) {
-          if (!builtInTools.includes(t)) builtInTools.push(t);
-        }
-      }
+        // --- Full OSSA agent card (from generator) ---
+        ...(cardResult.success && cardResult.card ? {
+          _agentCard: cardResult.card as unknown as Record<string, unknown>,
+        } : {}),
+      };
+      filename = 'agent-card.json';
+      break;
     }
 
-    // Map MCP servers from tools
-    const mcpServers: Record<string, Record<string, unknown>> = {};
-    const customTools: Array<Record<string, unknown>> = [];
-    for (const tool of sdkTools) {
-      if (tool.type === 'mcp' && tool.server) {
-        const sname = String(tool.server);
-        if (!mcpServers[sname]) {
-          mcpServers[sname] = {
-            type: (tool.transport as string) || 'stdio',
-            ...(tool.command ? { command: tool.command } : {}),
-            ...(tool.args ? { args: tool.args } : {}),
-            ...(tool.url ? { url: tool.url } : {}),
-          };
-        }
-      } else {
-        customTools.push({
-          name: tool.name || 'unnamed',
-          description: (tool.description as string) || '',
-          inputSchema: tool.inputSchema ||
-            tool.input_schema ||
-            tool.parameters || { type: 'object', properties: {} },
-        });
-      }
-    }
-
-    // Map autonomy to permission mode
-    const sdkAutonomy = manifest.spec?.autonomy as
-      | Record<string, unknown>
-      | undefined;
-    let permissionMode = 'default';
-    if (sdkAutonomy) {
-      const level = (sdkAutonomy.level as string) || '';
-      if (level === 'full' || level === 'autonomous')
-        permissionMode = 'bypassPermissions';
-      else if (level === 'supervised') permissionMode = 'acceptEdits';
-      else if (level === 'planning') permissionMode = 'planMode';
-    }
-
-    // Resolve Claude model name
-    let claudeModel = 'claude-sonnet-4-20250514';
-    if (sdkModel.includes('opus')) claudeModel = 'claude-opus-4-20250514';
-    else if (sdkModel.includes('haiku'))
-      claudeModel = 'claude-haiku-4-5-20251001';
-    else if (sdkModel.includes('sonnet'))
-      claudeModel = 'claude-sonnet-4-20250514';
-    else if (sdkModel.includes('claude')) claudeModel = sdkModel;
-
-    converted = {
-      name: meta.name,
-      version: meta.version || '1.0.0',
-      description: meta.description || '',
-      ossaVersion: manifest.apiVersion || 'ossa/v0.4',
-
-      // Claude Agent SDK configuration
-      sdk: {
-        typescript: {
-          package: '@anthropic-ai/claude-agent-sdk',
-          install: 'npm install @anthropic-ai/claude-agent-sdk',
-          docs: 'https://docs.claude.com/en/api/agent-sdk/typescript',
-        },
-        python: {
-          package: 'claude-agent-sdk',
-          install: 'pip install claude-agent-sdk',
-          docs: 'https://docs.claude.com/en/api/agent-sdk/python',
-        },
-        go: {
-          package: 'github.com/M1n9X/claude-agent-sdk-go',
-          install: 'go get github.com/M1n9X/claude-agent-sdk-go',
-          docs: 'https://github.com/M1n9X/claude-agent-sdk-go',
-          community: true,
-        },
-        rust: {
-          package: 'claude_agent',
-          install: 'cargo add claude_agent',
-          docs: 'https://crates.io/crates/claude_agent',
-          community: true,
-        },
-      },
-
-      // Agent options (ready to use in SDK)
-      options: {
-        systemPrompt: sdkRole,
-        model: claudeModel,
-        permissionMode,
-        ...(builtInTools.length > 0 ? { allowedTools: builtInTools } : {}),
-        ...(Object.keys(mcpServers).length > 0 ? { mcpServers } : {}),
-      },
-
-      // Custom tools (need implementation)
-      ...(customTools.length > 0 ? { customTools } : {}),
-
-      // TypeScript usage
-      usage: {
-        typescript: `import { query } from '@anthropic-ai/claude-agent-sdk';\n\nconst conversation = query({\n  prompt: 'Your prompt here',\n  options: ${JSON.stringify({ systemPrompt: sdkRole.substring(0, 80) + '...', model: claudeModel, permissionMode }, null, 4)}\n});\n\nfor await (const message of conversation) {\n  if (message.type === 'assistant') {\n    for (const block of message.message.content) {\n      if (block.type === 'text') process.stdout.write(block.text);\n    }\n  }\n}`,
-        python: `from claude_agent_sdk import query\n\nasync for message in query(\n    prompt="Your prompt here",\n    options=ClaudeAgentOptions(\n        system_prompt=${JSON.stringify(sdkRole.substring(0, 80) + '...')},\n        model="${claudeModel}",\n        permission_mode="${permissionMode}",\n    )\n):\n    if message.type == "assistant":\n        for block in message.message.content:\n            if hasattr(block, "text"):\n                print(block.text, end="")`,
-      },
-    };
-    filename = `${meta.name}.claude-agent-sdk.json`;
-  } else {
-    // Delegate to adapter registry (config-only + full adapters with toConfig())
-    initializeAdapters();
-    const adapter = convertRegistry.getAdapter(input.target);
-    if (!adapter) {
+    default:
       return errResponse(`Unknown target: ${input.target}`);
-    }
-    try {
-      const result = await adapter.toConfig(manifest);
-      converted = result.config;
-      filename = result.filename;
-    } catch (err) {
-      return errResponse(
-        `toConfig() failed for target "${input.target}": ${err instanceof Error ? err.message : String(err)}`
-      );
-    }
   }
 
   // Optionally write to disk
@@ -2076,11 +1780,7 @@ async function handleConvert(args: Record<string, unknown>) {
     }
 
     fs.writeFileSync(outPath, content, 'utf8');
-    return okResponse({
-      target: input.target,
-      written_to: outPath,
-      content: converted,
-    });
+    return okResponse({ target: input.target, written_to: outPath, content: converted });
   }
 
   return okResponse({ target: input.target, filename, content: converted });
@@ -2098,11 +1798,7 @@ async function handleWorkspace(args: Record<string, unknown>) {
       const wsDir = path.join(dir, '.agents-workspace');
       const registryDir = path.join(wsDir, 'registry');
       if (fs.existsSync(wsDir)) {
-        return okResponse({
-          action: 'init',
-          status: 'already_exists',
-          path: wsDir,
-        });
+        return okResponse({ action: 'init', status: 'already_exists', path: wsDir });
       }
       fs.mkdirSync(registryDir, { recursive: true });
       const wsName = input.name || path.basename(dir);
@@ -2115,42 +1811,18 @@ async function handleWorkspace(args: Record<string, unknown>) {
       fs.writeFileSync(path.join(registryDir, 'index.yaml'), indexYaml);
       fs.writeFileSync(
         path.join(wsDir, 'README.md'),
-        `# OSSA Workspace: ${wsName}\n\nGenerated by OSSA MCP Server.\n\nRun \`ossa workspace discover\` to scan for agents.\n`
+        `# OSSA Workspace: ${wsName}\n\nGenerated by OSSA MCP Server.\n\nRun \`ossa workspace discover\` to scan for agents.\n`,
       );
-      return okResponse({
-        action: 'init',
-        status: 'created',
-        path: wsDir,
-        name: wsName,
-      });
+      return okResponse({ action: 'init', status: 'created', path: wsDir, name: wsName });
     }
 
     case 'discover': {
       // Scan for all *.ossa.yaml manifests
-      const patterns = [
-        '**/*.ossa.yaml',
-        '**/*.ossa.yml',
-        '**/.agents/*/manifest.ossa.yaml',
-      ];
-      const ignorePatterns = [
-        '**/node_modules/**',
-        '**/dist/**',
-        '**/.git/**',
-        '**/coverage/**',
-      ];
-      const files = await fg(patterns, {
-        cwd: dir,
-        ignore: ignorePatterns,
-        absolute: true,
-      });
+      const patterns = ['**/*.ossa.yaml', '**/*.ossa.yml', '**/.agents/*/manifest.ossa.yaml'];
+      const ignorePatterns = ['**/node_modules/**', '**/dist/**', '**/.git/**', '**/coverage/**'];
+      const files = await fg(patterns, { cwd: dir, ignore: ignorePatterns, absolute: true });
 
-      const agents: Array<{
-        name: string;
-        path: string;
-        version: string;
-        kind: string;
-        description: string;
-      }> = [];
+      const agents: Array<{ name: string; path: string; version: string; kind: string; description: string }> = [];
       for (const f of files) {
         try {
           const raw = fs.readFileSync(f, 'utf8');
@@ -2177,17 +1849,9 @@ async function handleWorkspace(args: Record<string, unknown>) {
           workspace: path.basename(dir),
           discovered: new Date().toISOString(),
           count: agents.length,
-          agents: agents.map((a) => ({
-            name: a.name,
-            version: a.version,
-            kind: a.kind,
-            path: a.path,
-          })),
+          agents: agents.map((a) => ({ name: a.name, version: a.version, kind: a.kind, path: a.path })),
         };
-        fs.writeFileSync(
-          path.join(registryDir, 'index.yaml'),
-          yaml.dump(index)
-        );
+        fs.writeFileSync(path.join(registryDir, 'index.yaml'), yaml.dump(index));
       }
 
       return okResponse({ action: 'discover', count: agents.length, agents });
@@ -2197,20 +1861,10 @@ async function handleWorkspace(args: Record<string, unknown>) {
       const wsDir = path.join(dir, '.agents-workspace');
       const indexPath = path.join(wsDir, 'registry', 'index.yaml');
       if (!fs.existsSync(indexPath)) {
-        return okResponse({
-          action: 'status',
-          initialized: false,
-          message: 'Run ossa_workspace with action: init first',
-        });
+        return okResponse({ action: 'status', initialized: false, message: 'Run ossa_workspace with action: init first' });
       }
-      const indexContent = yaml.load(
-        fs.readFileSync(indexPath, 'utf8')
-      ) as Record<string, unknown>;
-      return okResponse({
-        action: 'status',
-        initialized: true,
-        workspace: indexContent,
-      });
+      const indexContent = yaml.load(fs.readFileSync(indexPath, 'utf8')) as Record<string, unknown>;
+      return okResponse({ action: 'status', initialized: true, workspace: indexContent });
     }
   }
 }
@@ -2223,23 +1877,10 @@ async function handleWorkspace(args: Record<string, unknown>) {
 function deepDiff(
   obj1: Record<string, unknown>,
   obj2: Record<string, unknown>,
-  prefix = ''
-): Array<{
-  type: 'added' | 'removed' | 'modified';
-  path: string;
-  oldValue?: unknown;
-  newValue?: unknown;
-}> {
-  const changes: Array<{
-    type: 'added' | 'removed' | 'modified';
-    path: string;
-    oldValue?: unknown;
-    newValue?: unknown;
-  }> = [];
-  const allKeys = new Set([
-    ...Object.keys(obj1 || {}),
-    ...Object.keys(obj2 || {}),
-  ]);
+  prefix = '',
+): Array<{ type: 'added' | 'removed' | 'modified'; path: string; oldValue?: unknown; newValue?: unknown }> {
+  const changes: Array<{ type: 'added' | 'removed' | 'modified'; path: string; oldValue?: unknown; newValue?: unknown }> = [];
+  const allKeys = new Set([...Object.keys(obj1 || {}), ...Object.keys(obj2 || {})]);
 
   for (const key of allKeys) {
     const fieldPath = prefix ? `${prefix}.${key}` : key;
@@ -2251,27 +1892,13 @@ function deepDiff(
     } else if (!(key in (obj2 || {}))) {
       changes.push({ type: 'removed', path: fieldPath, oldValue: val1 });
     } else if (
-      typeof val1 === 'object' &&
-      typeof val2 === 'object' &&
-      val1 !== null &&
-      val2 !== null &&
-      !Array.isArray(val1) &&
-      !Array.isArray(val2)
+      typeof val1 === 'object' && typeof val2 === 'object' &&
+      val1 !== null && val2 !== null &&
+      !Array.isArray(val1) && !Array.isArray(val2)
     ) {
-      changes.push(
-        ...deepDiff(
-          val1 as Record<string, unknown>,
-          val2 as Record<string, unknown>,
-          fieldPath
-        )
-      );
+      changes.push(...deepDiff(val1 as Record<string, unknown>, val2 as Record<string, unknown>, fieldPath));
     } else if (JSON.stringify(val1) !== JSON.stringify(val2)) {
-      changes.push({
-        type: 'modified',
-        path: fieldPath,
-        oldValue: val1,
-        newValue: val2,
-      });
+      changes.push({ type: 'modified', path: fieldPath, oldValue: val1, newValue: val2 });
     }
   }
   return changes;
@@ -2280,11 +1907,7 @@ function deepDiff(
 /** Detect breaking changes (same rules as diff.command.ts) */
 function isBreakingChange(change: { type: string; path: string }): boolean {
   if (change.type === 'removed') return true;
-  if (
-    change.path.includes('metadata.name') ||
-    change.path.includes('metadata.version')
-  )
-    return true;
+  if (change.path.includes('metadata.name') || change.path.includes('metadata.version')) return true;
   if (change.path.includes('spec.role')) return true;
   if (change.path.includes('apiVersion')) return true;
   return false;
@@ -2304,7 +1927,7 @@ async function handleDiff(args: Record<string, unknown>) {
   // Full recursive diff (catches ALL nested field changes)
   const allChanges = deepDiff(
     manifestA as unknown as Record<string, unknown>,
-    manifestB as unknown as Record<string, unknown>
+    manifestB as unknown as Record<string, unknown>,
   );
   const breakingChanges = allChanges.filter(isBreakingChange);
 
@@ -2328,19 +1951,11 @@ async function handleMigrate(args: Record<string, unknown>) {
   const manifestPath = resolvePath(input.path);
   const manifest = await manifestRepo.load(manifestPath);
   const detectionResult = await versionDetectionService.detectVersion(manifest);
-  const currentVersion =
-    detectionResult.version || (manifest.apiVersion as string) || 'unknown';
+  const currentVersion = detectionResult.version || (manifest.apiVersion as string) || 'unknown';
   const targetVersion = input.target_version;
 
-  if (
-    currentVersion === targetVersion ||
-    `ossa/${currentVersion}` === targetVersion
-  ) {
-    return okResponse({
-      migrated: false,
-      reason: `Already at ${targetVersion}`,
-      manifest_path: manifestPath,
-    });
+  if (currentVersion === targetVersion || `ossa/${currentVersion}` === targetVersion) {
+    return okResponse({ migrated: false, reason: `Already at ${targetVersion}`, manifest_path: manifestPath });
   }
 
   // Strip 'ossa/' prefix for MigrationTransformService (expects '0.3.3', not 'ossa/v0.3.3')
@@ -2353,28 +1968,18 @@ async function handleMigrate(args: Record<string, unknown>) {
   const migrations: string[] = [];
 
   if (transform) {
-    migrated = migrationTransformService.applyTransform(
-      manifest,
-      fromVer,
-      toVer
-    );
+    migrated = migrationTransformService.applyTransform(manifest, fromVer, toVer);
     migrations.push(`${transform.description} (${fromVer} → ${toVer})`);
-    if (transform.breaking)
-      migrations.push('WARNING: This migration contains breaking changes');
+    if (transform.breaking) migrations.push('WARNING: This migration contains breaking changes');
 
     // Validate migration preserved critical fields
-    const warnings = migrationTransformService.validateMigration(
-      manifest,
-      migrated
-    );
+    const warnings = migrationTransformService.validateMigration(manifest, migrated);
     if (warnings.length) migrations.push(...warnings.map((w) => `WARN: ${w}`));
   } else {
     // Fallback: update apiVersion only (no registered transform for this pair)
     migrated = JSON.parse(JSON.stringify(manifest)) as OssaAgent;
     migrated.apiVersion = targetVersion;
-    migrations.push(
-      `apiVersion: ${currentVersion} → ${targetVersion} (no registered transform — apiVersion updated only)`
-    );
+    migrations.push(`apiVersion: ${currentVersion} → ${targetVersion} (no registered transform — apiVersion updated only)`);
   }
 
   // Write output
@@ -2382,27 +1987,12 @@ async function handleMigrate(args: Record<string, unknown>) {
     const outDir = resolvePath(input.output_dir);
     fs.mkdirSync(outDir, { recursive: true });
     const outPath = path.join(outDir, path.basename(manifestPath));
-    const output = yaml.dump(migrated as Record<string, unknown>, {
-      lineWidth: 120,
-      noRefs: true,
-    });
+    const output = yaml.dump(migrated as Record<string, unknown>, { lineWidth: 120, noRefs: true });
     fs.writeFileSync(outPath, output, 'utf8');
-    return okResponse({
-      migrated: true,
-      from: currentVersion,
-      to: targetVersion,
-      migrations,
-      written_to: outPath,
-    });
+    return okResponse({ migrated: true, from: currentVersion, to: targetVersion, migrations, written_to: outPath });
   }
 
-  return okResponse({
-    migrated: true,
-    from: currentVersion,
-    to: targetVersion,
-    migrations,
-    manifest: migrated,
-  });
+  return okResponse({ migrated: true, from: currentVersion, to: targetVersion, migrations, manifest: migrated });
 }
 
 // ---------------------------------------------------------------------------
@@ -2422,9 +2012,7 @@ function resolvePath(p: string): string {
   const resolved = path.resolve(process.cwd(), s);
   const cwd = path.resolve(process.cwd());
   if (!resolved.startsWith(cwd + path.sep) && resolved !== cwd) {
-    throw new Error(
-      `Path traversal rejected: relative path "${p}" escapes working directory`
-    );
+    throw new Error(`Path traversal rejected: relative path "${p}" escapes working directory`);
   }
   return resolved;
 }
@@ -2437,12 +2025,7 @@ function okResponse(data: unknown) {
 
 function errResponse(message: string) {
   return {
-    content: [
-      {
-        type: 'text' as const,
-        text: JSON.stringify({ error: message }, null, 2),
-      },
-    ],
+    content: [{ type: 'text' as const, text: JSON.stringify({ error: message }, null, 2) }],
     isError: true,
   };
 }
@@ -2455,7 +2038,7 @@ async function main(): Promise<void> {
   await server.connect(transport);
   log.info(
     { tools: tools.map((t) => t.name), version: pkgVersion },
-    'OSSA MCP server running on stdio'
+    'OSSA MCP server running on stdio',
   );
 }
 
