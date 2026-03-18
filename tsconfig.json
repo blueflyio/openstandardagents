@@ -46,6 +46,7 @@
     "src/types/generated/openapi/*.zod.ts",
     "src/tools/**",
     "src/packages/**",
-    "src/deployment-templates/**"
+    "src/deployment-templates/**",
+    "src/cli/commands/sign.command.ts"
   ]
 }
