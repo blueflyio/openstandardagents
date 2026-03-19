@@ -62,7 +62,7 @@ publishCommand.action(
     try {
       // Load manifest
       const manifestRepo = new ManifestRepository();
-      const manifest = (await manifestRepo.load(manifestPath)) as OssaAgent;
+      const manifest = (await manifestRepo.load(manifestPath)) as any;
 
       if (!manifest) {
         if (!options.quiet) {
@@ -72,8 +72,11 @@ publishCommand.action(
         process.exit(ExitCode.CANNOT_EXECUTE);
       }
 
+      const kind = manifest.kind || 'Agent';
+      const name = manifest.metadata?.name || 'unknown';
+
       if (options.dryRun) {
-        log('DRY RUN MODE - Not publishing to registry', chalk.yellow);
+        log(`DRY RUN MODE - Not publishing ${kind} to registry`, chalk.yellow);
       }
 
       // Remote DUADP node publishing
@@ -84,12 +87,11 @@ publishCommand.action(
         });
 
         if (options.dryRun) {
-          const id = manifest.metadata?.name || 'unknown';
-          log(`\nWould publish to ${options.remote}: ${id}`, chalk.blue);
+          log(`\nWould publish ${kind} to ${options.remote}: ${name}`, chalk.blue);
           process.exit(ExitCode.SUCCESS);
         }
 
-        const result = await client.publish(manifest as any);
+        const result = await client.publish(manifest);
         if (result.success) {
           log(
             `\nPublished to ${options.remote}: ${(result as any).gaid || manifest.metadata?.name}`,

@@ -114,7 +114,7 @@ export type {
     Session,
 } from './cognition.zod.js';
 
-// Export Protocol Declaration types (v0.5)
+// v0.5: Protocol Declarations
 export * from './protocols.js';
 export type {
   A2AAgentCard,
@@ -132,6 +132,45 @@ export type {
   ProtocolDeclarations,
   VerifiableCredentialRef,
 } from './protocols.js';
+
+/**
+ * Execution Economics Types (v0.5.1)
+ * Portable execution intent and token governance
+ */
+export interface ExecutionProfile {
+  id: string;
+  intent_class: 'micro-audit' | 'fast-route' | 'balanced-work' | 'deep-reason' | 'long-context' | 'strict-structured' | 'human-gated';
+  latency_sla_ms?: number;
+  max_cost_usd?: number;
+  max_input_tokens?: number;
+  max_output_tokens?: number;
+  max_reasoning_tokens?: number;
+  preferred_modes?: string[];
+  fallback_chain?: string[];
+  compression_policy?: 'none' | 'extractive' | 'semantic-brief' | 'schema-projection' | 'evidence-only' | 'risk-first' | 'diff-only';
+  cache_policy?: 'none' | 'content-addressed' | 'ttl';
+  provenance_mode?: 'relaxed' | 'strict';
+}
+
+export interface ContextPack {
+  id: string;
+  version: string;
+  description?: string;
+  token_size?: number;
+  content_hash?: string;
+  trust_score?: number;
+  permission_scope?: string[];
+}
+
+export interface ReplayPacket {
+  compute_tokens: number;
+  context_tokens: number;
+  execution_profile_id: string;
+  context_pack_hashes?: string[];
+  policy_decisions?: Record<string, unknown>;
+  failure_class?: string;
+}
+
 
 /**
  * Agent Taxonomy Types (v0.4.4+)
@@ -728,6 +767,15 @@ export interface OssaAgent {
     team?: TeamDefinition;
     /** Child agents for delegation (v0.4.6+) */
     subagents?: SubagentDefinition[];
+    /** Execution economics (v0.5.1) */
+    economics?: {
+      execution_profile?: string;
+      context_packs?: string[];
+      token_sovereignty?: {
+        tokenization_boundary?: string;
+        context_retention?: string;
+      };
+    };
   };
   // v0.5: Security Posture
   security?: SecurityPosture;
