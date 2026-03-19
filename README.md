@@ -75,16 +75,14 @@ OSSA natively aligns with the [NIST CAISI Request for Information on Collaborati
 
 ## What's New in v0.5.1
 
-- **CAOE cognition types**: `session`, `hypothesis`, and `alignment gate` JSON schema extensions for cognitive agent orchestration.
-- **kind: Role manifest spec**: New manifest kind `Role` for declarative role-based agent definitions.
-- **@better-openclaw/core integration**: 201 services and 44 skill packs wired through OpenClaw core.
-- **MCP DI services wired**: `ossa_validate` and `ossa_publish` connected to dependency injection services.
-- **proxy-agent + universal-user-agent**: Standards-compliant HTTP proxy and user-agent handling.
-- **Security**: Scrubbed hardcoded credentials from codebase.
-- **Spec and schema remain on `v0.5`**. Public examples, migration commands, and SDK snippets continue to use `ossa/v0.5.0` and [`spec/v0.5/agent.schema.json`](./spec/v0.5/agent.schema.json).
-- **OpenAI Agents SDK export remains first-class**. Use `ossa export agent.ossa.yaml --platform openai-agents-sdk` to generate a runnable `@openai/agents` TypeScript package with MCP config and guardrails.
-- **AgentScope support** continues via `extensions.agentscope` for class, orchestration, memory backend, capabilities, and compression settings.
-- **Team topology stays in the core contract**. `spec.team`, `spec.subagents`, and `--perfect-agent` continue to support lead-teammate, peer, hierarchical, and swarm compositions from a single manifest.
+- **Layer 4: Execution Economics**: Portable execution intent via `ExecutionProfile`, `ContextPack`, and `ReplayPacket`.
+- **StateMesh Integration**: Support for governed agent state exchange (`extensions.statemesh`).
+- **Active Operational Memory**: Agents now publish `StateClaims` (Evidence/Intent) to the mesh during runtime.
+- **AI SDK v6 Loop**: Native `ToolLoopAgent` implementation in the production `OpenAIAdapter`.
+- **Reasoning Escrow**: Cryptographic hashing of reasoning traces for auditable yet private agent decisions.
+- **DUADP Trust Tiers**: Native alignment with DUADP's four-tier trust model (Official, Verified, Community, Unverified).
+- **CLI Economics**: New commands: `ossa execution-profile validate`, `ossa context-pack build`, `ossa task quote`.
+- **CAOE cognition types**: `session`, `hypothesis`, and `alignment gate` JSON schema extensions.
 
 See [CHANGELOG.md](./CHANGELOG.md) for complete details.
 
