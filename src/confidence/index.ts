@@ -53,22 +53,14 @@ export interface DeployGateContext {
 export function confidenceGate(
   confidence: number,
   trustTier: string = 'community',
-  validationPassed: boolean = false
+  validationPassed: boolean = false,
 ): ConfidenceVerdict {
   if (confidence === 0) {
-    return {
-      action: 'proceed',
-      confidence,
-      reason: 'no-model-confidence-provided',
-    };
+    return { action: 'proceed', confidence, reason: 'no-model-confidence-provided' };
   }
 
   if (confidence >= 90) {
-    return {
-      action: 'proceed',
-      confidence,
-      reason: 'high-confidence-auto-approve',
-    };
+    return { action: 'proceed', confidence, reason: 'high-confidence-auto-approve' };
   }
 
   if (confidence >= 50) {
@@ -81,11 +73,7 @@ export function confidenceGate(
         degraded_tier: 'signed',
       };
     }
-    return {
-      action: 'proceed',
-      confidence,
-      reason: 'medium-confidence-acceptable-for-tier',
-    };
+    return { action: 'proceed', confidence, reason: 'medium-confidence-acceptable-for-tier' };
   }
 
   if (validationPassed) {
@@ -97,11 +85,7 @@ export function confidenceGate(
     };
   }
 
-  return {
-    action: 'reject',
-    confidence,
-    reason: 'low-confidence-and-validation-failed',
-  };
+  return { action: 'reject', confidence, reason: 'low-confidence-and-validation-failed' };
 }
 
 // ---------------------------------------------------------------------------
@@ -119,8 +103,7 @@ export function confidenceGate(
  */
 export function logprobsToConfidence(logprobs: number[]): number {
   if (!logprobs?.length) return 0;
-  const avgProb =
-    logprobs.reduce((s, lp) => s + Math.exp(lp), 0) / logprobs.length;
+  const avgProb = logprobs.reduce((s, lp) => s + Math.exp(lp), 0) / logprobs.length;
   return Math.round(Math.min(1, Math.max(0, avgProb)) * 100);
 }
 
@@ -156,17 +139,9 @@ export function selfConsistencyConfidence(responses: string[]): number {
  * Reads from CI artifact metrics; pass overrides when calling from tests.
  */
 export function buildDeployGateContext(
-  overrides: Partial<DeployGateContext> = {}
+  overrides: Partial<DeployGateContext> = {},
 ): DeployGateContext {
-  const days = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-  ];
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   return {
     confidence_score: overrides.confidence_score ?? 0,
     test_coverage: overrides.test_coverage ?? 0,
@@ -185,17 +160,11 @@ export function buildDeployGateContext(
  * Extract confidence score from an OSSA resource payload.
  * Checks metadata.confidence_score, spec.confidence_score, extensions.confidence_score.
  */
-export function extractConfidenceScore(
-  resource: Record<string, unknown>
-): number {
+export function extractConfidenceScore(resource: Record<string, unknown>): number {
   const meta = resource.metadata as Record<string, unknown> | undefined;
   const spec = resource.spec as Record<string, unknown> | undefined;
   const ext = resource.extensions as Record<string, unknown> | undefined;
-  const raw =
-    meta?.confidence_score ??
-    spec?.confidence_score ??
-    ext?.confidence_score ??
-    0;
+  const raw = meta?.confidence_score ?? spec?.confidence_score ?? ext?.confidence_score ?? 0;
   const n = typeof raw === 'number' ? raw : parseInt(String(raw), 10);
   return isNaN(n) ? 0 : Math.min(100, Math.max(0, n));
 }

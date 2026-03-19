@@ -104,8 +104,14 @@ function scanAgentsDir(agentsPath: string): string[] {
 }
 
 export const agentsSyncCommand = new Command('agents-sync')
-  .description('Sync platform agents between NAS, local, and Oracle')
-  .option('--source <path>', 'Source agents directory', NAS_AGENTS_PATH)
+  .description(
+    'Sync platform agents between NAS, local, and Oracle'
+  )
+  .option(
+    '--source <path>',
+    'Source agents directory',
+    NAS_AGENTS_PATH
+  )
   .option(
     '--target <target>',
     'Target: "local" (default), "oracle", or a path',
@@ -202,8 +208,12 @@ export const agentsSyncCommand = new Command('agents-sync')
         if (fs.existsSync(options.source)) {
           const nasAgents = scanAgentsDir(options.source);
           if (!options.json) {
-            console.log(chalk.cyan.bold(`Platform Agents (${options.source})`));
-            console.log(chalk.white(`  ${nasAgents.length} agents available`));
+            console.log(
+              chalk.cyan.bold(`Platform Agents (${options.source})`)
+            );
+            console.log(
+              chalk.white(`  ${nasAgents.length} agents available`)
+            );
             console.log(
               chalk.gray(
                 `  ${nasAgents.slice(0, 10).join(', ')}${nasAgents.length > 10 ? `, ... +${nasAgents.length - 10} more` : ''}`
@@ -238,7 +248,9 @@ export const agentsSyncCommand = new Command('agents-sync')
       }
 
       if (!fs.existsSync(sourcePath)) {
-        console.error(chalk.red(`Source not found: ${sourcePath}`));
+        console.error(
+          chalk.red(`Source not found: ${sourcePath}`)
+        );
         console.error(
           chalk.yellow('Is the NAS mounted at /Volumes/AgentPlatform/?')
         );
@@ -290,9 +302,7 @@ export const agentsSyncCommand = new Command('agents-sync')
       // Publish to DUADP if requested
       if (options.publish) {
         console.log(
-          chalk.cyan(
-            `\nPublishing ${stats.agents.length} agents to ${options.publish}...`
-          )
+          chalk.cyan(`\nPublishing ${stats.agents.length} agents to ${options.publish}...`)
         );
         let published = 0;
         let failed = 0;
@@ -300,27 +310,9 @@ export const agentsSyncCommand = new Command('agents-sync')
         for (const agentName of stats.agents) {
           const cleanName = agentName.replace('@ossa/', '');
           const manifestPaths = [
-            path.join(
-              destPath,
-              '.agents',
-              '@ossa',
-              cleanName,
-              'manifest.ossa.yaml'
-            ),
-            path.join(
-              destPath,
-              '.agents',
-              '@ossa',
-              cleanName,
-              'agent.ossa.yaml'
-            ),
-            path.join(
-              destPath,
-              '.agents',
-              '@ossa',
-              cleanName,
-              'manifest.ossa.json'
-            ),
+            path.join(destPath, '.agents', '@ossa', cleanName, 'manifest.ossa.yaml'),
+            path.join(destPath, '.agents', '@ossa', cleanName, 'agent.ossa.yaml'),
+            path.join(destPath, '.agents', '@ossa', cleanName, 'manifest.ossa.json'),
           ];
 
           let manifestContent: string | null = null;
@@ -344,11 +336,14 @@ export const agentsSyncCommand = new Command('agents-sync')
               continue; // Skip YAML for now, only JSON
             }
 
-            const response = await fetch(`${options.publish}/api/v1/publish`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(manifest),
-            });
+            const response = await fetch(
+              `${options.publish}/api/v1/publish`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(manifest),
+              }
+            );
 
             if (response.ok) {
               published++;

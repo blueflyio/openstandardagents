@@ -74,6 +74,11 @@
       "types": "./dist/services/trust/trust.service.d.ts",
       "import": "./dist/services/trust/trust.service.js",
       "require": "./dist/services/trust/trust.service.js"
+    },
+    "./workspace-validate": {
+      "types": "./dist/cli/workspace-validate.d.ts",
+      "import": "./dist/cli/workspace-validate.js",
+      "require": "./dist/cli/workspace-validate.js"
     }
   },
   "description": "OSSA - Open Standard for Software Agents. Infrastructure bridge between agent protocols (MCP, A2A) and deployment platforms. Define once in YAML, export to 9+ platforms (Docker, Kubernetes, LangChain, CrewAI, Claude Skills, etc.).",
@@ -238,6 +243,7 @@
     "release:semantic:dry": "npx semantic-release --dry-run"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.41",
     "@anthropic-ai/claude-agent-sdk": "^0.2.50",
     "@anthropic-ai/sdk": "^0.71.0",
     "@aws-sdk/client-bedrock-runtime": "^3.955.0",
@@ -271,6 +277,7 @@
     "@types/tar": "^6.1.13",
     "@types/ws": "^8.18.1",
     "agent-browser": "^0.20.11",
+    "ai": "^6.0.116",
     "ajv": "^8.12.0",
     "ajv-formats": "^3.0.1",
     "axios": "^1.12.2",
@@ -308,7 +315,7 @@
     "web-did-resolver": "^2.0.32",
     "ws": "^8.19.0",
     "yaml": "^2.3.0",
-    "zod": "^4.1.11"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@bluefly/duadp": "^0.1.4",
