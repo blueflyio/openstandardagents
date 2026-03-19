@@ -91,7 +91,11 @@ contextPackCommand
       };
 
       const outPath = path.join(process.cwd(), `${name}.context.json`);
-      fs.writeFileSync(outPath, JSON.stringify(result, null, 2));
+      try {
+        fs.writeFileSync(outPath, JSON.stringify(result, null, 2));
+      } catch (writeError) {
+        throw new Error(`Failed to write context pack to ${outPath}: ${writeError instanceof Error ? writeError.message : String(writeError)}`);
+      }
       
       log(`✅ Context Pack built successfully: ${chalk.green(outPath)}`);
     } catch (e) {
