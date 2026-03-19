@@ -36,16 +36,18 @@ executionProfileCommand
 
       if (manifest.kind !== 'ExecutionProfile') {
         log(`❌ Error: Manifest kind must be 'ExecutionProfile', found '${manifest.kind}'`, chalk.red);
-        process.exit(ExitCode.VALIDATION_ERROR);
+        process.exit(ExitCode.GENERAL_ERROR);
       }
 
-      log(`✅ ExecutionProfile '${manifest.metadata.id}' is valid.`, chalk.green);
+      // @ts-ignore - metadata.id is a v0.5.1 extension
+      const profileId = (manifest.metadata as any)?.id || manifest.metadata?.name || 'unknown';
+      log(`✅ ExecutionProfile '${profileId}' is valid.`, chalk.green);
       if (options.verbose) {
         log(JSON.stringify(manifest, null, 2), chalk.gray);
       }
     } catch (e) {
       log(`❌ Validation failed: ${e instanceof Error ? e.message : String(e)}`, chalk.red);
-      process.exit(ExitCode.VALIDATION_ERROR);
+      process.exit(ExitCode.GENERAL_ERROR);
     }
   });
 
@@ -120,5 +122,3 @@ taskCommand
     console.log(`  Escalation Risk:  ${chalk.blue('Low (12%)')}`);
     console.log(`  Latency Target:   ${chalk.cyan('8.5s')}`);
   });
-
-// Export a combined group if needed, but for now we follow the root register pattern

@@ -4,7 +4,7 @@
  */
 
 import { createOpenAI } from '@ai-sdk/openai';
-import { ToolLoopAgent, stepCountIs, type ModelMessage } from 'ai';
+import { generateText, ToolLoopAgent, stepCountIs, type ModelMessage } from 'ai';
 import { z } from 'zod';
 
 export interface OssaManifest {
@@ -39,6 +39,9 @@ export interface OssaManifest {
       context_retention?: string;
       sovereign_embeddings?: boolean;
     };
+  };
+  security?: {
+    tier?: string;
   };
   extensions?: {
     statemesh?: {
@@ -294,23 +297,23 @@ export class OpenAIAdapter {
       console.error('Failed to record Replay Packet');
     }
   }
-/**
- * Publish a claim to the ContractPlane State Plane API
- */
-private async publishStateClaim(baseUrl: string, claim: { subject: string, claim_type: string, payload: any }): Promise<void> {
-  try {
-    await fetch(`${baseUrl}/api/v1/statemesh/claims`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...claim,
-        producer_id: `agent://${this.manifest.metadata.name}`,
-        confidence: 100,
-        trust_tier: this.manifest.security?.tier || 'unverified'
-      })
-    });
-  } catch (error) {
-...
+
+  /**
+   * Publish a claim to the ContractPlane State Plane API
+   */
+  private async publishStateClaim(baseUrl: string, claim: { subject: string, claim_type: string, payload: any }): Promise<void> {
+    try {
+      await fetch(`${baseUrl}/api/v1/statemesh/claims`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...claim,
+          producer_id: `agent://${this.manifest.metadata.name}`,
+          confidence: 100,
+          trust_tier: this.manifest.security?.tier || 'unverified'
+        })
+      });
+    } catch (error) {
       console.error(`Failed to publish StateClaim: ${error instanceof Error ? error.message : String(error)}`);
     }
   }

@@ -69,13 +69,22 @@ export class GkgMatchmaker {
 
   private mapToAgentCard(raw: any): AgentCard {
     return {
-      id: raw.metadata.name,
-      uri: `did:web:blueflyagents.com:agent:${raw.metadata.name}`,
-      name: raw.metadata.name,
-      description: raw.metadata.description,
+      uri: raw.uri || `did:web:blueflyagents.com:agent:${raw.metadata?.name}`,
+      name: raw.metadata?.name || 'anonymous',
+      version: raw.metadata?.version || '1.0.0',
+      ossaVersion: raw.apiVersion || 'ossa/v0.5.1',
+      gaid: raw.gaid,
       endpoints: raw.endpoints || {},
-      capabilities: raw.spec.tools?.map((t: any) => t.name) || [],
-      status: raw.metadata.status || 'active'
+      transport: raw.transport || ['http'],
+      authentication: raw.authentication || ['none'],
+      encryption: raw.encryption || { tlsRequired: true, minTlsVersion: '1.3' },
+      capabilities: raw.spec?.tools?.map((t: any) => t.name) || [],
+      status: raw.metadata?.status || 'healthy',
+      metadata: {
+        description: raw.metadata?.description,
+        author: raw.metadata?.author,
+        ...(raw.metadata || {})
+      }
     };
   }
 }
