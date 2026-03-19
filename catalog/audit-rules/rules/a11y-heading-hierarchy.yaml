@@ -1,0 +1,12 @@
+id: a11y-heading-hierarchy
+description: "Skipped heading levels break document outline for screen reader navigation."
+severity: warning
+dimension: accessibility
+anti_pattern:
+  type: regex
+  pattern: "<h1[^>]*>[^<]*</h1>[^]*?<h[3-6]"
+  flags: gim
+  path_glob: "**/*.{html.twig,twig,htm,html}"
+fix_suggestion: "Use sequential heading levels (h1 then h2, h2 then h3). Never skip levels."
+target_languages: [twig, html]
+tags: [accessibility, wcag, headings]

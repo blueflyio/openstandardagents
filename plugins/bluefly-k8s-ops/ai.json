@@ -1,0 +1,24 @@
+{
+  "apiVersion": "ossa/v0.5",
+  "identity": {
+    "gaid": "agent://bluefly.io/plugins/k8s-ops",
+    "name": "bluefly-k8s-ops",
+    "description": "Kubernetes and infrastructure operations plugin for BlueFly Agent Platform. Includes k8s ops, kagent management, and observability.",
+    "homepage": "https://blueflyagents.com",
+    "repository": "https://gitlab.com/blueflyio/agent-platform/plugins/k8s-ops"
+  },
+  "capabilities": {
+    "discovery": true,
+    "k8s": true,
+    "infrastructure": true,
+    "mcp": true
+  },
+  "protocols": {
+    "duadp": {
+      "node": "https://discover.duadp.org"
+    }
+  },
+  "schemas": {
+    "plugin": "https://blueflyagents.com/schemas/v1/plugin.json"
+  }
+}

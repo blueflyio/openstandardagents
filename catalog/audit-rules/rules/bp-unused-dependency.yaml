@@ -1,0 +1,12 @@
+id: bp-unused-dependency
+description: "Module dependencies declared in info.yml but not actually used in code."
+severity: info
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "dependencies:\\s*\\n(\\s+-\\s+\\w+:\\w+\\n){5,}"
+  flags: gm
+  path_glob: "**/*.info.yml"
+fix_suggestion: "Audit module dependencies and remove unused ones to reduce installation requirements."
+target_languages: [yaml]
+tags: [best-practices, dependencies, drupal]

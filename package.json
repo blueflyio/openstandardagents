@@ -240,9 +240,11 @@
     "release:semantic:dry": "npx semantic-release --dry-run"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.41",
     "@anthropic-ai/claude-agent-sdk": "^0.2.50",
     "@anthropic-ai/sdk": "^0.71.0",
     "@aws-sdk/client-bedrock-runtime": "^3.955.0",
+    "@cedar-policy/cedar-wasm": "^4.9.1",
     "@gitbeaker/node": "^35.8.1",
     "@gitbeaker/rest": "^43.8.0",
     "@google/generative-ai": "^0.21.0",
@@ -270,6 +272,7 @@
     "@temporalio/workflow": "^1.11.3",
     "@types/tar": "^6.1.13",
     "@types/ws": "^8.18.1",
+    "ai": "^6.0.116",
     "ajv": "^8.12.0",
     "ajv-formats": "^3.0.1",
     "axios": "^1.12.2",
@@ -303,7 +306,7 @@
     "web-did-resolver": "^2.0.32",
     "ws": "^8.19.0",
     "yaml": "^2.3.0",
-    "zod": "^4.1.11"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",

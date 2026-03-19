@@ -1,0 +1,12 @@
+id: sec-dangerous-permissions
+description: "Granting dangerous permissions like 'administer site configuration' or 'use PHP for settings' in config."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "(administer site configuration|use PHP for settings|administer permissions|administer users)"
+  flags: gm
+  path_glob: "**/*.{yml,yaml}"
+fix_suggestion: "Create granular custom permissions specific to your module's functionality. Avoid granting broad administrative permissions."
+target_languages: [yaml]
+tags: [security, permissions, drupal, configuration]

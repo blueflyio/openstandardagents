@@ -1,0 +1,61 @@
+version: 3.8
+services:
+  drupal-contributor:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    ports:
+      - 3000:3000
+      - 9229:9229
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      LOG_LEVEL: debug
+    networks:
+      - agent-network
+    depends_on:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: agent_db
+      POSTGRES_USER: agent
+      POSTGRES_PASSWORD: development
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - agent-network
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U agent
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+    networks:
+      - agent-network
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+networks:
+  agent-network:
+    driver: bridge
+volumes:
+  postgres-data:
+  redis-data:

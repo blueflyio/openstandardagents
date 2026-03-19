@@ -1,0 +1,12 @@
+id: perf-db-query-in-loop
+description: "Database queries inside loops cause N+1 query performance problems."
+severity: warning
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "(foreach|for|while)\\s*\\([^)]*\\)\\s*\\{[^}]*(->query|db_query|->select|->execute)"
+  flags: gms
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Collect IDs in the loop, then execute a single query with IN condition after the loop."
+target_languages: [php]
+tags: [performance, database, drupal]

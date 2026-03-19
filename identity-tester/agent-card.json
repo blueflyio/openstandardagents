@@ -1,0 +1,22 @@
+{
+  "uri": "uadp://default/identity-tester",
+  "name": "identity-tester",
+  "version": "1.0.0",
+  "ossaVersion": "ossa/v0.4",
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "gaid": "u_default_identity_tester",
+  "capabilities": [],
+  "role": "Test agent",
+  "endpoints": {},
+  "transport": [
+    "http"
+  ],
+  "authentication": [
+    "bearer"
+  ],
+  "encryption": {
+    "tlsRequired": true,
+    "minTlsVersion": "1.2"
+  },
+  "cardProfile": "discovery"
+}

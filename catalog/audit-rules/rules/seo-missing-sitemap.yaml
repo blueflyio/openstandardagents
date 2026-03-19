@@ -1,0 +1,12 @@
+id: seo-missing-sitemap
+description: "Content types not included in XML sitemap are harder for search engines to discover."
+severity: info
+dimension: seo
+anti_pattern:
+  type: regex
+  pattern: "type:\\s+module"
+  flags: gm
+  path_glob: "**/*.info.yml"
+fix_suggestion: "Configure Simple XML Sitemap module to include all public-facing content types and views."
+target_languages: [yaml]
+tags: [seo, sitemap, drupal]

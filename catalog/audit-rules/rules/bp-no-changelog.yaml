@@ -1,0 +1,12 @@
+id: bp-no-changelog
+description: "Module missing CHANGELOG or version history documentation."
+severity: info
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "^name:\\s"
+  flags: gm
+  path_glob: "**/*.info.yml"
+fix_suggestion: "Add a CHANGELOG.txt or maintain version history in the module's project page."
+target_languages: [yaml]
+tags: [best-practices, documentation, drupal]

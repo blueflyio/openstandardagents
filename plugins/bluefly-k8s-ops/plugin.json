@@ -1,0 +1,12 @@
+{
+  "name": "bluefly-k8s-ops",
+  "version": "0.1.0",
+  "description": "Kubernetes and infrastructure operations plugin for BlueFly Agent Platform.",
+  "author": "BlueFly.io",
+  "skills": [
+    "skills/k8s-ops-worker.md",
+    "skills/kagent-worker.md",
+    "skills/infrastructure.md",
+    "skills/observability.md"
+  ]
+}

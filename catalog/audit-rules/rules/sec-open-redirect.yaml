@@ -1,0 +1,12 @@
+id: sec-open-redirect
+description: "Redirect using user-controlled input without validation enables open redirect attacks."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "header\\s*\\(\\s*[\"']Location:\\s*[\"']\\s*\\.\\s*\\$"
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Use Drupal's TrustedRedirectResponse or Url::fromUserInput() with validation. Never redirect to raw user input."
+target_languages: [php]
+tags: [security, open-redirect, header-injection]
