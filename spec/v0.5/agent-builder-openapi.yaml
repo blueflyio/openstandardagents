@@ -1,0 +1,230 @@
+openapi: 3.1.0
+info:
+  title: OSSA Agent Builder API
+  version: 0.5.1
+  description: |
+    Canonical builder API for creating and deploying OSSA agents.
+    Owned by ossa-studio (studio.blueflyagents.com) per OWNERSHIP.md.
+    Triggers ossa-deploy pipeline for build/score/publish lifecycle.
+  contact:
+    name: BlueFly.io
+    url: https://bluefly.io
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:3000
+    description: Local development
+  - url: https://studio.blueflyagents.com
+    description: Production (moved from agents.blueflyagents.com/wizard)
+
+paths:
+  /api/agent-builder/generate:
+    post:
+      summary: Generate an OSSA agent manifest
+      operationId: generateAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentBuilderRequest'
+      responses:
+        '200':
+          description: Manifest generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentBuilderResult'
+        '400':
+          description: Invalid request — version gate rejects manifests < ossa/v0.5.0
+        '500':
+          description: Build pipeline error
+
+  /api/agent-builder/deploy:
+    post:
+      summary: Deploy agent via ossa-deploy pipeline
+      operationId: deployAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeployRequest'
+      responses:
+        '202':
+          description: Deploy queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeployResult'
+        '400':
+          description: Invalid manifest or version
+        '503':
+          description: ossa-deploy unavailable
+
+  /api/agent-builder/memory:
+    post:
+      summary: Configure memory tier for an agent
+      operationId: configureMemory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemoryConfig'
+      responses:
+        '200':
+          description: Memory configured
+        '400':
+          description: Invalid memory config
+
+  /api/agent-builder/options:
+    get:
+      summary: Get all available builder options
+      operationId: getBuilderOptions
+      responses:
+        '200':
+          description: Available options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuilderOptions'
+
+components:
+  schemas:
+    AgentBuilderRequest:
+      type: object
+      required: [kind, apiVersion, metadata]
+      properties:
+        kind:
+          type: string
+          enum: [Agent, Task, Workflow]
+        apiVersion:
+          type: string
+          description: Must be ossa/v0.5.0 or later; older versions are rejected
+          example: ossa/v0.5.0
+        metadata:
+          type: object
+          properties:
+            name:
+              type: string
+            displayName:
+              type: string
+            description:
+              type: string
+        spec:
+          type: object
+
+    AgentBuilderResult:
+      type: object
+      properties:
+        manifestYaml:
+          type: string
+        agentName:
+          type: string
+        apiVersion:
+          type: string
+          example: ossa/v0.5.0
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              step:
+                type: string
+              stdout:
+                type: string
+              exitCode:
+                type: integer
+
+    DeployRequest:
+      type: object
+      required: [manifestPath, sourceRepo]
+      properties:
+        manifestPath:
+          type: string
+          description: Path to manifest within the source repo
+        sourceRepo:
+          type: string
+        sourceRef:
+          type: string
+          default: main
+        requestedBy:
+          type: string
+        options:
+          type: object
+          properties:
+            score:
+              type: boolean
+              default: true
+            publish:
+              type: boolean
+              default: true
+            openMr:
+              type: boolean
+              default: true
+
+    DeployResult:
+      type: object
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued, running, complete, failed]
+        score:
+          type: number
+        artifactUrl:
+          type: string
+          format: uri
+        mrUrl:
+          type: string
+          format: uri
+        duadpDid:
+          type: string
+          nullable: true
+        errors:
+          type: array
+          items:
+            type: string
+        pipelineUrl:
+          type: string
+          format: uri
+
+    MemoryConfig:
+      type: object
+      required: [agentName, tier]
+      properties:
+        agentName:
+          type: string
+        tier:
+          type: string
+          enum: [global, domain, agent]
+        collection:
+          type: string
+          description: 'Naming: global.<collection>, <domain>.<collection>, <domain>.<agent>.<collection>'
+
+    BuilderOptions:
+      type: object
+      properties:
+        apiVersions:
+          type: array
+          items:
+            type: string
+          example: ['ossa/v0.5.0', 'ossa/v0.5.1']
+        kinds:
+          type: array
+          items:
+            type: string
+          example: [Agent, Task, Workflow]
+        platforms:
+          type: array
+          items:
+            type: string
+          example: [docker, kubernetes, serverless]
+        memoryTiers:
+          type: array
+          items:
+            type: string
+          example: [global, domain, agent]
