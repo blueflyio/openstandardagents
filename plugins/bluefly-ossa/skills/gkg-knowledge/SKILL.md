@@ -20,9 +20,9 @@ allowed-tools:
 
 GKG is the semantic search layer across the entire BlueFly Agent Platform. It indexes all agents, services, packages, policies, recipes, workflows, documents, and people into a queryable graph.
 
-- **URL**: https://gkg.blueflyagents.com
+- **URL**: https://gkg.bluefly.internal
 - **Port**: 3015
-- **MCP**: https://gkg.blueflyagents.com/mcp/sse
+- **MCP**: https://gkg.bluefly.internal/mcp/sse
 - **Package**: `@bluefly/agent-brain` (vector search) + `@bluefly/gkg-api` (graph API)
 
 ## Entity Types
@@ -60,43 +60,43 @@ Person ──maintains──→ Package | Service
 ### Search
 ```bash
 # Full-text semantic search
-curl "https://gkg.blueflyagents.com/api/search?q=vulnerability+scanning"
+curl "https://gkg.bluefly.internal/api/search?q=vulnerability+scanning"
 
 # Typed search
-curl "https://gkg.blueflyagents.com/api/search?q=security&type=agent"
-curl "https://gkg.blueflyagents.com/api/search?q=docker&type=package"
+curl "https://gkg.bluefly.internal/api/search?q=security&type=agent"
+curl "https://gkg.bluefly.internal/api/search?q=docker&type=package"
 
 # Multi-type
-curl "https://gkg.blueflyagents.com/api/search?q=deployment&type=agent,service,workflow"
+curl "https://gkg.bluefly.internal/api/search?q=deployment&type=agent,service,workflow"
 ```
 
 ### Entity Operations
 ```bash
 # Get entity by ID
-curl "https://gkg.blueflyagents.com/api/entities/agent/vulnerability-scanner"
+curl "https://gkg.bluefly.internal/api/entities/agent/vulnerability-scanner"
 
 # Get relationships
-curl "https://gkg.blueflyagents.com/api/entities/agent/vulnerability-scanner/relationships"
+curl "https://gkg.bluefly.internal/api/entities/agent/vulnerability-scanner/relationships"
 
 # Traverse graph (2 hops)
-curl "https://gkg.blueflyagents.com/api/entities/agent/vulnerability-scanner/traverse?depth=2"
+curl "https://gkg.bluefly.internal/api/entities/agent/vulnerability-scanner/traverse?depth=2"
 
 # Get all entities of type
-curl "https://gkg.blueflyagents.com/api/entities?type=agent&limit=100"
+curl "https://gkg.bluefly.internal/api/entities?type=agent&limit=100"
 ```
 
 ### Graph Queries
 ```bash
 # What agents use a service?
-curl "https://gkg.blueflyagents.com/api/graph/query" \
+curl "https://gkg.bluefly.internal/api/graph/query" \
   -d '{"from": "service/agents-api", "relation": "used-by", "to_type": "agent"}'
 
 # What policies govern an agent?
-curl "https://gkg.blueflyagents.com/api/graph/query" \
+curl "https://gkg.bluefly.internal/api/graph/query" \
   -d '{"from": "agent/pipeline-remediation", "relation": "governed-by", "to_type": "policy"}'
 
 # Dependency chain
-curl "https://gkg.blueflyagents.com/api/graph/dependencies/package/agent-router"
+curl "https://gkg.bluefly.internal/api/graph/dependencies/package/agent-router"
 ```
 
 ## MCP Integration
@@ -114,7 +114,7 @@ The GKG MCP server exposes these tools:
 ```json
 {
   "bluefly-gkg": {
-    "url": "https://gkg.blueflyagents.com/mcp/sse",
+    "url": "https://gkg.bluefly.internal/mcp/sse",
     "transport": "sse"
   }
 }

@@ -31,7 +31,7 @@ npm install @bluefly/openstandardagents
 Set your Mistral API key:
 
 ```bash
-export MISTRAL_API_KEY=SET_API_KEY
+export MISTRAL_API_KEY=your-api-key-here
 ```
 
 Or provide it in the manifest:

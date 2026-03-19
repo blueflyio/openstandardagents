@@ -2461,7 +2461,7 @@ class ${className}FunctionalTest extends BrowserTestBase {
 
   <php>
     <env name="SIMPLETEST_BASE_URL" value="http://localhost:8888"/>
-    <env name="SIMPLETEST_DB" value="mysql://drupal:TEST_DB_PASSWORD__AT__localhost/drupal"/>
+    <env name="SIMPLETEST_DB" value="mysql://drupal:\${DRUPAL_DB_PASSWORD}@localhost/drupal"/>
     <env name="BROWSERTEST_OUTPUT_DIRECTORY" value="sites/default/files/simpletest"/>
   </php>
 </phpunit>

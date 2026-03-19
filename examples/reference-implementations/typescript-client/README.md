@@ -59,7 +59,7 @@ npm run example
 npm run example:search
 
 # Publish an agent (requires OSSA_TOKEN)
-export OSSA_TOKEN=SET_OSSA_BEARER_TOKEN
+export OSSA_TOKEN=ossa_tok_xxx
 npm run example:publish
 
 # A2A messaging and webhooks

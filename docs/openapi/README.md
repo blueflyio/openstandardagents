@@ -31,7 +31,7 @@ All API requests (except health checks) require authentication. See the [Authent
 
 ```bash
 # Example with API Key
-curl -H "X-API-Key: SET_API_KEY" \
+curl -H "X-API-Key: your-api-key" \
   https://api.llm.bluefly.io/ossa/v1/agents
 
 # Example with Bearer Token

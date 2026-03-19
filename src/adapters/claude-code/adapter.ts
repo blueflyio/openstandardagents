@@ -426,8 +426,8 @@ fi`
 
 # Delegate to OSSA CLI when available (set OSSA_MANIFEST to manifest path)
 if command -v ossa >/dev/null 2>&1 && [[ -n "\${OSSA_MANIFEST:-}" ]]; then
-  ossa run "\${OSSA_MANIFEST}" --tool ${tool.name} -- "\$@"
-  exit \$?
+  ossa run "\${OSSA_MANIFEST}" --tool ${tool.name} -- "$@"
+  exit $?
 fi
 
 # Fallback: output structured result

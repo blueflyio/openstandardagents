@@ -1,10 +1,12 @@
 {
   "name": "@bluefly/openstandardagents",
-  "version": "0.4.9",
+  "version": "0.5.1",
   "exports": {
-    "./schema": "./spec/v0.4/agent.schema.json",
+    "./schema": "./spec/v0.5/agent.schema.json",
     "./schema/v0.4": "./spec/v0.4/agent.schema.json",
     "./schema/v0.4.1": "./spec/v0.4/agent.schema.json",
+    "./schema/v0.5": "./spec/v0.5/agent.schema.json",
+    "./schema/v0.5.0": "./spec/v0.5/agent.schema.json",
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
@@ -46,7 +48,7 @@
       "import": "./dist/services/agent-card-generator.js",
       "require": "./dist/services/agent-card-generator.js"
     },
-    "./agent-card-schema": "./spec/v0.4/agent-card.schema.json",
+    "./agent-card-schema": "./spec/v0.5/agent-card.schema.json",
     "./sdk": {
       "types": "./dist/sdk.d.ts",
       "import": "./dist/sdk.js",
@@ -72,6 +74,11 @@
       "types": "./dist/services/trust/trust.service.d.ts",
       "import": "./dist/services/trust/trust.service.js",
       "require": "./dist/services/trust/trust.service.js"
+    },
+    "./workspace-validate": {
+      "types": "./dist/cli/workspace-validate.d.ts",
+      "import": "./dist/cli/workspace-validate.js",
+      "require": "./dist/cli/workspace-validate.js"
     }
   },
   "description": "OSSA - Open Standard for Software Agents. Infrastructure bridge between agent protocols (MCP, A2A) and deployment platforms. Define once in YAML, export to 9+ platforms (Docker, Kubernetes, LangChain, CrewAI, Claude Skills, etc.).",
@@ -150,8 +157,9 @@
     "build:assets": "cp -r spec dist/ && cp package.json .version.json dist/",
     "build:clean": "npm run clean && npm run build",
     "dev": "tsc --watch",
-    "clean": "rm -rf dist coverage .tsbuildinfo",
+    "clean": "node -e \"const fs=require('node:fs'); ['dist','coverage','.tsbuildinfo'].forEach((p)=>fs.rmSync(p,{recursive:true,force:true}))\"",
     "// TESTING": "",
+    "pretest": "npm run build",
     "test": "jest",
     "test:unit": "jest tests/unit --forceExit",
     "test:integration": "jest tests/integration",
@@ -185,7 +193,7 @@
     "validate:sdk:python": "cd src/sdks/python && python -m pip install --quiet -e . && python -m pytest tests/ -v || true",
     "validate:schema": "npx ajv-cli compile -s $(node -p \"require('./.version.json').spec_path\")/$(node -p \"require('./.version.json').schema_file\") -r $(node -p \"require('./.version.json').spec_path\")/extensions/kagent/kagent.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/mcp/mcp.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/a2a/a2a.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/langchain/langchain.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/langgraph/langgraph.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/ag2/ag2.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/crewai/crewai.schema.json --strict=false --allow-union-types",
     "validate:manifest": "npx ajv-cli validate -s $(node -p \"require('./.version.json').spec_path\")/$(node -p \"require('./.version.json').schema_file\") --strict=false --allow-union-types -d",
-    "validate:examples": "find examples \\( -name '*.ossa.yaml' -o -name '*.ossa.yml' \\) | grep -v 'swarm-to-ossa' | head -20 | xargs -I {} npm run validate:manifest -- {} || true",
+    "validate:examples": "tsx src/tools/validation/validate-examples.ts",
     "validate:versions": "tsx src/tools/validate-versions.ts",
     "fix:versions": "tsx src/tools/fix-versions.ts",
     "validate:power": "tsx src/tools/validation/validate-ossa.ts",
@@ -227,7 +235,7 @@
     "postinstall": "node bin/postinstall || true",
     "// RELEASE & PUBLISH": "",
     "prepublishOnly": "publint && npm run test:unit && npm run build",
-    "validate:deps": "depcheck --ignore-dirs=examples --ignores='@anthropic-ai/claude-agent-sdk,@langchain/openai,@openai/agents,@temporalio/activity,@temporalio/workflow,pino-pretty,readline,@types/*,ts-jest,eslint*,prettier*,lefthook,jest*,vitest,semantic-release*,@semantic-release/*,keep-a-changelog,jest-junit,publint,conventional-changelog-conventionalcommits,ajv-cli,json-schema-to-typescript,json-schema-to-zod,ts-node,@playwright/test,@langchain/anthropic,@langchain/core,langchain'",
+    "validate:deps": "depcheck --ignore-dirs=examples --ignores='@anthropic-ai/claude-agent-sdk,@langchain/openai,@openai/agents,@temporalio/activity,@temporalio/workflow,pino-pretty,readline,@types/*,ts-jest,eslint*,prettier*,lefthook,jest*,vitest,semantic-release*,@semantic-release/*,keep-a-changelog,jest-junit,publint,conventional-changelog-conventionalcommits,ajv-cli,json-schema-to-typescript,json-schema-to-zod,ts-node,@playwright/test,@langchain/anthropic,@langchain/core,langchain,agent-browser'",
     "validate:package": "publint",
     "publish:dry-run": "npm publish --dry-run",
     "release:check": "npm run typecheck && npm run test:unit && npm run validate:schema && publint",
@@ -235,9 +243,11 @@
     "release:semantic:dry": "npx semantic-release --dry-run"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.41",
     "@anthropic-ai/claude-agent-sdk": "^0.2.50",
     "@anthropic-ai/sdk": "^0.71.0",
     "@aws-sdk/client-bedrock-runtime": "^3.955.0",
+    "@better-openclaw/core": "^1.0.30",
     "@cedar-policy/cedar-wasm": "^4.9.1",
     "@gitbeaker/node": "^35.8.1",
     "@gitbeaker/rest": "^43.8.0",
@@ -245,10 +255,10 @@
     "@langchain/anthropic": "^0.3.10",
     "@langchain/core": "^0.3.29",
     "@langchain/openai": "^0.3.17",
-    "@modelcontextprotocol/sdk": "^0.6.0",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "@noble/ed25519": "^2.3.0",
     "@octokit/rest": "^20.0.0",
-    "@openai/agents": "^0.4.6",
+    "@openai/agents": "^0.7.1",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/exporter-jaeger": "^1.28.0",
     "@opentelemetry/exporter-logs-otlp-http": "^0.211.0",
@@ -261,11 +271,13 @@
     "@opentelemetry/sdk-metrics": "^2.5.0",
     "@opentelemetry/sdk-node": "^0.54.0",
     "@opentelemetry/sdk-trace-base": "^1.28.0",
-    "@qdrant/js-client-rest": "^1.9.0",
+    "@qdrant/js-client-rest": "^1.17.0",
     "@temporalio/activity": "^1.11.3",
     "@temporalio/workflow": "^1.11.3",
     "@types/tar": "^6.1.13",
     "@types/ws": "^8.18.1",
+    "agent-browser": "^0.20.11",
+    "ai": "^6.0.116",
     "ajv": "^8.12.0",
     "ajv-formats": "^3.0.1",
     "axios": "^1.12.2",
@@ -291,18 +303,22 @@
     "pino": "^10.3.0",
     "pino-pretty": "^13.1.3",
     "prom-client": "^15.1.3",
+    "proxy-agent": "^7.0.0",
     "readline": "^1.3.0",
     "reflect-metadata": "^0.2.2",
     "semver": "^7.7.3",
-    "tar": "^7.5.3",
+    "tar": "^7.5.11",
+    "twig": "^2.0.0",
+    "twig-drupal-filters": "^3.2.0",
+    "universal-user-agent": "^7.0.3",
     "uuid": "^11.0.5",
     "web-did-resolver": "^2.0.32",
     "ws": "^8.19.0",
     "yaml": "^2.3.0",
-    "zod": "^4.1.11"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@bluefly/duadp": "^0.1.3",
+    "@bluefly/duadp": "^0.1.4",
     "@jest/globals": "^29.7.0",
     "@octokit/rest": "^22.0.1",
     "@semantic-release/changelog": "^6.0.3",
@@ -320,6 +336,7 @@
     "@types/pg": "^8.15.5",
     "@types/redis": "^4.0.10",
     "@types/semver": "^7.7.1",
+    "@types/twig": "^1.12.17",
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
     "ajv-cli": "^5.0.0",
@@ -344,7 +361,7 @@
     "vitest": "^2.1.8"
   },
   "optionalDependencies": {
-    "nodemailer": "^6.9.0"
+    "nodemailer": "^8.0.2"
   },
   "engines": {
     "node": ">=20.0.0",
@@ -353,5 +370,15 @@
   "volta": {
     "node": "22.19.0",
     "npm": "11.10.0"
+  },
+  "overrides": {
+    "@hono/node-server": "^1.19.10",
+    "express-rate-limit": "^8.2.2",
+    "hono": "^4.12.7",
+    "langsmith": "^0.4.6",
+    "fast-xml-parser": "^5.3.8",
+    "@langchain/anthropic": {
+      "fast-xml-parser": "^4.5.4"
+    }
   }
 }

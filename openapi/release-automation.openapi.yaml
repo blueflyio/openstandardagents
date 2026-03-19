@@ -5,7 +5,7 @@ info:
   description: |
     OpenAPI specification for agent-based release automation.
     Integrates semantic-release, Keep a Changelog format, and agent orchestration.
-    
+
     FOLLOWS DRY PRINCIPLE: Single source of truth for release automation schemas.
   contact:
     name: OSSA Release Team
@@ -13,13 +13,11 @@ info:
   license:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-
 servers:
   - url: http://localhost:4000/api/v1
     description: Local development server
   - url: https://your-registry.example.com/api/v1
     description: Production API server (set OSSA_REGISTRY_URL)
-
 tags:
   - name: release
     description: Release orchestration and automation
@@ -27,7 +25,6 @@ tags:
     description: Changelog generation and management
   - name: version
     description: Version management and validation
-
 paths:
   /release/analyze:
     post:
@@ -57,7 +54,7 @@ paths:
                   type: boolean
                   default: false
       responses:
-        '200':
+        "200":
           description: Release analysis complete
           content:
             application/json:
@@ -68,12 +65,20 @@ paths:
                     type: boolean
                   releaseType:
                     type: string
-                    enum: [major, minor, patch, prerelease]
+                    enum:
+                      - major
+                      - minor
+                      - patch
+                      - prerelease
                   currentVersion:
                     type: string
                   nextVersion:
                     type: string
-
+      x-ossa-capability: analyze-release
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Analyze commits and determine release type
   /release/execute:
     post:
       operationId: executeRelease
@@ -95,9 +100,13 @@ paths:
                   type: boolean
                   default: false
       responses:
-        '200':
+        "200":
           description: Release executed successfully
-
+      x-ossa-capability: execute-release
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Execute full release workflow via agent orchestration
   /changelog/generate:
     post:
       operationId: generateChangelog
@@ -117,12 +126,19 @@ paths:
                   type: string
                 format:
                   type: string
-                  enum: [keepachangelog, markdown, json]
+                  enum:
+                    - keepachangelog
+                    - markdown
+                    - json
                   default: keepachangelog
       responses:
-        '200':
+        "200":
           description: Changelog generated successfully
-
+      x-ossa-capability: generate-changelog
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Generate changelog following Keep a Changelog format
   /changelog/validate:
     post:
       operationId: validateChangelog
@@ -140,5 +156,23 @@ paths:
                   type: string
                   default: CHANGELOG.md
       responses:
-        '200':
+        "200":
           description: Changelog validation result
+      x-ossa-capability: validate-changelog
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Validate changelog follows Keep a Changelog format
+x-ossa-metadata:
+  version: 0.5.0
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: release-automation
+    type: orchestrator

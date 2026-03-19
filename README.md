@@ -56,7 +56,7 @@ AI agents need the same foundational infrastructure the internet has: **identity
 | Agent identity & authentication | ✅ W3C DID (GAID) per agent | ✅ DID-verified nodes |
 | Authorization & least-privilege | ✅ AWS Cedar policies in manifest | ✅ Trust-tier gating |
 | Governance & human oversight | ✅ Signed manifests + OSCAL pointers | ✅ Audit log + attestation API |
-| Cross-system interoperability | ✅ 22 platform exports | ✅ Federated gossip discovery |
+| Cross-system interoperability | ✅ Multi-platform exports | ✅ Federated gossip discovery |
 | Monitoring & incident response | ✅ Observability config in spec | ✅ Revocation + incident endpoints |
 | Supply chain security | ✅ `x-signature` + SBOM | ✅ Signed resource registry |
 
@@ -73,54 +73,18 @@ OSSA natively aligns with the [NIST CAISI Request for Information on Collaborati
 - **Federated Discovery**: Integration with DUADP (`.well-known` endpoints) scales agent discovery securely across organizational boundaries without centralized lock-in.
 - **Supply Chain Security (SI-7)**: Cryptographically signed manifests (`x-signature`) and explicit OSCAL/SBOM pointers prevent tool poisoning and supply chain attacks.
 
-## What's New
+## What's New in v0.5.1
 
-### AgentScope Integration (v0.4.8)
-
-- **New agent framework**: `agentscope` — Alibaba's production-ready Python agent framework (Apache 2.0, 17.8k stars) now supported as an OSSA agent type
-- **Python adapter**: Full OSSA-to-AgentScope bridge — reads OSSA manifests, instantiates ReActAgent with MCP tools, A2A protocol, memory backends (Mem0, Redis, ReMe)
-- **MCP server wrapper**: Expose any AgentScope agent as an MCP server for Claude Code, Cursor, VS Code
-- **A2A endpoint**: Serve AgentScope agents as discoverable A2A protocol endpoints with `.well-known/agent.json`
-- **Drupal module**: `ai_agents_agentscope` — contrib-first AiProvider plugin bridging AgentScope into Drupal's AI Agents ecosystem
-- **Docker support**: Dockerfile + docker-compose for containerized AgentScope runtime
-- **CLI**: `ossa-agentscope run|validate|serve` commands for manifest-driven agent execution
-- **Unique capabilities** not available in other frameworks: RL-based agent training, realtime voice agents, built-in evaluation framework
-- **Schema**: `extensions.agentscope` block in v0.4 and v0.5 specs with agent_class, capabilities, memory_backend, orchestration, formatter, compression, skill_dirs
-
-### OpenAI Agents SDK Export (2026-02-16)
-
-- **New export platform**: `openai-agents-sdk` (22nd platform) — generates runnable `@openai/agents` TypeScript packages from OSSA manifests
-- Maps OSSA `spec.personality` to agent instructions, `spec.llm` to model selection, `spec.tools` to function tools, `spec.mcp` to MCPServerStreamableHttp connections, `spec.safety` to guardrails
-- Generates: `agent.ts`, `mcp-config.ts`, `guardrails.ts`, `run.ts`, `package.json`, `tsconfig.json`
-- Usage: `ossa export --platform openai-agents-sdk agent.ossa.yaml`
-- New OSSA extension blocks planned: `openai_agents_sdk`, `openai_responses_api`, `openai_realtime`, `openai_deep_research`
-- Supports defining agents once and exporting to both Claude and OpenAI platforms
-
-### Multi-Agent Team Topology (2026-02-17)
-
-- **Team definitions** (`spec.team`): Define coordinated multi-agent teams with 4 team models — lead-teammate, peer-to-peer, hierarchical, swarm
-- **Subagent definitions** (`spec.subagents`): Parent-child delegation hierarchies with role-based agents (worker, specialist, reviewer, debugger)
-- **8 architecture patterns**: single, swarm, pipeline, graph, hierarchical, reactive, cognitive, lead-teammate
-- **Team code generation**: Export team topology to CrewAI (Python), OpenAI Agents SDK (TypeScript), Claude Code (markdown), and npm (TypeScript)
-- **`--perfect-agent` CLI flag**: Generate a complete production bundle — AGENTS.md, team scaffolding, CLEAR eval stubs, governance config, observability config, and agent card
-- **Team-aware AGENTS.md**: Auto-generated documentation with team topology tables, member roles, coordination strategy, and hierarchy diagrams
-- **5 new export platforms**: `openai-agents-sdk` (beta), `a2a` (alpha), `claude-skills` (beta), `mobile-agent` (alpha), `symfony` (alpha) — bringing total to 22
-
-### v0.4.6 (2026-02-19)
-
-**Version Update**:
-- Updated all version references from 0.4.5 to 0.4.6
-- Package version bumped to 0.4.6
-
-### v0.4.5 (2026-02-10)
-
-**Major Cleanup & Foundation Improvements**:
-- 16,574 LOC removed - 47% codebase reduction (35,425 to 18,851 LOC)
-- SDK Migration - Anthropic adapter now uses official `@anthropic-ai/sdk` (513 LOC removed, 25.8% reduction)
-- Complete Skills Pipeline - Research, generate, export, validate, sync Claude Skills
-- Zero Build Errors - Fixed all TypeScript errors, 100% passing tests
-- DRY Improvements - Eliminated 99 LOC duplication via BasePackageGenerator
-- 19 New Tests - Skills pipeline fully tested (100% passing)
+- **CAOE cognition types**: `session`, `hypothesis`, and `alignment gate` JSON schema extensions for cognitive agent orchestration.
+- **kind: Role manifest spec**: New manifest kind `Role` for declarative role-based agent definitions.
+- **@better-openclaw/core integration**: 201 services and 44 skill packs wired through OpenClaw core.
+- **MCP DI services wired**: `ossa_validate` and `ossa_publish` connected to dependency injection services.
+- **proxy-agent + universal-user-agent**: Standards-compliant HTTP proxy and user-agent handling.
+- **Security**: Scrubbed hardcoded credentials from codebase.
+- **Spec and schema remain on `v0.5`**. Public examples, migration commands, and SDK snippets continue to use `ossa/v0.5.0` and [`spec/v0.5/agent.schema.json`](./spec/v0.5/agent.schema.json).
+- **OpenAI Agents SDK export remains first-class**. Use `ossa export agent.ossa.yaml --platform openai-agents-sdk` to generate a runnable `@openai/agents` TypeScript package with MCP config and guardrails.
+- **AgentScope support** continues via `extensions.agentscope` for class, orchestration, memory backend, capabilities, and compression settings.
+- **Team topology stays in the core contract**. `spec.team`, `spec.subagents`, and `--perfect-agent` continue to support lead-teammate, peer, hierarchical, and swarm compositions from a single manifest.
 
 See [CHANGELOG.md](./CHANGELOG.md) for complete details.
 
@@ -338,7 +302,7 @@ Upgrade manifests to the latest spec version:
 
 ```bash
 # Migrate from older version to current
-ossa migrate agent.ossa.yaml --to 0.4.6
+ossa migrate agent.ossa.yaml --to 0.5.0
 
 # List available migration paths
 ossa migrate --list
@@ -365,7 +329,7 @@ if (result.valid) {
 }
 ```
 
-## Production Status (v0.4.6)
+## Production Status (v0.5.1)
 
 ### ✅ Production-Ready (Tested & Documented)
 
@@ -377,13 +341,13 @@ if (result.valid) {
 - `ossa migrate` - Migrate between spec versions
 - `ossa generate-gaid` - Global Agent ID generation
 
-**Production Platform Exports** (4 production, 8 beta, 10 alpha — 22 total):
+**Production Platform Exports** (see `ossa export --list-platforms` for the live matrix):
 - `langchain` (production) - Python + TypeScript agents (uses @langchain/* SDK v0.3+)
 - `mcp` (production) - MCP server for Claude Code (uses @modelcontextprotocol/sdk v1.0+)
 - `npm` (production) - TypeScript package with manifest
 - `agent-skills` (production) - SKILL.md for Claude Code
 
-**Skills Pipeline** (✅ Complete in v0.4.6):
+**Skills Pipeline** (✅ Current in v0.5.0):
 - `ossa skills research` - Index skills from curated sources (cached locally at ~/.ossa/skills-index.json)
 - `ossa skills generate` - Auto-detects input format (OSSA, Oracle Agent Spec, AGENTS.md)
 - `ossa skills export` - Package as npm, install to ~/.claude/skills/, publish to registry
@@ -402,7 +366,7 @@ if (result.valid) {
 - `ossa agents-local` - Local `.agents/` folder management
 - `ossa agents-md` - Generate, validate, sync [agents.md](https://agents.md) files (standard: [agentsmd/agents.md](https://github.com/agentsmd/agents.md)); customize via wizard step or `ossa agents-md generate|validate|sync`
 - Export to: `crewai`, `drupal`, `claude-code`, `cursor`, `warp`, `anthropic`
-- Anthropic runtime adapter uses official `@anthropic-ai/sdk` (v0.4.6 improvement: 513 LOC removed)
+- Anthropic runtime adapter uses official `@anthropic-ai/sdk`
 
 ### GitLab Agent Examples (Fully Implemented)
 
@@ -446,7 +410,7 @@ OSSA complements MCP and A2A by adding the packaging and deployment layer they d
 ### Manifest Format
 
 ```yaml
-apiVersion: ossa/v0.4.6
+apiVersion: ossa/v0.5.0
 kind: Agent
 metadata:
   name: code-reviewer
@@ -473,7 +437,7 @@ spec:
 #### Team Manifest Example
 
 ```yaml
-apiVersion: ossa/v0.4.6
+apiVersion: ossa/v0.5.0
 kind: Agent
 metadata:
   name: dev-team
@@ -567,7 +531,7 @@ import { validateManifest } from '@bluefly/openstandardagents/validation';
 import type { OssaAgent } from '@bluefly/openstandardagents/types';
 
 const agent: OssaAgent = {
-  apiVersion: 'ossa/v0.4.6',
+  apiVersion: 'ossa/v0.5.0',
   kind: 'Agent',
   metadata: { name: 'creative-agent-naming', version: '1.0.0' },
   spec: {
@@ -582,7 +546,7 @@ if (result.valid) console.log('Valid manifest');
 
 ## Spec Features
 
-The OSSA v0.4 schema supports these optional sections:
+The OSSA v0.5.0 schema supports these optional sections:
 
 - **LLM Configuration** - Provider, model, temperature, max tokens, caching
 - **Tools** - Named tools with input schemas
@@ -613,7 +577,7 @@ OSSA is designed to work **alongside** existing agent protocols, not replace the
 **Example**: An OSSA manifest can declare that an agent uses MCP tools and A2A messaging, then export that configuration to Docker, Kubernetes, or LangChain deployment packages.
 
 ```yaml
-apiVersion: ossa/v0.4.6
+apiVersion: ossa/v0.5.0
 kind: Agent
 metadata:
   name: code-reviewer
@@ -667,7 +631,7 @@ ossa export agent.ossa.yaml --platform docker --output ./docker-deploy
 ossa export --list-platforms
 ossa lint agent.ossa.yaml
 ossa diff old.ossa.yaml new.ossa.yaml
-ossa migrate agent.ossa.yaml --to 0.4.6
+ossa migrate agent.ossa.yaml --to 0.5.0
 ossa generate-gaid agent.ossa.yaml
 ossa export agent.ossa.yaml --perfect-agent
 ossa export agent.ossa.yaml --include-agents-md --include-team --include-evals
@@ -755,7 +719,7 @@ All mutation commands support:
 - [Agents workspace and registry](./docs/getting-started/agents-workspace-registry.md) - `.agents-workspace/` layout, sources, MCP/A2A
 - [CHANGELOG](./CHANGELOG.md) - Release history
 - [Examples](./examples) - Sample manifests
-- [JSON Schema](./spec/v0.4/agent.schema.json) - Full spec
+- [JSON Schema](./spec/v0.5/agent.schema.json) - Full spec
 - [GitLab](https://gitlab.com/blueflyio/ossa/openstandardagents) - Source
 - [GitHub Mirror](https://github.com/blueflyio/openstandardagents)
 

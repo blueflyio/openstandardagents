@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-03-18
+
+### Added
+- **CAOE cognition types**: `session`, `hypothesis`, and `alignment gate` JSON schema extensions for cognitive agent orchestration
+- **kind: Role manifest spec**: New manifest kind `Role` for declarative role-based agent definitions
+- **@better-openclaw/core integration**: 201 services and 44 skill packs wired through OpenClaw core
+
+### Changed
+- **MCP DI services wired**: `ossa_validate` and `ossa_publish` connected to dependency injection services
+- **proxy-agent + universal-user-agent**: Integrated for standards-compliant HTTP proxy and user-agent handling
+- **Security**: Scrubbed hardcoded credentials from codebase
+
 ## [0.5.0] - 2026-03-08
 
 ### Added
@@ -500,7 +512,7 @@ Complete agent registration infrastructure enabling global agent discovery, veri
 - HTTP client for registry API integration (248 lines)
 - Axios-based with TypeScript types
 - Methods: `registerAgent()`, `discoverAgents()`, `verifyAgent()`, `getAgentCard()`
-- Configurable base URL (default: https://mesh.blueflyagents.com)
+- Configurable base URL (default: https://mesh.bluefly.internal)
 - Comprehensive error handling
 - Exported from index.ts for SDK consumption
 
@@ -511,7 +523,7 @@ Complete agent registration infrastructure enabling global agent discovery, veri
   - Organization name for GAID (default: blueflyio)
   - Serial number prefix (default: AG)
   - 📡 Register agent to platform registry? (default: no)
-  - Registry API URL (default: https://mesh.blueflyagents.com)
+  - Registry API URL (default: https://mesh.bluefly.internal)
 - Serial number format: `{PREFIX}-{TIMESTAMP}-{RANDOM}`
   - Example: `AG-1K2L3M-4N5P`
   - Unique, time-sortable, URL-safe
@@ -524,7 +536,7 @@ Complete agent registration infrastructure enabling global agent discovery, veri
       ossa.org/organization: blueflyio
       ossa.org/registered-at: 2026-02-06T...
       ossa.org/registered: "true"
-      ossa.org/registry-url: https://mesh.blueflyagents.com
+      ossa.org/registry-url: https://mesh.bluefly.internal
       ossa.org/signature: sha256:abc...
   ```
 - GAID info file: Saves `.gaid.json` with registration metadata
@@ -655,7 +667,7 @@ ossa validate creative-agent-naming.ossa.yaml
 ossa generate-gaid creative-agent-naming.ossa.yaml --org blueflyio
 
 # Register to platform
-ossa register creative-agent-naming.ossa.yaml --registry https://mesh.blueflyagents.com
+ossa register creative-agent-naming.ossa.yaml --registry https://mesh.bluefly.internal
 
 # Discover agents
 ossa discover --capability compliance-audit

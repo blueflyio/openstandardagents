@@ -1,8 +1,4 @@
-# OSSA v1alpha2 export example: Agent with RemoteMCPServer tools and Anthropic provider
-# Run: ossa export examples/kagent/ossa-kagent-mcp-tools.ossa.yaml --platform kagent -o ./mcp-tools-out
-# Deploy: ossa export examples/kagent/ossa-kagent-mcp-tools.ossa.yaml --platform kagent --apply
-# Result: ModelConfig + 2x RemoteMCPServer + Agent applied in APPLY_ORDER
-apiVersion: ossa/v0.4
+apiVersion: ossa/v0.5
 kind: Agent
 metadata:
   name: fleet-ops-agent
@@ -40,29 +36,5 @@ extensions:
       resourceLimits:
         cpu: 1000m
         memory: 1Gi
-    mcpServers:
-      kagent-tool-server:
-        url: http://kagent-tool-server.kagent.svc.cluster.local/sse
-        transport: sse
-      # GitLab tools live in agent-protocol (no separate gitlab-mcp-server)
-      agent-protocol-gitlab:
-        url: http://agent-protocol.agent-platform.svc.cluster.local:4005/api/mcp/sse
-        transport: sse
-        headers:
-          - name: Authorization
-            valueFrom:
-              type: Secret
-              name: gitlab-token
-              key: token
     a2aConfig:
-      skills:
-        - id: fleet-management
-          name: Fleet Management
-          description: Manage Kubernetes resources and GitLab repositories across the fleet
-          inputModes: [text]
-          outputModes: [text]
-          tags: [k8s, gitlab, fleet, ossa]
-          examples:
-            - "List all deployments in the kagent namespace"
-            - "Show recent merge requests for agent-buildkit"
-            - "Get logs from the failing pod"
+      enabled: true

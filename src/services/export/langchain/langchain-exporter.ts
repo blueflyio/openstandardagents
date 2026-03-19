@@ -919,7 +919,7 @@ services:
       - "6379:6379"
 `;
     } else if (memoryBackend === 'postgres') {
-      compose += `      - POSTGRES_URL=postgresql://postgres:postgres@postgres:5432/agent_memory
+      compose += `      - POSTGRES_URL=postgresql://postgres:\${POSTGRES_PASSWORD}@postgres:5432/agent_memory
     depends_on:
       - postgres
 
@@ -955,7 +955,7 @@ volumes:
       '',
       '# Memory Backend',
       'REDIS_URL=redis://localhost:6379',
-      'POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/agent_memory',
+      'POSTGRES_URL=postgresql://postgres:${POSTGRES_PASSWORD}@localhost:5432/agent_memory',
       '',
       '# API Configuration',
       'API_PORT=8000',

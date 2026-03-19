@@ -7,7 +7,7 @@ Example:
     ```python
     from ossa_client import OSSA
 
-    client = OSSA(bearer_token='SET_OSSA_BEARER_TOKEN')
+    client = OSSA(bearer_token='ossa_tok_xxx')
 
     # Search for agents
     results = client.agents.search(domain='security', limit=10)

@@ -249,10 +249,7 @@ export class SkillsInstallService {
       });
 
       const skillMdPaths = (tree.tree || [])
-        .filter(
-          (e: any) =>
-            e.type === 'blob' && e.path?.endsWith('SKILL.md')
-        )
+        .filter((e: any) => e.type === 'blob' && e.path?.endsWith('SKILL.md'))
         .map((e: any) => e.path);
 
       const dirs = new Map<string, string>();

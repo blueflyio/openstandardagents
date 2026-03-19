@@ -71,7 +71,7 @@ agent = ReActAgent(
 
 The manifest declares two MCP tool servers under `spec.tools`:
 
-1. **knowledge-base** -- Graph knowledge base at `gkg.blueflyagents.com` for codebase analysis and structured queries.
+1. **knowledge-base** -- Graph knowledge base at `gkg.bluefly.internal` for codebase analysis and structured queries.
 2. **web-search** -- General MCP server at `mcp.blueflyagents.com` for web search and content retrieval.
 
 At runtime, the adapter connects to these SSE endpoints, discovers available tools, and registers them with the AgentScope `ReActAgent` tool list.

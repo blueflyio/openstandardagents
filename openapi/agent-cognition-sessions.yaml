@@ -1,0 +1,580 @@
+openapi: 3.1.0
+info:
+  title: OSSA Agent Cognition Sessions API
+  version: 0.4.0
+  description: >
+    API for managing collaborative agent cognition sessions, hypotheses,
+    presence signals, and alignment locks within the CAOE framework.
+
+paths:
+  /sessions:
+    post:
+      operationId: createSession
+      summary: Create a new collaborative session
+      tags: [Sessions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionRequest'
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSessionResponse'
+    get:
+      operationId: listSessions
+      summary: List active sessions
+      tags: [Sessions]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/SessionStatus'
+      responses:
+        '200':
+          description: List of sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Session'
+
+  /sessions/{sessionId}:
+    get:
+      operationId: getSession
+      summary: Get session details
+      tags: [Sessions]
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '404':
+          description: Session not found
+    delete:
+      operationId: endSession
+      summary: End a session
+      tags: [Sessions]
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Session ended
+
+  /sessions/{sessionId}/hypotheses:
+    post:
+      operationId: emitHypothesis
+      summary: Emit a hypothesis in a session
+      tags: [Hypotheses]
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmitHypothesisRequest'
+      responses:
+        '201':
+          description: Hypothesis emitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hypothesis'
+        '409':
+          description: Conflict detected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conflicts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Hypothesis'
+    get:
+      operationId: listHypotheses
+      summary: List hypotheses in a session
+      tags: [Hypotheses]
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: List of hypotheses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Hypothesis'
+
+  /sessions/{sessionId}/hypotheses/{hypothesisId}/lock:
+    post:
+      operationId: lockHypothesis
+      summary: Lock a hypothesis (human arbitration)
+      tags: [Hypotheses]
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/HypothesisId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LockHypothesisRequest'
+      responses:
+        '200':
+          description: Hypothesis locked
+
+  /sessions/{sessionId}/conflicts/resolve:
+    post:
+      operationId: resolveConflict
+      summary: Resolve a hypothesis conflict
+      tags: [Conflicts]
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConflictResolutionRequest'
+      responses:
+        '200':
+          description: Conflict resolved
+
+  /sessions/{sessionId}/presence:
+    get:
+      operationId: getPresence
+      summary: Get current presence signals for a session
+      tags: [Presence]
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Presence signals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PresenceSignal'
+
+components:
+  parameters:
+    SessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    HypothesisId:
+      name: hypothesisId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    SessionStatus:
+      type: string
+      enum: [active, paused, ended]
+
+    ActorType:
+      type: string
+      enum: [human, agent]
+
+    HypothesisStatus:
+      type: string
+      enum: [forming, active, locked, superseded, rejected, completed]
+
+    CognitionEventType:
+      type: string
+      enum:
+        - hypothesis.formed
+        - hypothesis.updated
+        - hypothesis.locked
+        - hypothesis.rejected
+        - hypothesis.completed
+        - conflict.detected
+        - conflict.resolved
+        - alignment.checkpoint
+        - session.joined
+        - session.left
+        - focus.changed
+
+    HypothesisIntent:
+      type: object
+      required: [action, targetFiles, targetPackages, estimatedScope]
+      properties:
+        action:
+          type: string
+          enum: [create, modify, delete, read, test, refactor, review, deploy, analyze]
+        targetFiles:
+          type: array
+          items:
+            type: string
+        targetPackages:
+          type: array
+          items:
+            type: string
+        estimatedScope:
+          type: string
+          enum: [line, function, file, module, package]
+        conflictSensitive:
+          type: boolean
+          default: true
+
+    Hypothesis:
+      type: object
+      required: [id, sessionId, actorId, actorType, statement, intent, status, confidence, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        sessionId:
+          type: string
+          format: uuid
+        actorId:
+          type: string
+          minLength: 1
+        actorType:
+          $ref: '#/components/schemas/ActorType'
+        statement:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        intent:
+          $ref: '#/components/schemas/HypothesisIntent'
+        status:
+          $ref: '#/components/schemas/HypothesisStatus'
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        supersedes:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        lockedBy:
+          type: string
+        lockedAt:
+          type: string
+          format: date-time
+
+    PresenceSignal:
+      type: object
+      required: [actorId, actorType, actorLabel, sessionId, focus, color, status, timestamp]
+      properties:
+        actorId:
+          type: string
+          minLength: 1
+        actorType:
+          $ref: '#/components/schemas/ActorType'
+        actorLabel:
+          type: string
+        sessionId:
+          type: string
+          format: uuid
+        focus:
+          type: object
+          properties:
+            file:
+              type: string
+            line:
+              type: integer
+              minimum: 1
+            column:
+              type: integer
+              minimum: 0
+            selection:
+              type: object
+              properties:
+                startLine:
+                  type: integer
+                endLine:
+                  type: integer
+            package:
+              type: string
+            scope:
+              type: string
+        activeHypothesisId:
+          type: string
+          format: uuid
+        color:
+          type: string
+          pattern: '^#[0-9a-fA-F]{6}$'
+        status:
+          type: string
+          enum: [active, idle, blocked, offline]
+        timestamp:
+          type: string
+          format: date-time
+
+    SessionParticipant:
+      type: object
+      required: [actorId, actorType, joinedAt, role]
+      properties:
+        actorId:
+          type: string
+        actorType:
+          $ref: '#/components/schemas/ActorType'
+        joinedAt:
+          type: string
+          format: date-time
+        role:
+          type: string
+          enum: [owner, collaborator, observer]
+
+    AlignmentCheckpoint:
+      type: object
+      required: [id, hypothesisId, approvedBy, approvedAt, description]
+      properties:
+        id:
+          type: string
+          format: uuid
+        hypothesisId:
+          type: string
+          format: uuid
+        approvedBy:
+          type: string
+        approvedAt:
+          type: string
+          format: date-time
+        description:
+          type: string
+
+    Session:
+      type: object
+      required: [id, name, packages, status, participants, activeHypothesisIds, alignmentCheckpoints, wsEndpoint, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        gitlabIssueId:
+          type: integer
+        branch:
+          type: string
+        packages:
+          type: array
+          items:
+            type: string
+        status:
+          $ref: '#/components/schemas/SessionStatus'
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionParticipant'
+        activeHypothesisIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        alignmentCheckpoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlignmentCheckpoint'
+        wsEndpoint:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: string
+          format: date-time
+
+    CognitionEvent:
+      type: object
+      required: [id, type, sessionId, actorId, actorType, description, affectedFiles, nist, timestamp]
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/CognitionEventType'
+        sessionId:
+          type: string
+          format: uuid
+        actorId:
+          type: string
+        actorType:
+          $ref: '#/components/schemas/ActorType'
+        hypothesisId:
+          type: string
+          format: uuid
+        conflictingHypothesisIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        checkpointHypothesisId:
+          type: string
+          format: uuid
+        description:
+          type: string
+        affectedFiles:
+          type: array
+          items:
+            type: string
+        nist:
+          type: object
+          required: [classification]
+          properties:
+            control:
+              type: string
+              default: AU-2
+            classification:
+              type: string
+              enum: [informational, warning, critical]
+            requiresReview:
+              type: boolean
+              default: false
+        timestamp:
+          type: string
+          format: date-time
+
+    OSSACognitionSpec:
+      type: object
+      properties:
+        sessionCapable:
+          type: boolean
+          default: false
+        hypothesisEmission:
+          type: string
+          enum: [required, optional, disabled]
+          default: optional
+        conflictBehavior:
+          type: string
+          enum: [block, warn, defer]
+          default: block
+        alignmentGate:
+          type: string
+          enum: [human_approval, auto_on_confidence, peer_agent, none]
+          default: human_approval
+        autoLockConfidenceThreshold:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.95
+        maxConcurrentHypotheses:
+          type: integer
+          minimum: 1
+          maximum: 5
+          default: 1
+        cognitiveFingerprint:
+          type: string
+
+    CreateSessionRequest:
+      type: object
+      required: [name, packages]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        gitlabIssueId:
+          type: integer
+        branch:
+          type: string
+        packages:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        agentIds:
+          type: array
+          items:
+            type: string
+
+    CreateSessionResponse:
+      type: object
+      required: [session, joinUrl, wsEndpoint]
+      properties:
+        session:
+          $ref: '#/components/schemas/Session'
+        joinUrl:
+          type: string
+          format: uri
+        wsEndpoint:
+          type: string
+          format: uri
+
+    EmitHypothesisRequest:
+      type: object
+      required: [sessionId, statement, intent, confidence]
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        statement:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        intent:
+          $ref: '#/components/schemas/HypothesisIntent'
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        supersedes:
+          type: string
+          format: uuid
+
+    LockHypothesisRequest:
+      type: object
+      required: [sessionId, hypothesisId, arbitratorId]
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        hypothesisId:
+          type: string
+          format: uuid
+        arbitratorId:
+          type: string
+        reason:
+          type: string
+
+    ConflictResolutionRequest:
+      type: object
+      required: [sessionId, winningHypothesisId, losingHypothesisIds, arbitratorId, checkpointDescription]
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        winningHypothesisId:
+          type: string
+          format: uuid
+        losingHypothesisIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        arbitratorId:
+          type: string
+        checkpointDescription:
+          type: string

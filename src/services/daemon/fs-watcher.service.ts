@@ -13,9 +13,9 @@ import chokidar, { type FSWatcher } from 'chokidar';
 
 export interface FileChangeEvent {
   type: 'added' | 'changed' | 'removed';
-  path: string;        // Relative to workspace root
+  path: string; // Relative to workspace root
   absolutePath: string; // Full path (validated)
-  timestamp: string;    // ISO 8601
+  timestamp: string; // ISO 8601
 }
 
 export interface FileTreeEntry {
@@ -34,11 +34,7 @@ const WATCH_PATTERNS = [
   '**/SKILL.md',
 ];
 
-const IGNORED = [
-  '**/node_modules/**',
-  '**/dist/**',
-  '**/.git/**',
-];
+const IGNORED = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
 
 const DEBOUNCE_MS = 300;
 
@@ -47,21 +43,27 @@ export class FileWatcherService {
   private watcher: FSWatcher | null = null;
   private workspaceRoot = '';
   private callbacks: FileChangeCallback[] = [];
-  private debounceTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
-  private trackedFiles: Map<string, { modified: string; size: number }> = new Map();
+  private debounceTimers: Map<string, ReturnType<typeof setTimeout>> =
+    new Map();
+  private trackedFiles: Map<string, { modified: string; size: number }> =
+    new Map();
 
   /**
    * Start watching a workspace directory for OSSA file changes.
    */
   start(workspaceRoot: string): void {
     if (this.watcher) {
-      throw new Error('FileWatcherService is already running. Call stop() first.');
+      throw new Error(
+        'FileWatcherService is already running. Call stop() first.'
+      );
     }
 
     this.workspaceRoot = path.resolve(workspaceRoot);
     this.trackedFiles.clear();
 
-    const watchPaths = WATCH_PATTERNS.map((p) => path.join(this.workspaceRoot, p));
+    const watchPaths = WATCH_PATTERNS.map((p) =>
+      path.join(this.workspaceRoot, p)
+    );
 
     this.watcher = chokidar.watch(watchPaths, {
       ignored: IGNORED,
@@ -74,8 +76,12 @@ export class FileWatcherService {
     });
 
     this.watcher
-      .on('add', (filePath, stats) => this.handleEvent('added', filePath, stats))
-      .on('change', (filePath, stats) => this.handleEvent('changed', filePath, stats))
+      .on('add', (filePath, stats) =>
+        this.handleEvent('added', filePath, stats)
+      )
+      .on('change', (filePath, stats) =>
+        this.handleEvent('changed', filePath, stats)
+      )
       .on('unlink', (filePath) => this.handleEvent('removed', filePath))
       .on('error', (error) => {
         // Log but don't throw — watcher should stay alive
@@ -128,7 +134,10 @@ export class FileWatcherService {
     const resolved = path.resolve(filePath);
 
     // Must be inside workspace root
-    if (!resolved.startsWith(this.workspaceRoot + path.sep) && resolved !== this.workspaceRoot) {
+    if (
+      !resolved.startsWith(this.workspaceRoot + path.sep) &&
+      resolved !== this.workspaceRoot
+    ) {
       return false;
     }
 
@@ -162,7 +171,7 @@ export class FileWatcherService {
   private handleEvent(
     type: FileChangeEvent['type'],
     filePath: string,
-    stats?: { size: number; mtime: Date } | undefined,
+    stats?: { size: number; mtime: Date } | undefined
   ): void {
     const absolutePath = path.resolve(filePath);
 
@@ -178,7 +187,9 @@ export class FileWatcherService {
     } else {
       const fileStats = stats ?? this.safeStatSync(absolutePath);
       this.trackedFiles.set(relativePath, {
-        modified: fileStats ? new Date(fileStats.mtime).toISOString() : new Date().toISOString(),
+        modified: fileStats
+          ? new Date(fileStats.mtime).toISOString()
+          : new Date().toISOString(),
         size: fileStats?.size ?? 0,
       });
     }

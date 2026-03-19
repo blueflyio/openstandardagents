@@ -4,13 +4,18 @@ import { container } from '../../di-container.js';
 import { RegistryService } from '../../services/registry.service.js';
 
 export const searchCommand = new Command('search')
-  .description('Search for OSSA agents in the registry (local or remote DUADP node)')
+  .description(
+    'Search for OSSA agents in the registry (local or remote DUADP node)'
+  )
   .option('-q, --query <query>', 'Search query')
   .option('-d, --domain <domain>', 'Filter by domain')
   .option('-t, --type <type>', 'Filter by agent type')
   .option('-l, --limit <limit>', 'Limit results', '20')
   .option('-r, --registry <path>', 'Registry path (defaults to .ossa-registry)')
-  .option('--remote <url>', 'Search a remote DUADP node (e.g., https://discover.duadp.org)')
+  .option(
+    '--remote <url>',
+    'Search a remote DUADP node (e.g., https://discover.duadp.org)'
+  )
   .option('--federated', 'Include federated results from peer nodes')
   .action(
     async (options: {
@@ -39,7 +44,11 @@ export const searchCommand = new Command('search')
             process.exit(0);
           }
 
-          console.log(chalk.blue(`\nFound ${data.length} result(s) from ${options.remote}:\n`));
+          console.log(
+            chalk.blue(
+              `\nFound ${data.length} result(s) from ${options.remote}:\n`
+            )
+          );
           for (const item of data) {
             const name = item.metadata?.name || item.name || 'unknown';
             const kind = item._kind || item.kind || '';

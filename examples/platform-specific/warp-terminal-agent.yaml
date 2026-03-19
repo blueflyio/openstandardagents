@@ -4,7 +4,7 @@ metadata:
   name: warp-dev-agent
   version: 1.0.0
   description: Development workflow agent for Warp Terminal
-  author: Bluefly Platform
+  author: Agent Platform
   tags:
     - warp
     - terminal

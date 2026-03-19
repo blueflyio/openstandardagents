@@ -5,15 +5,12 @@ info:
   description: |
     OpenAPI extension for WebSocket event definitions in OSSA.
     Defines event schemas for bidirectional agent-to-agent messaging over WebSocket.
-
   contact:
     name: OSSA Standards Team
     url: https://openstandardagents.org
-
 servers:
   - url: wss://agent.example.com
     description: WebSocket server endpoint
-
 x-websocket-config:
   protocol: ossa.v0.3.0
   keepalive:
@@ -23,9 +20,8 @@ x-websocket-config:
   compression:
     enabled: true
     method: permessage-deflate
-  max_message_size_bytes: 1048576  # 1MB
+  max_message_size_bytes: 1048576
   max_connections_per_agent: 10
-
 paths:
   /ws:
     get:
@@ -33,7 +29,6 @@ paths:
       description: |
         Establish WebSocket connection for agent-to-agent messaging.
         Client must send registration event after connection.
-
       parameters:
         - name: Authorization
           in: header
@@ -41,54 +36,54 @@ paths:
           schema:
             type: string
           description: Bearer token for authentication (preferred)
-
         - name: token
           in: query
           required: false
           schema:
             type: string
           description: JWT token for authentication (fallback for restricted environments)
-
       responses:
-        '101':
+        "101":
           description: Switching Protocols - WebSocket connection established
           headers:
             Upgrade:
               schema:
                 type: string
-                enum: [websocket]
+                enum:
+                  - websocket
             Connection:
               schema:
                 type: string
-                enum: [Upgrade]
+                enum:
+                  - Upgrade
             Sec-WebSocket-Accept:
               schema:
                 type: string
-
-        '401':
+        "401":
           description: Unauthorized - Invalid or missing authentication
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-
-        '429':
+                $ref: "#/components/schemas/Error"
+        "429":
           description: Too Many Requests - Connection limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-
+                $ref: "#/components/schemas/Error"
       x-websocket-events:
-        - $ref: '#/components/x-websocket-events/Register'
-        - $ref: '#/components/x-websocket-events/Message'
-        - $ref: '#/components/x-websocket-events/CapabilityCall'
-        - $ref: '#/components/x-websocket-events/StatusUpdate'
-        - $ref: '#/components/x-websocket-events/Error'
-        - $ref: '#/components/x-websocket-events/Acknowledgment'
-        - $ref: '#/components/x-websocket-events/Ping'
-        - $ref: '#/components/x-websocket-events/Pong'
-
+        - $ref: "#/components/x-websocket-events/Register"
+        - $ref: "#/components/x-websocket-events/Message"
+        - $ref: "#/components/x-websocket-events/CapabilityCall"
+        - $ref: "#/components/x-websocket-events/StatusUpdate"
+        - $ref: "#/components/x-websocket-events/Error"
+        - $ref: "#/components/x-websocket-events/Acknowledgment"
+        - $ref: "#/components/x-websocket-events/Ping"
+        - $ref: "#/components/x-websocket-events/Pong"
+      x-ossa-capability: protocol-get-/ws
+      tags:
+        - WebSocket
+      operationId: getWs
 components:
   x-websocket-events:
     Register:
@@ -118,12 +113,13 @@ components:
               items:
                 type: string
               description: List of capabilities this agent provides
-              example: [process_data, analyze_content]
+              example:
+                - process_data
+                - analyze_content
             version:
               type: string
               description: OSSA protocol version
               example: ossa/v0.3.3
-
     Message:
       summary: General message event
       description: Pub/sub style message broadcast
@@ -131,8 +127,7 @@ components:
       event:
         type: message
         schema:
-          $ref: '#/components/schemas/WebSocketEvent'
-
+          $ref: "#/components/schemas/WebSocketEvent"
     CapabilityCall:
       summary: Capability invocation event
       description: RPC-style capability call with request/response pattern
@@ -141,7 +136,7 @@ components:
         type: capability_call
         schema:
           allOf:
-            - $ref: '#/components/schemas/WebSocketEvent'
+            - $ref: "#/components/schemas/WebSocketEvent"
             - type: object
               required:
                 - payload
@@ -160,7 +155,7 @@ components:
                       description: Capability input parameters
                 metadata:
                   allOf:
-                    - $ref: '#/components/schemas/EventMetadata'
+                    - $ref: "#/components/schemas/EventMetadata"
                     - type: object
                       required:
                         - correlationId
@@ -172,7 +167,6 @@ components:
                         replyTo:
                           type: string
                           description: WebSocket connection ID for response
-
     StatusUpdate:
       summary: Agent status update event
       description: Periodic health and status broadcasts
@@ -181,7 +175,7 @@ components:
         type: status_update
         schema:
           allOf:
-            - $ref: '#/components/schemas/WebSocketEvent'
+            - $ref: "#/components/schemas/WebSocketEvent"
             - type: object
               required:
                 - payload
@@ -193,7 +187,11 @@ components:
                   properties:
                     status:
                       type: string
-                      enum: [healthy, degraded, unhealthy, offline]
+                      enum:
+                        - healthy
+                        - degraded
+                        - unhealthy
+                        - offline
                     load:
                       type: number
                       minimum: 0
@@ -209,7 +207,6 @@ components:
                     metrics:
                       type: object
                       additionalProperties: true
-
     Error:
       summary: Error event
       description: Error notification for failed operations
@@ -218,7 +215,7 @@ components:
         type: error
         schema:
           allOf:
-            - $ref: '#/components/schemas/WebSocketEvent'
+            - $ref: "#/components/schemas/WebSocketEvent"
             - type: object
               required:
                 - payload
@@ -246,7 +243,6 @@ components:
                     retryable:
                       type: boolean
                       default: false
-
     Acknowledgment:
       summary: Message acknowledgment
       description: Confirms message receipt for at-least-once delivery
@@ -255,7 +251,7 @@ components:
         type: ack
         schema:
           allOf:
-            - $ref: '#/components/schemas/WebSocketEvent'
+            - $ref: "#/components/schemas/WebSocketEvent"
             - type: object
               required:
                 - payload
@@ -271,8 +267,10 @@ components:
                       format: uuid
                     status:
                       type: string
-                      enum: [received, processed, failed]
-
+                      enum:
+                        - received
+                        - processed
+                        - failed
     Ping:
       summary: Keepalive ping
       description: Server-initiated heartbeat to maintain connection
@@ -291,7 +289,6 @@ components:
             timestamp:
               type: string
               format: date-time
-
     Pong:
       summary: Keepalive pong
       description: Client response to ping
@@ -310,7 +307,6 @@ components:
             timestamp:
               type: string
               format: date-time
-
   schemas:
     WebSocketEvent:
       type: object
@@ -342,8 +338,7 @@ components:
           type: object
           description: Event-specific payload
         metadata:
-          $ref: '#/components/schemas/EventMetadata'
-
+          $ref: "#/components/schemas/EventMetadata"
     EventMetadata:
       type: object
       required:
@@ -363,7 +358,11 @@ components:
           description: Connection ID or endpoint for responses
         priority:
           type: string
-          enum: [low, normal, high, critical]
+          enum:
+            - low
+            - normal
+            - high
+            - critical
           default: normal
         ttl:
           type: integer
@@ -373,7 +372,6 @@ components:
           type: integer
           minimum: 0
           description: Number of retry attempts
-
     Error:
       type: object
       required:
@@ -387,27 +385,22 @@ components:
         details:
           type: object
           additionalProperties: true
-
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
     queryToken:
       type: apiKey
       in: query
       name: token
-
 security:
   - bearerAuth: []
   - queryToken: []
-
 x-rate-limits:
   messages_per_second: 100
   max_payload_size_bytes: 1048576
   burst_size: 200
-
 x-reliability:
   delivery_guarantee: at-least-once
   retry_policy:
@@ -415,7 +408,6 @@ x-reliability:
     backoff: exponential
     initial_delay_ms: 1000
     max_delay_ms: 30000
-
 tags:
   - name: Connection
     description: WebSocket connection management
@@ -425,3 +417,18 @@ tags:
     description: Capability invocation
   - name: Health
     description: Agent health and status
+  - name: WebSocket
+    description: WebSocket operations
+x-ossa-metadata:
+  version: 0.3.3
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: protocols-websocket-events
+    type: integrator

@@ -1,15 +1,13 @@
-apiVersion: ossa/v0.4.7
+apiVersion: ossa/v0.5
 kind: Agent
 metadata:
   name: gitlab-ci-agent
   version: 1.0.0
-  description: >-
-    Pipeline fixer agent. Detects broken CI/CD pipelines, inspects job logs,
-    diagnoses failures, and applies fixes. Uses BuildKit CLI and GitLab API.
+  description: Pipeline fixer agent. Detects broken CI/CD pipelines, inspects job logs, diagnoses failures, and applies fixes. Uses BuildKit CLI and GitLab API.
   labels:
     use-case: ci-cd-automation
-    production-ready: "false"
-    ossa-native: "true"
+    production-ready: 'false'
+    ossa-native: 'true'
   agentType: custom
   agentKind: worker
   identity:
@@ -20,8 +18,8 @@ metadata:
       name: BlueFly.io
       email: agents@bluefly.io
       website: https://openstandardagents.org
-    created_at: "2026-03-10T12:00:00Z"
-    updated_at: "2026-03-10T12:00:00Z"
+    created_at: 2026-03-10T12:00:00Z
+    updated_at: 2026-03-10T12:00:00Z
   catalog:
     published: true
     visibility: public
@@ -35,7 +33,6 @@ metadata:
       - pipeline
       - buildkit
       - ossa-native
-
 spec:
   role: |
     You are an autonomous GitLab CI/CD pipeline fixer agent.
@@ -52,13 +49,11 @@ spec:
     - Always create fix branches, never commit directly to main/release
     - Explain your diagnosis clearly in commit messages
     - Escalate to humans for infrastructure-level issues
-
   llm:
     provider: anthropic
     model: claude-sonnet-4-20250514
     temperature: 0.1
     max_tokens: 8192
-
   tools:
     - type: command
       name: pipeline_list
@@ -72,7 +67,6 @@ spec:
         ref:
           type: string
           description: Branch to check (e.g. release/v0.1.x)
-
     - type: command
       name: pipeline_jobs
       description: List jobs in a pipeline with status
@@ -82,7 +76,6 @@ spec:
         pipeline_id:
           type: number
           description: Pipeline ID to inspect
-
     - type: command
       name: job_log
       description: Fetch the log output of a failed job
@@ -92,7 +85,6 @@ spec:
         job_id:
           type: number
           description: Job ID to get log for
-
     - type: command
       name: deploy_service
       description: Deploy a service to Oracle via BuildKit
@@ -102,7 +94,6 @@ spec:
         service:
           type: string
           description: Service name to deploy (e.g. mcp, mesh, router)
-
     - type: api
       name: gitlab_api
       description: Direct GitLab API calls for MR management
@@ -110,11 +101,13 @@ spec:
       parameters:
         method:
           type: string
-          enum: [GET, POST, PUT]
+          enum:
+            - GET
+            - POST
+            - PUT
         endpoint:
           type: string
           description: GitLab API endpoint path
-
   capabilities:
     - name: pipeline-monitoring
       description: Monitor CI/CD pipeline status across projects
@@ -124,7 +117,6 @@ spec:
       description: Apply fixes for common CI failures
     - name: deployment
       description: Deploy services via BuildKit
-
   safety:
     guardrails:
       - no_force_push
@@ -133,8 +125,7 @@ spec:
       - audit_all_actions
     pii_handling: none
     audit_all_actions: true
-    max_cost_per_execution: 0.30
-
+    max_cost_per_execution: 0.3
 security:
   tier: tier_2_write_limited
   threat_model:
@@ -161,40 +152,70 @@ security:
       max_execution_seconds: 300
   network_access:
     allowed_domains:
-      - "gitlab.com"
-      - "*.gitlab.com"
-      - "api.anthropic.com"
+      - gitlab.com
+      - '*.gitlab.com'
+      - api.anthropic.com
     protocols:
       - https
     egress_policy: allow-list
   data_classification: internal
-
 protocols:
   mcp:
+    version: 1.0.0
     role: client
-    transport: stdio
     capabilities:
       tools: true
+      resources: false
+      prompts: false
+      sampling: false
     servers:
       - name: buildkit
+        transport: stdio
         command: buildkit
-        description: BuildKit CLI for deploy and GitLab operations
+        tools:
+          - pipeline_list
+          - pipeline_jobs
+          - job_log
+          - deploy_service
+          - gitlab_api
   a2a:
-    role: server
-    endpoint: /agents/gitlab-ci-agent
-    skills:
-      - name: fix-pipeline
-        description: Diagnose and fix a broken CI pipeline
-        input_schema:
-          type: object
-          properties:
-            project:
-              type: string
-            ref:
-              type: string
-          required:
-            - project
-
+    version: 0.2.0
+    endpoint: https://openstandardagents.org/agents/gitlab-ci-agent
+    agent_card:
+      name: GitLab CI Agent
+      description: Diagnose and repair GitLab CI/CD pipelines
+      skills:
+        - id: fix-pipeline
+          name: Fix Pipeline
+          description: Diagnose and fix a broken CI pipeline
+    capabilities:
+      streaming: true
+      pushNotifications: false
+      stateTransitionHistory: true
+    authentication:
+      schemes:
+        - bearer
 governance:
-  cedar_policy_set: blueflyio/cedar-policies
-  pre_execution_check: true
+  authorization:
+    clearance_level: 2
+    policy_references:
+      - blueflyio/cedar-policies
+    tool_permissions:
+      - tool: pipeline_list
+        risk_level: low
+      - tool: pipeline_jobs
+        risk_level: low
+      - tool: job_log
+        risk_level: low
+      - tool: deploy_service
+        risk_level: high
+        requires_approval: true
+      - tool: gitlab_api
+        risk_level: high
+        requires_approval: true
+  quality_requirements:
+    confidence_threshold: 0.85
+    security_score_threshold: 80
+  compliance:
+    data_classification: internal
+    audit_logging_required: true

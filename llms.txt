@@ -39,7 +39,7 @@ npm install -g @bluefly/openstandardagents
 
 ### Tools
 
-- `ossa_validate` — Validate manifest against OSSA v0.4 schema
+- `ossa_validate` — Validate manifest against the current OSSA schema
 - `ossa_scaffold` — Scaffold new agent (manifest + directory structure)
 - `ossa_generate` — Generate agent-card.json for A2A discovery
 - `ossa_publish` — Publish to registry (dry-run or live)
@@ -90,15 +90,15 @@ Single JSON with OSSA contract, A2A skills, MCP tools, and 12 platform adapters 
 ossa wizard -o agent.ossa.yaml        # Interactive manifest creation
 ossa validate agent.ossa.yaml         # Validate against schema
 ossa export agent.ossa.yaml --platform docker  # Export to platform
-ossa export --list-platforms           # List all 22 export platforms
+ossa export --list-platforms           # List supported export platforms
 ossa diff old.yaml new.yaml           # Compare manifests
-ossa migrate agent.yaml --to 0.4.6    # Migrate to newer version
+ossa migrate agent.yaml --to 0.5.0    # Migrate to newer version
 ```
 
 ## Minimal Manifest
 
 ```yaml
-apiVersion: ossa/v0.4
+apiVersion: ossa/v0.5.0
 kind: Agent
 metadata:
   name: my-agent
@@ -110,8 +110,8 @@ spec:
 ## Testing
 
 ```bash
-npm test              # Full suite (1266 tests)
-npm run test:mcp      # MCP integration tests (40 tests)
+npm test              # Full suite
+npm run test:mcp      # MCP integration tests
 npm run test:unit     # Unit tests
 ```
 
@@ -121,12 +121,12 @@ npm run test:unit     # Unit tests
 - @modelcontextprotocol/sdk — MCP protocol
 - Zod — Runtime validation
 - Pino — Structured logging
-- Vitest — Testing
+- Jest — Testing
 - fast-glob — Workspace discovery
 
-## Status (Feb 2026)
+## Status (March 2026)
 
-CLI: production | MCP Server: 10 tools, 40 tests | Export: 22 platforms | Spec: v0.4.6
+CLI: production | MCP Server: 10 tools | Export: see `ossa export --list-platforms` | Spec: v0.5.0
 
 ## Repository Governance Instructions
 **ATTENTION ALL AI AGENTS AND COPILOTS:**

@@ -9,6 +9,7 @@
  * @since 0.5.0
  */
 
+import { trace } from '@opentelemetry/api';
 import type { AgentExecutionMessage } from '../Message/AgentExecutionMessage.js';
 import type { OssaAgent } from '../../types/index.js';
 
@@ -92,11 +93,16 @@ export class AgentExecutionHandler {
     const input = message.getInput();
     const context = message.getContext();
 
+    const span = trace.getActiveSpan();
+    if (context.requestId) {
+      span?.setAttribute('request.id', context.requestId);
+    }
+
     this.deps.logger.info('Starting agent execution', {
       agentId,
       userId: context.userId,
       sessionId: context.sessionId,
-      requestId: context.requestId,
+      requestId: span?.spanContext().traceId ?? context.requestId,
     });
 
     try {

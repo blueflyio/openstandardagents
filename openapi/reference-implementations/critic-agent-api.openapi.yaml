@@ -5,7 +5,9 @@ info:
   description: |
     Quality assurance agent for code review, testing, and continuous improvement.
     Analyzes code quality, detects issues, and suggests improvements.
-
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:
@@ -13,36 +15,37 @@ x-ossa-metadata:
     frameworks:
       - OSSA
       - OpenAPI 3.1
-
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
 x-ossa:
   version: 0.2.5-RC
   agent:
-    id: code-quality-critic
+    id: reference-implementations-critic-agent-api
     type: critic
     compliance:
       standards:
         - openapi-first
         - type-safe
       validated: true
-      validatedAt: "2024-01-15T10:00:00Z"
-
+      validatedAt: 2024-01-15T10:00:00Z
 servers:
   - url: https://critic.platform.com/api/v1
     description: Production
-
 tags:
   - name: review
     description: Code review operations
   - name: analysis
     description: Code analysis operations
-
 paths:
   /review:
     post:
       summary: Review code changes
       description: Analyze code changes for quality, security, and best practices
       operationId: reviewCode
-      tags: [review]
+      tags:
+        - review
       x-ossa-capability: review-changes
       x-ossa-autonomy:
         level: autonomous
@@ -57,19 +60,28 @@ paths:
           application/json:
             schema:
               type: object
-              required: [code, language]
+              required:
+                - code
+                - language
               properties:
                 code:
                   type: string
                   description: Code to review
                 language:
                   type: string
-                  enum: [javascript, typescript, python, java, go, rust, csharp]
+                  enum:
+                    - javascript
+                    - typescript
+                    - python
+                    - java
+                    - go
+                    - rust
+                    - csharp
                 diff:
                   type: string
                   description: Git diff of changes
       responses:
-        '200':
+        "200":
           description: Review completed
           content:
             application/json:
@@ -83,10 +95,18 @@ paths:
                       properties:
                         severity:
                           type: string
-                          enum: [critical, high, medium, low]
+                          enum:
+                            - critical
+                            - high
+                            - medium
+                            - low
                         type:
                           type: string
-                          enum: [security, performance, maintainability, style]
+                          enum:
+                            - security
+                            - performance
+                            - maintainability
+                            - style
                         message:
                           type: string
                         line:
@@ -99,13 +119,13 @@ paths:
                     type: number
                     minimum: 0
                     maximum: 100
-
   /analyze:
     post:
       summary: Analyze code quality
       description: Perform comprehensive code quality analysis
       operationId: analyzeCode
-      tags: [analysis]
+      tags:
+        - analysis
       x-ossa-capability: analyze-code
       x-ossa-autonomy:
         level: autonomous
@@ -116,7 +136,8 @@ paths:
           application/json:
             schema:
               type: object
-              required: [code]
+              required:
+                - code
               properties:
                 code:
                   type: string
@@ -124,9 +145,15 @@ paths:
                   type: array
                   items:
                     type: string
-                    enum: [complexity, maintainability, reliability, security, performance, testability]
+                    enum:
+                      - complexity
+                      - maintainability
+                      - reliability
+                      - security
+                      - performance
+                      - testability
       responses:
-        '200':
+        "200":
           description: Analysis completed
           content:
             application/json:
@@ -148,4 +175,3 @@ paths:
                         type: number
                       testability:
                         type: number
-

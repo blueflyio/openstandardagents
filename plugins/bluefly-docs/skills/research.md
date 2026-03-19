@@ -85,9 +85,9 @@ buildkit gitlab wiki publish
 
 ## GKG (Global Knowledge Graph)
 
-- **URL**: https://gkg.blueflyagents.com
+- **URL**: https://gkg.bluefly.internal
 - **Port**: 3015
-- **MCP**: https://gkg.blueflyagents.com/mcp/sse
+- **MCP**: https://gkg.bluefly.internal/mcp/sse
 
 ### Entity Types
 | Type | Examples |
@@ -104,10 +104,10 @@ buildkit gitlab wiki publish
 ### Search
 ```bash
 # Via MCP (preferred)
-# GKG MCP server at https://gkg.blueflyagents.com/mcp/sse
+# GKG MCP server at https://gkg.bluefly.internal/mcp/sse
 
 # Via API
-curl "https://gkg.blueflyagents.com/api/search?q=vulnerability+scanner&type=agent"
+curl "https://gkg.bluefly.internal/api/search?q=vulnerability+scanner&type=agent"
 
 # Via BuildKit
 buildkit gkg search "deployment pipeline"

@@ -34,10 +34,10 @@ import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
 import { AgentCardGenerator } from '../../services/agent-card-generator.js';
 import {
-    addBackupOptions,
-    addGlobalOptions,
-    addMutationOptions,
-    shouldUseColor,
+  addBackupOptions,
+  addGlobalOptions,
+  addMutationOptions,
+  shouldUseColor,
 } from '../utils/standard-options.js';
 
 export const exportCommand = new Command('export')
@@ -142,7 +142,8 @@ exportCommand.action(
         options.gitlabProject ||
         process.env.EXPORT_GITLAB_PROJECT_PATH ||
         process.env.EXPORT_GITLAB_PROJECT_ID ||
-        process.env.EXPORT_GITLAB_PROJECT_PATH || 'my-org%2Fossa%2Fgenerated-agents';
+        process.env.EXPORT_GITLAB_PROJECT_PATH ||
+        'my-org%2Fossa%2Fgenerated-agents';
       const ref = process.env.EXPORT_REF || 'main';
       const platform = options.platform || 'docker';
       const platforms = process.env.EXPORT_PLATFORMS;
@@ -974,16 +975,20 @@ exportCommand.action(
 
           const generator = new AgentCardGenerator();
           const result = generator.generate(manifest, {
-            cardProfile: 'discovery'
+            cardProfile: 'discovery',
           });
 
           if (!result.success || !result.card) {
-            throw new Error(result.errors.join(', ') || 'Agent Card generation failed');
+            throw new Error(
+              result.errors.join(', ') || 'Agent Card generation failed'
+            );
           }
 
           const agentName = manifest.metadata?.name || 'agent';
           const outputDir = options.output || `./${agentName}`;
-          const outPath = options.output?.endsWith('.json') ? options.output : path.join(outputDir, 'agent-card.json');
+          const outPath = options.output?.endsWith('.json')
+            ? options.output
+            : path.join(outputDir, 'agent-card.json');
 
           if (!options.dryRun) {
             const outDirAbs = path.dirname(outPath);

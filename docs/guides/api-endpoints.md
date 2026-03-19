@@ -88,7 +88,7 @@ Execute agent with input.
 ```bash
 curl -X POST http://localhost:3000/api/v1/execute \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: SET_API_KEY" \
+  -H "X-API-Key: your-api-key" \
   -d '{
     "input": "Review this code: def hello(): pass",
     "context": {
@@ -360,7 +360,7 @@ curl http://localhost:3000/metadata
 Most endpoints require API key authentication:
 
 ```bash
-curl -H "X-API-Key: SET_API_KEY" \
+curl -H "X-API-Key: your-api-key" \
   http://localhost:3000/api/v1/execute
 ```
 
@@ -620,7 +620,7 @@ const ws = new WebSocket('ws://localhost:3000/ws');
 ws.onopen = () => {
   ws.send(JSON.stringify({
     type: 'authenticate',
-    apiKey: 'SET_API_KEY'
+    apiKey: 'your-api-key'
   }));
 };
 

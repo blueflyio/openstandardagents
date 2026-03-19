@@ -42,8 +42,8 @@ MESSENGER_TRANSPORT_DSN=doctrine://default
 MESSENGER_BATCH_TRANSPORT_DSN=doctrine://default
 
 # Or use RabbitMQ - Recommended for production
-# MESSENGER_TRANSPORT_DSN=amqp://BROKER_USER:BROKER_PASSWORD__AT__rabbitmq:5672/%2f
-# MESSENGER_BATCH_TRANSPORT_DSN=amqp://BROKER_USER:BROKER_PASSWORD__AT__rabbitmq:5672/%2f
+# MESSENGER_TRANSPORT_DSN=amqp://user:${RABBITMQ_PASSWORD}@rabbitmq:5672/%2f
+# MESSENGER_BATCH_TRANSPORT_DSN=amqp://user:${RABBITMQ_PASSWORD}@rabbitmq:5672/%2f
 
 # Or use Redis - Fast and simple
 # MESSENGER_TRANSPORT_DSN=redis://redis:6379/messages
@@ -200,7 +200,7 @@ agent_async:
 
 ```yaml
 agent_async:
-  dsn: 'amqp://BROKER_USER:BROKER_PASSWORD__AT__rabbitmq:5672/%2f'
+  dsn: 'amqp://user:${RABBITMQ_PASSWORD}@rabbitmq:5672/%2f'
   options:
     auto_setup: true
     queue_name: ossa_agents

@@ -7,7 +7,7 @@ info:
     ## Authentication
     Most write operations require authentication via Bearer token:
     ```
-    Authorization: Bearer SET_OSSA_BEARER_TOKEN
+    Authorization: Bearer ossa_tok_xxx
     ```
 
     Obtain a token by running `ossa login` or via the web UI at https://registry.openstandardagents.org
@@ -519,7 +519,7 @@ components:
       bearerFormat: JWT
       description: |
         JWT bearer token obtained via `ossa login` or web UI.
-        Token format: `SET_OSSA_BEARER_TOKEN`
+        Token format: `ossa_tok_xxx`
 
   parameters:
     Publisher:

@@ -13,6 +13,7 @@
  */
 
 import { z } from 'zod';
+import { trace } from '@opentelemetry/api';
 import type { AgentIdentity, A2AMessage } from './a2a-protocol.js';
 import { MCPTransportManager } from './mcp-transport.js';
 
@@ -482,11 +483,13 @@ export class MCPIntegrationService {
   }
 
   /**
-   * Create trace context
+   * Create trace context — prefers active OTel span so outbound messages
+   * carry the same traceId as the surrounding span tree.
    */
   private createTraceContext(): any {
-    const traceId = this.generateHex(32);
-    const spanId = this.generateHex(16);
+    const activeSpan = trace.getActiveSpan();
+    const traceId = activeSpan?.spanContext().traceId ?? this.generateHex(32);
+    const spanId = activeSpan?.spanContext().spanId ?? this.generateHex(16);
     return {
       traceparent: `00-${traceId}-${spanId}-01`,
       traceId,

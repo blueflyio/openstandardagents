@@ -20,7 +20,7 @@ First, get your API credentials:
 Set up authentication:
 
 ```bash
-export OSSA_API_KEY=SET_OSSA_API_KEY
+export OSSA_API_KEY=ossa_ak_your_key_here
 ```
 
 ## Step 2: Test Connection

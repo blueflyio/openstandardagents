@@ -25,7 +25,7 @@ export interface OssaMcpServerEntry {
   transport: 'stdio' | 'sse' | 'streamable-http';
   source: string;
   importedAt: string;
-  tools?: string[];  // Tool names discovered via SDK listTools()
+  tools?: string[]; // Tool names discovered via SDK listTools()
 }
 
 export interface McpBridgeSyncResult {
@@ -46,19 +46,38 @@ export interface McpBridgeListResult {
 /** Known config file locations per app — no hardcoding of values, only path resolution */
 const KNOWN_CONFIG_PATHS: Record<string, string[]> = {
   'claude-desktop': [
-    path.join(os.homedir(), 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json'),
+    path.join(
+      os.homedir(),
+      'Library',
+      'Application Support',
+      'Claude',
+      'claude_desktop_config.json'
+    ),
     path.join(os.homedir(), '.config', 'claude', 'claude_desktop_config.json'),
   ],
   cursor: [
     path.join(os.homedir(), '.cursor', 'mcp.json'),
-    path.join(os.homedir(), 'Library', 'Application Support', 'Cursor', 'User', 'globalStorage', 'mcp.json'),
+    path.join(
+      os.homedir(),
+      'Library',
+      'Application Support',
+      'Cursor',
+      'User',
+      'globalStorage',
+      'mcp.json'
+    ),
   ],
 };
 
 @injectable()
 export class McpBridgeService {
   private getRegistryPath(workspaceDir: string): string {
-    return path.join(workspaceDir, '.agents-workspace', 'registry', 'mcp-bridge.yaml');
+    return path.join(
+      workspaceDir,
+      '.agents-workspace',
+      'registry',
+      'mcp-bridge.yaml'
+    );
   }
 
   private loadRegistry(workspaceDir: string): OssaMcpServerEntry[] {
@@ -73,7 +92,10 @@ export class McpBridgeService {
     }
   }
 
-  private saveRegistry(workspaceDir: string, servers: OssaMcpServerEntry[]): string {
+  private saveRegistry(
+    workspaceDir: string,
+    servers: OssaMcpServerEntry[]
+  ): string {
     const registryPath = this.getRegistryPath(workspaceDir);
     const registryDir = path.dirname(registryPath);
     if (!fs.existsSync(registryDir)) {
@@ -81,7 +103,15 @@ export class McpBridgeService {
     }
     fs.writeFileSync(
       registryPath,
-      yaml.dump({ generatedBy: 'ossa-mcp-bridge', apiVersion: getApiVersion(), updatedAt: new Date().toISOString(), servers }, { lineWidth: 120 }),
+      yaml.dump(
+        {
+          generatedBy: 'ossa-mcp-bridge',
+          apiVersion: getApiVersion(),
+          updatedAt: new Date().toISOString(),
+          servers,
+        },
+        { lineWidth: 120 }
+      ),
       'utf8'
     );
     return registryPath;
@@ -122,11 +152,21 @@ export class McpBridgeService {
    * Use @modelcontextprotocol/sdk Client to connect to a stdio server and list its tools.
    * Returns an empty array if connection fails (non-fatal — import still proceeds).
    */
-  private async discoverToolsViaSDK(command: string, args: string[]): Promise<string[]> {
+  private async discoverToolsViaSDK(
+    command: string,
+    args: string[]
+  ): Promise<string[]> {
     let client: Client | undefined;
     try {
-      const transport = new StdioClientTransport({ command, args, env: process.env as Record<string, string> });
-      client = new Client({ name: 'ossa-mcp-bridge', version: '1.0.0' }, { capabilities: {} });
+      const transport = new StdioClientTransport({
+        command,
+        args,
+        env: process.env as Record<string, string>,
+      });
+      client = new Client(
+        { name: 'ossa-mcp-bridge', version: '1.0.0' },
+        { capabilities: {} }
+      );
       await client.connect(transport);
       const { tools } = await client.listTools();
       return tools.map((t) => t.name);
@@ -135,7 +175,11 @@ export class McpBridgeService {
       return [];
     } finally {
       if (client) {
-        try { await client.close(); } catch { /* swallow */ }
+        try {
+          await client.close();
+        } catch {
+          /* swallow */
+        }
       }
     }
   }
@@ -144,7 +188,10 @@ export class McpBridgeService {
    * Parse an external app's MCP config JSON into normalized OSSA entries.
    * Uses the standard `mcpServers` shape from Claude Desktop / Cursor.
    */
-  private parseExternalConfig(configPath: string, source: string): Array<{
+  private parseExternalConfig(
+    configPath: string,
+    source: string
+  ): Array<{
     name: string;
     command?: string;
     args?: string[];
@@ -152,14 +199,19 @@ export class McpBridgeService {
     transport: OssaMcpServerEntry['transport'];
   }> {
     const raw = JSON.parse(fs.readFileSync(configPath, 'utf8')) as {
-      mcpServers?: Record<string, { command?: string; args?: string[]; url?: string; transport?: string }>;
+      mcpServers?: Record<
+        string,
+        { command?: string; args?: string[]; url?: string; transport?: string }
+      >;
     };
     return Object.entries(raw?.mcpServers ?? {}).map(([name, cfg]) => ({
       name,
       command: cfg.command,
       args: cfg.args,
       url: cfg.url,
-      transport: (cfg.transport as OssaMcpServerEntry['transport']) ?? (cfg.command ? 'stdio' : 'sse'),
+      transport:
+        (cfg.transport as OssaMcpServerEntry['transport']) ??
+        (cfg.command ? 'stdio' : 'sse'),
     }));
   }
 
@@ -167,16 +219,23 @@ export class McpBridgeService {
    * Sync an external MCP source into the OSSA workspace registry.
    * Uses SDK Client to introspect available tools where possible.
    */
-  async sync(source: string, workspaceDir: string): Promise<McpBridgeSyncResult> {
+  async sync(
+    source: string,
+    workspaceDir: string
+  ): Promise<McpBridgeSyncResult> {
     const dir = path.resolve(workspaceDir);
     const knownPaths = KNOWN_CONFIG_PATHS[source];
     if (!knownPaths) {
-      throw new Error(`Unknown MCP source: "${source}". Supported: ${Object.keys(KNOWN_CONFIG_PATHS).join(', ')}`);
+      throw new Error(
+        `Unknown MCP source: "${source}". Supported: ${Object.keys(KNOWN_CONFIG_PATHS).join(', ')}`
+      );
     }
 
     const configPath = knownPaths.find((p) => fs.existsSync(p));
     if (!configPath) {
-      throw new Error(`No config found for "${source}". Looked in:\n${knownPaths.join('\n')}`);
+      throw new Error(
+        `No config found for "${source}". Looked in:\n${knownPaths.join('\n')}`
+      );
     }
 
     const parsed = this.parseExternalConfig(configPath, source);
@@ -203,7 +262,14 @@ export class McpBridgeService {
       this.saveToolManifest(dir, entry);
     }
 
-    return { action: 'sync', source, serversFound: parsed.length, serversImported: newEntries.length, registryPath, servers: newEntries };
+    return {
+      action: 'sync',
+      source,
+      serversFound: parsed.length,
+      serversImported: newEntries.length,
+      registryPath,
+      servers: newEntries,
+    };
   }
 
   async list(workspaceDir: string): Promise<McpBridgeListResult> {
@@ -216,20 +282,38 @@ export class McpBridgeService {
    * Policy-gate check: validates that a tool server is registered in the OSSA bridge.
    * Future: enforce per-agent allowlist from .agents-workspace/policy/tool-allowlist.yaml
    */
-  async executeTool(agentId: string, toolName: string, workspaceDir: string): Promise<{ allowed: boolean; reason: string }> {
+  async executeTool(
+    agentId: string,
+    toolName: string,
+    workspaceDir: string
+  ): Promise<{ allowed: boolean; reason: string }> {
     const servers = this.loadRegistry(path.resolve(workspaceDir));
     const [serverName, method] = toolName.split('/');
     const server = servers.find((s) => s.name === serverName);
 
     if (!server) {
-      return { allowed: false, reason: `"${serverName}" not in OSSA bridge registry. Run: ossa mcp bridge sync <source>` };
+      return {
+        allowed: false,
+        reason: `"${serverName}" not in OSSA bridge registry. Run: ossa mcp bridge sync <source>`,
+      };
     }
 
     // Verify the specific tool name if we have a tool list from SDK discovery
-    if (server.tools && server.tools.length > 0 && method && !server.tools.includes(method)) {
-      return { allowed: false, reason: `Tool "${method}" not found on server "${serverName}". Known tools: ${server.tools.join(', ')}` };
+    if (
+      server.tools &&
+      server.tools.length > 0 &&
+      method &&
+      !server.tools.includes(method)
+    ) {
+      return {
+        allowed: false,
+        reason: `Tool "${method}" not found on server "${serverName}". Known tools: ${server.tools.join(', ')}`,
+      };
     }
 
-    return { allowed: true, reason: `Agent "${agentId}" is authorized to call "${toolName}" via OSSA bridge.` };
+    return {
+      allowed: true,
+      reason: `Agent "${agentId}" is authorized to call "${toolName}" via OSSA bridge.`,
+    };
   }
 }

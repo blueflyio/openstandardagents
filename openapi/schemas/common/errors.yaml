@@ -39,7 +39,6 @@ components:
             items:
               type: string
           description: Validation errors by field
-
     ValidationError:
       type: object
       properties:
@@ -49,7 +48,6 @@ components:
           type: string
         rule:
           type: string
-
     ValidationWarning:
       type: object
       properties:
@@ -59,7 +57,6 @@ components:
           type: string
         suggestion:
           type: string
-
     ExecutionError:
       type: object
       properties:
@@ -73,3 +70,16 @@ components:
         timestamp:
           type: string
           format: date-time
+x-ossa-metadata:
+  version: 0.5.0
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: schemas-common-errors
+    type: specialist

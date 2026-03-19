@@ -10,79 +10,86 @@ info:
       $ref: '../schemas/common/agent.yaml#/components/schemas/AgentManifest'
       $ref: '../schemas/common/errors.yaml#/components/schemas/Problem'
       $ref: '../schemas/common/pagination.yaml#/components/schemas/Pagination'
-
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 components:
   schemas:
-    # Agent Schemas
     AgentManifest:
-      $ref: './common/agent.yaml#/components/schemas/AgentManifest'
+      $ref: ./common/agent.yaml#/components/schemas/AgentManifest
     AgentSpec:
-      $ref: './common/agent.yaml#/components/schemas/AgentSpec'
+      $ref: ./common/agent.yaml#/components/schemas/AgentSpec
     AgentMetadata:
-      $ref: './common/agent.yaml#/components/schemas/Metadata'
+      $ref: ./common/agent.yaml#/components/schemas/Metadata
     AgentType:
-      $ref: './common/agent.yaml#/components/schemas/AgentType'
+      $ref: ./common/agent.yaml#/components/schemas/AgentType
     AgentStatus:
-      $ref: './common/agent.yaml#/components/schemas/AgentStatus'
+      $ref: ./common/agent.yaml#/components/schemas/AgentStatus
     Agent:
-      $ref: './common/agent.yaml#/components/schemas/Agent'
+      $ref: ./common/agent.yaml#/components/schemas/Agent
     Capability:
-      $ref: './common/agent.yaml#/components/schemas/Capability'
+      $ref: ./common/agent.yaml#/components/schemas/Capability
     Interface:
-      $ref: './common/agent.yaml#/components/schemas/Interface'
+      $ref: ./common/agent.yaml#/components/schemas/Interface
     Requirements:
-      $ref: './common/agent.yaml#/components/schemas/Requirements'
+      $ref: ./common/agent.yaml#/components/schemas/Requirements
     ResourceRequirements:
-      $ref: './common/agent.yaml#/components/schemas/ResourceRequirements'
-
-    # Error Schemas
+      $ref: ./common/agent.yaml#/components/schemas/ResourceRequirements
     Problem:
-      $ref: './common/errors.yaml#/components/schemas/Problem'
+      $ref: ./common/errors.yaml#/components/schemas/Problem
     ValidationError:
-      $ref: './common/errors.yaml#/components/schemas/ValidationError'
+      $ref: ./common/errors.yaml#/components/schemas/ValidationError
     ValidationWarning:
-      $ref: './common/errors.yaml#/components/schemas/ValidationWarning'
+      $ref: ./common/errors.yaml#/components/schemas/ValidationWarning
     ExecutionError:
-      $ref: './common/errors.yaml#/components/schemas/ExecutionError'
-
-    # Pagination Schemas
+      $ref: ./common/errors.yaml#/components/schemas/ExecutionError
     Pagination:
-      $ref: './common/pagination.yaml#/components/schemas/Pagination'
-
-    # Security Schemas
+      $ref: ./common/pagination.yaml#/components/schemas/Pagination
     TokenResponse:
-      $ref: './common/security.yaml#/components/schemas/TokenResponse'
+      $ref: ./common/security.yaml#/components/schemas/TokenResponse
     SecurityContext:
-      $ref: './common/security.yaml#/components/schemas/SecurityContext'
-
-    # Metadata Schemas
+      $ref: ./common/security.yaml#/components/schemas/SecurityContext
     Timestamps:
-      $ref: './common/metadata.yaml#/components/schemas/Timestamps'
+      $ref: ./common/metadata.yaml#/components/schemas/Timestamps
     Labels:
-      $ref: './common/metadata.yaml#/components/schemas/Labels'
+      $ref: ./common/metadata.yaml#/components/schemas/Labels
     Annotations:
-      $ref: './common/metadata.yaml#/components/schemas/Annotations'
+      $ref: ./common/metadata.yaml#/components/schemas/Annotations
     HealthStatus:
-      $ref: './common/metadata.yaml#/components/schemas/HealthStatus'
-
+      $ref: ./common/metadata.yaml#/components/schemas/HealthStatus
   parameters:
     PageParam:
-      $ref: './common/pagination.yaml#/components/parameters/PageParam'
+      $ref: ./common/pagination.yaml#/components/parameters/PageParam
     LimitParam:
-      $ref: './common/pagination.yaml#/components/parameters/LimitParam'
+      $ref: ./common/pagination.yaml#/components/parameters/LimitParam
     OffsetParam:
-      $ref: './common/pagination.yaml#/components/parameters/OffsetParam'
+      $ref: ./common/pagination.yaml#/components/parameters/OffsetParam
     SearchParam:
-      $ref: './common/pagination.yaml#/components/parameters/SearchParam'
+      $ref: ./common/pagination.yaml#/components/parameters/SearchParam
     SortParam:
-      $ref: './common/pagination.yaml#/components/parameters/SortParam'
-
+      $ref: ./common/pagination.yaml#/components/parameters/SortParam
   securitySchemes:
     ApiKeyAuth:
-      $ref: './common/security.yaml#/components/securitySchemes/ApiKeyAuth'
+      $ref: ./common/security.yaml#/components/securitySchemes/ApiKeyAuth
     BearerAuth:
-      $ref: './common/security.yaml#/components/securitySchemes/BearerAuth'
+      $ref: ./common/security.yaml#/components/securitySchemes/BearerAuth
     OAuth2:
-      $ref: './common/security.yaml#/components/securitySchemes/OAuth2'
+      $ref: ./common/security.yaml#/components/securitySchemes/OAuth2
     AgentMTLS:
-      $ref: './common/security.yaml#/components/securitySchemes/AgentMTLS'
+      $ref: ./common/security.yaml#/components/securitySchemes/AgentMTLS
+x-ossa-metadata:
+  version: 0.3.3
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: schemas-index
+    type: specialist
+servers:
+  - url: https://schemas.openstandardagents.org
+    description: Shared schema index

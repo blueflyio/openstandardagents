@@ -1,7 +1,7 @@
-apiVersion: ossa/v0.4.7
+apiVersion: ossa/v0.5.0
 kind: Agent
 metadata:
-  name: content_moderator
+  name: content-moderator
   version: 1.0.0
   description: AI-powered content moderation agent for Drupal
   labels:

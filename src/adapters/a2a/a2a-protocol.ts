@@ -12,6 +12,7 @@
  */
 
 import { z } from 'zod';
+import { trace } from '@opentelemetry/api';
 
 /**
  * Agent Identity
@@ -380,8 +381,9 @@ export function createA2AMessage<TPayload>(
   options?: Partial<MessageMetadata>
 ): A2AMessage<TPayload> {
   const now = new Date().toISOString();
-  const traceId = generateTraceId();
-  const spanId = generateSpanId();
+  const activeSpan = trace.getActiveSpan();
+  const traceId = activeSpan?.spanContext().traceId ?? generateTraceId();
+  const spanId = activeSpan?.spanContext().spanId ?? generateSpanId();
 
   return {
     id: crypto.randomUUID(),

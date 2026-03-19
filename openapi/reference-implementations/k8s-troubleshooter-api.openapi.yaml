@@ -5,7 +5,9 @@ info:
   description: |
     Autonomous Kubernetes cluster troubleshooting agent with diagnostic capabilities.
     Diagnoses pod failures, network issues, resource constraints, and configuration problems.
-
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:
@@ -13,25 +15,26 @@ x-ossa-metadata:
     frameworks:
       - OSSA
       - OpenAPI 3.1
-
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
 x-ossa:
   version: 0.2.5-RC
   agent:
-    id: k8s-troubleshooter
-    type: worker
+    id: reference-implementations-k8s-troubleshooter-api
+    type: specialist
     compliance:
       standards:
         - openapi-first
         - type-safe
       validated: true
-      validatedAt: "2024-01-15T10:00:00Z"
-
+      validatedAt: 2024-01-15T10:00:00Z
 servers:
   - url: https://troubleshooter.platform.com/api/v1
     description: Production
   - url: http://k8s-troubleshooter:3000/api/v1
     description: Kubernetes internal
-
 tags:
   - name: diagnostics
     description: Diagnostic operations
@@ -39,7 +42,6 @@ tags:
     description: Pod operations
   - name: cluster
     description: Cluster operations
-
 paths:
   /diagnose/pod:
     post:
@@ -48,7 +50,9 @@ paths:
         Analyzes a Kubernetes pod to identify failures, configuration issues,
         and resource constraints. Uses MCP tools to gather pod logs, events, and metrics.
       operationId: diagnosePod
-      tags: [diagnostics, pods]
+      tags:
+        - diagnostics
+        - pods
       x-ossa-capability: pod-diagnostics
       x-ossa-autonomy:
         level: supervised
@@ -81,7 +85,9 @@ paths:
           application/json:
             schema:
               type: object
-              required: [pod_name, namespace]
+              required:
+                - pod_name
+                - namespace
               properties:
                 pod_name:
                   type: string
@@ -95,7 +101,7 @@ paths:
                   default: true
                   description: Whether to include pod logs in diagnosis
       responses:
-        '200':
+        "200":
           description: Diagnosis completed
           content:
             application/json:
@@ -104,7 +110,10 @@ paths:
                 properties:
                   status:
                     type: string
-                    enum: [healthy, degraded, failed]
+                    enum:
+                      - healthy
+                      - degraded
+                      - failed
                   issues:
                     type: array
                     items:
@@ -112,7 +121,10 @@ paths:
                       properties:
                         severity:
                           type: string
-                          enum: [critical, warning, info]
+                          enum:
+                            - critical
+                            - warning
+                            - info
                         message:
                           type: string
                         resource:
@@ -129,19 +141,19 @@ paths:
                         format: date-time
                       execution_time_ms:
                         type: integer
-
   /cluster/health:
     get:
       summary: Check cluster health
       description: Perform comprehensive cluster health check
       operationId: checkClusterHealth
-      tags: [cluster]
+      tags:
+        - cluster
       x-ossa-capability: cluster-diagnostics
       x-ossa-autonomy:
         level: autonomous
         approval_required: false
       responses:
-        '200':
+        "200":
           description: Cluster health status
           content:
             application/json:
@@ -150,7 +162,10 @@ paths:
                 properties:
                   status:
                     type: string
-                    enum: [healthy, degraded, unhealthy]
+                    enum:
+                      - healthy
+                      - degraded
+                      - unhealthy
                   nodes:
                     type: array
                     items:
@@ -164,4 +179,3 @@ paths:
                           type: array
                           items:
                             type: string
-

@@ -434,7 +434,7 @@ export class KubernetesManifestGenerator {
       stringData: {
         '.env': `# API Keys and sensitive configuration
 # Replace these values with actual secrets
-API_KEY=SET_API_KEY
+API_KEY=your-api-key-here
 LLM_API_KEY=your-llm-api-key-here
 `,
       },
@@ -1210,7 +1210,7 @@ kubectl create secret generic ${name}-secret \\
 
 # Or from literals
 kubectl create secret generic ${name}-secret \\
-  --from-literal=API_KEY=SET_API_KEY \\
+  --from-literal=API_KEY=your-api-key \\
   --from-literal=LLM_API_KEY=your-llm-key \\
   --namespace=${name}-system
 \`\`\`

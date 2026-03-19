@@ -3,6 +3,7 @@
  *
  * Subcommands:
  *   ossa workspace init          - Initialize .agents-workspace/ structure
+ *   ossa workspace validate      - Run workspace health validators (from ai.json run_order or built-in)
  *   ossa workspace list          - List agents in workspace registry
  *   ossa workspace policy check  - Validate agent against workspace policies
  *   ossa workspace policy list   - List allowed/denied tools
@@ -14,22 +15,24 @@
 import { DuadpClient } from '@bluefly/duadp';
 import chalk from 'chalk';
 import { Command } from 'commander';
+import { spawnSync } from 'child_process';
 import * as fs from 'fs';
+import { runWorkspaceValidate } from '../workspace-validate.js';
 import { glob } from 'glob';
 import * as path from 'path';
 import * as yaml from 'yaml';
 import {
-    getDefaultAgentVersion,
-    getDefaultDiscoveryPatterns,
-    getDefaultDiscoveryRefresh,
-    getDefaultDiscoveryStrategy,
-    getDefaultOSSAAPIVersion,
-    getDefaultPolicyKind,
-    getDefaultRegistryKind,
-    getDefaultWorkspaceDir,
-    getRequiredWorkspaceDirs,
-    getWorkspacePolicyPath,
-    getWorkspaceRegistryPath,
+  getDefaultAgentVersion,
+  getDefaultDiscoveryPatterns,
+  getDefaultDiscoveryRefresh,
+  getDefaultDiscoveryStrategy,
+  getDefaultOSSAAPIVersion,
+  getDefaultPolicyKind,
+  getDefaultRegistryKind,
+  getDefaultWorkspaceDir,
+  getRequiredWorkspaceDirs,
+  getWorkspacePolicyPath,
+  getWorkspaceRegistryPath,
 } from '../../config/defaults.js';
 import { getVersion } from '../../utils/version.js';
 import { handleCommandError, outputJSON } from '../utils/index.js';
@@ -192,6 +195,24 @@ Global conventions and standards that apply to all agents in this workspace.
       );
 
       process.exit(0);
+    } catch (error) {
+      handleCommandError(error);
+    }
+  });
+
+// ============================================================================
+// Subcommand: workspace validate
+// ============================================================================
+workspaceCommand
+  .command('validate')
+  .description(
+    'Run workspace health validators. Uses ai.json control_primitives.run_order or control_primitives_run_order if present; otherwise runs built-in layout and registry checks.'
+  )
+  .option('--json', 'Pass --json to validators that support it')
+  .action(async (options: { json?: boolean }) => {
+    try {
+      const result = runWorkspaceValidate({ cwd: process.cwd(), json: options.json });
+      process.exit(result.ok ? 0 : 1);
     } catch (error) {
       handleCommandError(error);
     }
@@ -702,91 +723,114 @@ workspaceCommand
     'Authentication token for publishing. Default: AGENT_PROTOCOL_TOKEN env.'
   )
   .option('--discover', 'Run workspace discover first if registry is missing')
-  .action(async (options: { registryUrl?: string; token?: string; discover?: boolean }) => {
-    try {
-      const registryUrl =
-        options.registryUrl ||
-        process.env.OSSA_REGISTRY_URL ||
-        process.env.MESH_URL ||
-        process.env.AGENT_REGISTRY_URL ||
-        'https://registry.openstandardagents.org';
+  .action(
+    async (options: {
+      registryUrl?: string;
+      token?: string;
+      discover?: boolean;
+    }) => {
+      try {
+        const registryUrl =
+          options.registryUrl ||
+          process.env.OSSA_REGISTRY_URL ||
+          process.env.MESH_URL ||
+          process.env.AGENT_REGISTRY_URL ||
+          'https://registry.openstandardagents.org';
 
-      const token = options.token || process.env.AGENT_PROTOCOL_TOKEN || process.env.GITLAB_PRIVATE_TOKEN;
+        const token =
+          options.token ||
+          process.env.AGENT_PROTOCOL_TOKEN ||
+          process.env.GITLAB_PRIVATE_TOKEN;
 
-      const cwd = process.cwd();
-      const registryPath = path.resolve(
-        cwd,
-        getDefaultWorkspaceDir(),
-        getWorkspaceRegistryPath()
-      );
+        const cwd = process.cwd();
+        const registryPath = path.resolve(
+          cwd,
+          getDefaultWorkspaceDir(),
+          getWorkspaceRegistryPath()
+        );
 
-      if (!fs.existsSync(registryPath)) {
-        if (options.discover) {
-          console.log(chalk.blue('No registry found; running discover...'));
-          const discover = workspaceCommand.commands.find(
-            (c) => c.name() === 'discover'
-          );
-          if (discover) {
-            await discover.parseAsync(['discover'], { from: 'user' });
-          }
-          if (!fs.existsSync(registryPath)) {
-            console.log(chalk.red('Discover did not create registry'));
+        if (!fs.existsSync(registryPath)) {
+          if (options.discover) {
+            console.log(chalk.blue('No registry found; running discover...'));
+            const discover = workspaceCommand.commands.find(
+              (c) => c.name() === 'discover'
+            );
+            if (discover) {
+              await discover.parseAsync(['discover'], { from: 'user' });
+            }
+            if (!fs.existsSync(registryPath)) {
+              console.log(chalk.red('Discover did not create registry'));
+              process.exit(1);
+            }
+          } else {
+            console.log(chalk.yellow('No workspace registry found'));
+            console.log(
+              chalk.gray(
+                '  Run `ossa workspace discover` first, or use --discover'
+              )
+            );
             process.exit(1);
           }
-        } else {
-          console.log(chalk.yellow('No workspace registry found'));
-          console.log(
-            chalk.gray(
-              '  Run `ossa workspace discover` first, or use --discover'
-            )
-          );
+        }
+
+        const content = fs.readFileSync(registryPath, 'utf-8');
+        const registry = yaml.parse(content);
+        const projects = registry.agents || [];
+        let totalPublished = 0;
+        let totalFailed = 0;
+
+        const client = new DuadpClient(registryUrl, { token });
+
+        console.log(
+          chalk.blue(`Publishing workspace agents to ${registryUrl}...`)
+        );
+        console.log(chalk.gray('─'.repeat(50)));
+
+        for (const project of projects) {
+          const projectPath = path.resolve(cwd, project.path || '.');
+          for (const agentRef of project.agents || []) {
+            const manifestPath = path.resolve(projectPath, agentRef.manifest);
+            if (!fs.existsSync(manifestPath)) {
+              console.log(
+                chalk.yellow(
+                  `  ⚠ Skipping ${agentRef.name} (Manifest not found: ${manifestPath})`
+                )
+              );
+              continue;
+            }
+
+            try {
+              const agentManifest = yaml.parse(
+                fs.readFileSync(manifestPath, 'utf-8')
+              );
+              await client.publishAgent(agentManifest);
+              console.log(chalk.green(`  ✓ Published `) + agentRef.name);
+              totalPublished++;
+            } catch (e: any) {
+              console.log(
+                chalk.red(`  ✗ Failed to publish `) +
+                  agentRef.name +
+                  `: ${e.message}`
+              );
+              totalFailed++;
+            }
+          }
+        }
+
+        console.log(chalk.gray('─'.repeat(50)));
+        console.log(
+          chalk.green(`Successfully published ${totalPublished} agent(s).`)
+        );
+        if (totalFailed > 0) {
+          console.log(chalk.red(`${totalFailed} agent(s) failed to publish.`));
           process.exit(1);
         }
+        process.exit(0);
+      } catch (error) {
+        handleCommandError(error);
       }
-
-      const content = fs.readFileSync(registryPath, 'utf-8');
-      const registry = yaml.parse(content);
-      const projects = registry.agents || [];
-      let totalPublished = 0;
-      let totalFailed = 0;
-
-      const client = new DuadpClient(registryUrl, { token });
-
-      console.log(chalk.blue(`Publishing workspace agents to ${registryUrl}...`));
-      console.log(chalk.gray('─'.repeat(50)));
-
-      for (const project of projects) {
-        const projectPath = path.resolve(cwd, project.path || '.');
-        for (const agentRef of project.agents || []) {
-          const manifestPath = path.resolve(projectPath, agentRef.manifest);
-          if (!fs.existsSync(manifestPath)) {
-            console.log(chalk.yellow(`  ⚠ Skipping ${agentRef.name} (Manifest not found: ${manifestPath})`));
-            continue;
-          }
-
-          try {
-            const agentManifest = yaml.parse(fs.readFileSync(manifestPath, 'utf-8'));
-            await client.publishAgent(agentManifest);
-            console.log(chalk.green(`  ✓ Published `) + agentRef.name);
-            totalPublished++;
-          } catch (e: any) {
-             console.log(chalk.red(`  ✗ Failed to publish `) + agentRef.name + `: ${e.message}`);
-             totalFailed++;
-          }
-        }
-      }
-
-      console.log(chalk.gray('─'.repeat(50)));
-      console.log(chalk.green(`Successfully published ${totalPublished} agent(s).`));
-      if (totalFailed > 0) {
-        console.log(chalk.red(`${totalFailed} agent(s) failed to publish.`));
-        process.exit(1);
-      }
-      process.exit(0);
-    } catch (error) {
-      handleCommandError(error);
     }
-  });
+  );
 
 // ============================================================================
 // Subcommand: workspace list-remote (GET from UADP registry)
@@ -802,43 +846,59 @@ workspaceCommand
   )
   .option('--json', 'Output raw JSON')
   .option('--limit <limit>', 'Max number of agents to fetch', '50')
-  .action(async (options: { registryUrl?: string; json?: boolean; limit?: string }) => {
-    try {
-      const registryUrl =
-        options.registryUrl ||
-        process.env.OSSA_REGISTRY_URL ||
-        'https://registry.openstandardagents.org';
+  .action(
+    async (options: {
+      registryUrl?: string;
+      json?: boolean;
+      limit?: string;
+    }) => {
+      try {
+        const registryUrl =
+          options.registryUrl ||
+          process.env.OSSA_REGISTRY_URL ||
+          'https://registry.openstandardagents.org';
 
-      const client = new DuadpClient(registryUrl);
-      const res = await client.listAgents({ limit: parseInt(options.limit || '50', 10) });
+        const client = new DuadpClient(registryUrl);
+        const res = await client.listAgents({
+          limit: parseInt(options.limit || '50', 10),
+        });
 
-      if (options.json) {
-        console.log(JSON.stringify(res, null, 2));
+        if (options.json) {
+          console.log(JSON.stringify(res, null, 2));
+          process.exit(0);
+        }
+
+        const agents = res.data || [];
+        console.log(chalk.blue('Registry: ') + registryUrl);
+        console.log(chalk.gray('Total Agents: ' + agents.length));
+        console.log(chalk.gray('─'.repeat(50)));
+
+        for (const a of agents) {
+          const agent = a as any;
+          console.log(`\n  ${chalk.cyan(agent.metadata?.name || 'unknown')}`);
+          if (agent.metadata?.identity?.namespace) {
+            console.log(
+              chalk.gray(`    Namespace: ${agent.metadata.identity.namespace}`)
+            );
+          }
+          if (agent.metadata?.description) {
+            console.log(
+              chalk.gray(`    Description: ${agent.metadata.description}`)
+            );
+          }
+          const caps = agent.spec?.capabilities || [];
+          if (caps.length > 0) {
+            console.log(
+              chalk.gray(
+                `    Capabilities: ${caps.map((c: any) => (typeof c === 'string' ? c : c.name)).join(', ')}`
+              )
+            );
+          }
+        }
+        console.log('');
         process.exit(0);
+      } catch (error) {
+        handleCommandError(error);
       }
-
-      const agents = res.data || [];
-      console.log(chalk.blue('Registry: ') + registryUrl);
-      console.log(chalk.gray('Total Agents: ' + agents.length));
-      console.log(chalk.gray('─'.repeat(50)));
-
-      for (const a of agents) {
-        const agent = a as any;
-        console.log(`\n  ${chalk.cyan(agent.metadata?.name || 'unknown')}`);
-        if (agent.metadata?.identity?.namespace) {
-          console.log(chalk.gray(`    Namespace: ${agent.metadata.identity.namespace}`));
-        }
-        if (agent.metadata?.description) {
-          console.log(chalk.gray(`    Description: ${agent.metadata.description}`));
-        }
-        const caps = agent.spec?.capabilities || [];
-        if (caps.length > 0) {
-          console.log(chalk.gray(`    Capabilities: ${caps.map((c: any) => typeof c === 'string' ? c : c.name).join(', ')}`));
-        }
-      }
-      console.log('');
-      process.exit(0);
-    } catch (error) {
-      handleCommandError(error);
     }
-  });
+  );

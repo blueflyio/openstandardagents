@@ -12,10 +12,10 @@ import { getSkillsPathDefault } from '../../config/cli-config.js';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import {
-    SkillsExportService,
-    SkillsGeneratorService,
-    SkillsInstallService,
-    SkillsResearchService,
+  SkillsExportService,
+  SkillsGeneratorService,
+  SkillsInstallService,
+  SkillsResearchService,
 } from '../../services/skills-pipeline/index.js';
 import { ClaudeSkillsService } from '../../services/skills/claude-skills.service.js';
 

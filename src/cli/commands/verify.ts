@@ -14,8 +14,8 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
 import {
-    addRegistryOptions,
-    resolveRegistryUrl,
+  addRegistryOptions,
+  resolveRegistryUrl,
 } from '../utils/standard-options.js';
 
 /**
@@ -67,9 +67,15 @@ class AgentProtocolClient {
   private client: DuadpClient;
 
   constructor(config?: { baseUrl?: string; apiKey?: string }) {
-    const baseUrl = config?.baseUrl || process.env.OSSA_REGISTRY_URL || 'https://registry.openstandardagents.org';
+    const baseUrl =
+      config?.baseUrl ||
+      process.env.OSSA_REGISTRY_URL ||
+      'https://registry.openstandardagents.org';
     this.client = new DuadpClient(baseUrl, {
-      token: config?.apiKey || process.env.AGENT_PROTOCOL_TOKEN || process.env.GITLAB_PRIVATE_TOKEN,
+      token:
+        config?.apiKey ||
+        process.env.AGENT_PROTOCOL_TOKEN ||
+        process.env.GITLAB_PRIVATE_TOKEN,
     });
   }
 
@@ -80,12 +86,16 @@ class AgentProtocolClient {
     try {
       // 1. If it's a URI, resolve directly
       if (gaid.startsWith('uadp://') || gaid.startsWith('uadp://')) {
-        const resolution = await resolveGaid(gaid, { token: this.client['token'] });
+        const resolution = await resolveGaid(gaid, {
+          token: this.client['token'],
+        });
         if (resolution.kind === 'agents') {
-           const agent = await resolution.client.getAgent(resolution.name);
-           return this.mapToDIDResult(agent, gaid);
+          const agent = await resolution.client.getAgent(resolution.name);
+          return this.mapToDIDResult(agent, gaid);
         } else {
-           throw new Error(`Expected an agent URI, but got kind: ${resolution.kind}`);
+          throw new Error(
+            `Expected an agent URI, but got kind: ${resolution.kind}`
+          );
         }
       }
 
@@ -93,48 +103,57 @@ class AgentProtocolClient {
       const wfResponse = await this.client.resolveGaid(gaid);
 
       // We expect the webfinger response to return JRD+JSON containing the agent profile link
-      const agentLink = wfResponse.links?.find((l: any) => l.rel === 'http://openstandardagents.org/rels/profile');
+      const agentLink = wfResponse.links?.find(
+        (l: any) => l.rel === 'http://openstandardagents.org/rels/profile'
+      );
       if (!agentLink || !agentLink.href) {
-         throw new Error(`WebFinger resolution missing agent profile link for ${gaid}`);
+        throw new Error(
+          `WebFinger resolution missing agent profile link for ${gaid}`
+        );
       }
 
       // Fetch the agent profile from the href
       // If the href is a fully qualified URL we could fetch it, but usually it's on the same node
       const url = new URL(agentLink.href, this.client.baseUrl);
       const res = await fetch(url.toString());
-      if (!res.ok) throw new Error(`Failed to fetch mapped agent: ${res.statusText}`);
+      if (!res.ok)
+        throw new Error(`Failed to fetch mapped agent: ${res.statusText}`);
 
       const agent = await res.json();
       return this.mapToDIDResult(agent, gaid);
-
     } catch (error: any) {
       throw new Error(`DID resolution failed: ${error.message}`);
     }
   }
 
-  private mapToDIDResult(agent: any, originalGaid: string): DIDResolutionResult {
-     const tier = agent.security?.tier;
-     let trustLevel = 0.5;
-     if (tier === 'tier_4_system_admin') trustLevel = 1.0;
-     else if (tier === 'tier_3_write_elevated') trustLevel = 0.8;
-     else if (tier === 'tier_2_write_limited') trustLevel = 0.6;
-     else if (tier === 'tier_1_read') trustLevel = 0.4;
+  private mapToDIDResult(
+    agent: any,
+    originalGaid: string
+  ): DIDResolutionResult {
+    const tier = agent.security?.tier;
+    let trustLevel = 0.5;
+    if (tier === 'tier_4_system_admin') trustLevel = 1.0;
+    else if (tier === 'tier_3_write_elevated') trustLevel = 0.8;
+    else if (tier === 'tier_2_write_limited') trustLevel = 0.6;
+    else if (tier === 'tier_1_read') trustLevel = 0.4;
 
-     return {
-        gaid: originalGaid,
-        did: agent.metadata?.annotations?.['ossa.org/gaid'] || originalGaid,
-        name: agent.metadata?.name || 'unknown',
-        organization: agent.metadata?.identity?.namespace || 'community',
-        trustTier: tier || 'unverified',
-        trustLevel,
-        verified: !!agent.metadata?.identity?.publisher?.pgp_key,
-        capabilities: (agent.spec?.capabilities || []).map((c: any) => typeof c === 'string' ? c : c.name),
-        endpoints: agent.endpoints,
-        publicKey: agent.metadata?.identity?.publisher?.pgp_key,
-        signature: agent.metadata?.identity?.signature,
-        createdAt: agent.metadata?.created_at,
-        updatedAt: agent.metadata?.updated_at,
-     };
+    return {
+      gaid: originalGaid,
+      did: agent.metadata?.annotations?.['ossa.org/gaid'] || originalGaid,
+      name: agent.metadata?.name || 'unknown',
+      organization: agent.metadata?.identity?.namespace || 'community',
+      trustTier: tier || 'unverified',
+      trustLevel,
+      verified: !!agent.metadata?.identity?.publisher?.pgp_key,
+      capabilities: (agent.spec?.capabilities || []).map((c: any) =>
+        typeof c === 'string' ? c : c.name
+      ),
+      endpoints: agent.endpoints,
+      publicKey: agent.metadata?.identity?.publisher?.pgp_key,
+      signature: agent.metadata?.identity?.signature,
+      createdAt: agent.metadata?.created_at,
+      updatedAt: agent.metadata?.updated_at,
+    };
   }
 }
 

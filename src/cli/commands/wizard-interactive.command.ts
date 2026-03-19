@@ -3762,7 +3762,8 @@ Guidelines:
     if (outputAnswers.generate_gaid) {
       printInfo('\n🆔 Generating Global Agent ID (GAID)...');
 
-      const org = outputAnswers.organization || process.env.OSSA_ORG || 'my-org';
+      const org =
+        outputAnswers.organization || process.env.OSSA_ORG || 'my-org';
       const prefix = outputAnswers.serial_prefix || 'AG';
 
       // Generate deterministic UUID v5 based on agent metadata

@@ -13,11 +13,9 @@ info:
     url: https://openstandardagents.org
   license:
     name: MIT
-
 servers:
   - url: http://localhost:4242
     description: Local daemon (127.0.0.1 only)
-
 tags:
   - name: Pairing
     description: NIST-grade local authentication via 6-digit pairing codes
@@ -33,10 +31,8 @@ tags:
     description: Server-Sent Events for real-time updates
   - name: WebSocket
     description: Bidirectional real-time communication
-
 security:
   - pairingToken: []
-
 components:
   securitySchemes:
     pairingToken:
@@ -47,20 +43,22 @@ components:
         Session token obtained via pairing protocol.
         Sent as Bearer token in Authorization header (HTTP)
         or via Sec-WebSocket-Protocol header (WebSocket).
-
   schemas:
     PairRequest:
       type: object
-      required: [code]
+      required:
+        - code
       properties:
         code:
           type: string
-          pattern: '^\d{6}$'
+          pattern: ^\d{6}$
           description: 6-digit pairing code displayed in daemon terminal
-
     PairResponse:
       type: object
-      required: [sessionId, token, expiresAt]
+      required:
+        - sessionId
+        - token
+        - expiresAt
       properties:
         sessionId:
           type: string
@@ -72,23 +70,30 @@ components:
           type: string
           format: date-time
           description: Token expiry (24h from creation)
-
     HealthResponse:
       type: object
-      required: [status, version, uptime, workspace]
+      required:
+        - status
+        - version
+        - uptime
+        - workspace
       properties:
         status:
           type: string
-          enum: [ok, degraded]
+          enum:
+            - ok
+            - degraded
         version:
           type: string
-          example: '0.4.0'
+          example: 0.4.0
         uptime:
           type: integer
           description: Daemon uptime in seconds
         workspace:
           type: object
-          required: [path, manifestCount]
+          required:
+            - path
+            - manifestCount
           properties:
             path:
               type: string
@@ -97,10 +102,12 @@ components:
         activeSessions:
           type: integer
           maximum: 3
-
     WorkspaceState:
       type: object
-      required: [root, files, manifests]
+      required:
+        - root
+        - files
+        - manifests
       properties:
         root:
           type: string
@@ -108,15 +115,17 @@ components:
         files:
           type: array
           items:
-            $ref: '#/components/schemas/FileEntry'
+            $ref: "#/components/schemas/FileEntry"
         manifests:
           type: array
           items:
-            $ref: '#/components/schemas/ManifestSummary'
-
+            $ref: "#/components/schemas/ManifestSummary"
     FileEntry:
       type: object
-      required: [path, modified, size]
+      required:
+        - path
+        - modified
+        - size
       properties:
         path:
           type: string
@@ -126,21 +135,22 @@ components:
           format: date-time
         size:
           type: integer
-
     FileTree:
       type: object
-      required: [root, entries]
+      required:
+        - root
+        - entries
       properties:
         root:
           type: string
         entries:
           type: array
           items:
-            $ref: '#/components/schemas/FileEntry'
-
+            $ref: "#/components/schemas/FileEntry"
     FileWriteRequest:
       type: object
-      required: [content]
+      required:
+        - content
       properties:
         content:
           type: string
@@ -149,10 +159,12 @@ components:
         createDirectories:
           type: boolean
           default: false
-
     FileWriteResponse:
       type: object
-      required: [path, written, validated]
+      required:
+        - path
+        - written
+        - validated
       properties:
         path:
           type: string
@@ -164,25 +176,33 @@ components:
         validationErrors:
           type: array
           items:
-            $ref: '#/components/schemas/ValidationError'
-
+            $ref: "#/components/schemas/ValidationError"
     ManifestSummary:
       type: object
-      required: [path, kind, name]
+      required:
+        - path
+        - kind
+        - name
       properties:
         path:
           type: string
         kind:
           type: string
-          enum: [Agent, Skill, MCPServer, Team]
+          enum:
+            - Agent
+            - Skill
+            - MCPServer
+            - Team
         name:
           type: string
         version:
           type: string
-
     ValidationError:
       type: object
-      required: [path, message, severity]
+      required:
+        - path
+        - message
+        - severity
       properties:
         path:
           type: string
@@ -190,40 +210,60 @@ components:
           type: string
         severity:
           type: string
-          enum: [error, warning, info]
-
+          enum:
+            - error
+            - warning
+            - info
     SkillCatalog:
       type: object
-      required: [skills, sources]
+      required:
+        - skills
+        - sources
       properties:
         skills:
           type: array
           items:
-            $ref: '#/components/schemas/SkillEntry'
+            $ref: "#/components/schemas/SkillEntry"
         sources:
           type: array
           items:
             type: object
-            required: [name, status, count]
+            required:
+              - name
+              - status
+              - count
             properties:
               name:
                 type: string
-                enum: [local, builtin, github, registry]
+                enum:
+                  - local
+                  - builtin
+                  - github
+                  - registry
               status:
                 type: string
-                enum: [loaded, error, loading]
+                enum:
+                  - loaded
+                  - error
+                  - loading
               count:
                 type: integer
-
     SkillEntry:
       type: object
-      required: [name, source, description]
+      required:
+        - name
+        - source
+        - description
       properties:
         name:
           type: string
         source:
           type: string
-          enum: [local, builtin, github, registry]
+          enum:
+            - local
+            - builtin
+            - github
+            - registry
         description:
           type: string
         version:
@@ -236,23 +276,28 @@ components:
           type: array
           items:
             type: string
-
     SkillInstallRequest:
       type: object
-      required: [name, source]
+      required:
+        - name
+        - source
       properties:
         name:
           type: string
         source:
           type: string
-          enum: [builtin, github, registry]
+          enum:
+            - builtin
+            - github
+            - registry
         targetPath:
           type: string
           description: Relative path in workspace to install skill
-
     SkillInstallResponse:
       type: object
-      required: [installed, path]
+      required:
+        - installed
+        - path
       properties:
         installed:
           type: boolean
@@ -262,10 +307,10 @@ components:
           type: array
           items:
             type: string
-
     ExecuteRequest:
       type: object
-      required: [manifestPath]
+      required:
+        - manifestPath
       properties:
         manifestPath:
           type: string
@@ -275,37 +320,56 @@ components:
           description: Agent input parameters
         runtime:
           type: string
-          enum: [claude, openai, ollama, groq, together, deepseek, gemini, mock]
+          enum:
+            - claude
+            - openai
+            - ollama
+            - groq
+            - together
+            - deepseek
+            - gemini
+            - mock
           default: claude
         stream:
           type: boolean
           default: true
-
     ExecuteResponse:
       type: object
-      required: [executionId, status]
+      required:
+        - executionId
+        - status
       properties:
         executionId:
           type: string
           format: uuid
         status:
           type: string
-          enum: [running, completed, failed, cancelled]
+          enum:
+            - running
+            - completed
+            - failed
+            - cancelled
         sseUrl:
           type: string
           format: uri
           description: SSE endpoint for streaming output
-
     ExecutionStatus:
       type: object
-      required: [executionId, status, startedAt]
+      required:
+        - executionId
+        - status
+        - startedAt
       properties:
         executionId:
           type: string
           format: uuid
         status:
           type: string
-          enum: [running, completed, failed, cancelled]
+          enum:
+            - running
+            - completed
+            - failed
+            - cancelled
         startedAt:
           type: string
           format: date-time
@@ -318,10 +382,11 @@ components:
         error:
           type: string
           description: Error message (only when failed)
-
     ErrorResponse:
       type: object
-      required: [error, message]
+      required:
+        - error
+        - message
       properties:
         error:
           type: string
@@ -329,11 +394,14 @@ components:
           type: string
         details:
           type: object
-
-    # WebSocket event schemas
     DaemonWebSocketEvent:
       type: object
-      required: [type, id, timestamp, payload, metadata]
+      required:
+        - type
+        - id
+        - timestamp
+        - payload
+        - metadata
       properties:
         type:
           type: string
@@ -362,7 +430,8 @@ components:
           type: object
         metadata:
           type: object
-          required: [agentId]
+          required:
+            - agentId
           properties:
             agentId:
               type: string
@@ -372,20 +441,30 @@ components:
               type: string
             priority:
               type: string
-              enum: [low, normal, high, critical]
+              enum:
+                - low
+                - normal
+                - high
+                - critical
             ttl:
               type: integer
             sessionId:
               type: string
-
-    # SSE event schemas
     SSEExecutionEvent:
       type: object
-      required: [type, data]
+      required:
+        - type
+        - data
       properties:
         type:
           type: string
-          enum: [stdout, stderr, tool_call, tool_result, completion, error]
+          enum:
+            - stdout
+            - stderr
+            - tool_call
+            - tool_result
+            - completion
+            - error
         data:
           type: string
         timestamp:
@@ -393,14 +472,19 @@ components:
           format: date-time
         executionId:
           type: string
-
     SSEWorkspaceEvent:
       type: object
-      required: [type, path, timestamp]
+      required:
+        - type
+        - path
+        - timestamp
       properties:
         type:
           type: string
-          enum: [added, changed, removed]
+          enum:
+            - added
+            - changed
+            - removed
         path:
           type: string
         timestamp:
@@ -411,47 +495,51 @@ components:
         validationErrors:
           type: array
           items:
-            $ref: '#/components/schemas/ValidationError'
-
+            $ref: "#/components/schemas/ValidationError"
 paths:
-  # === Pairing ===
   /pair:
     post:
       operationId: submitPairingCode
       summary: Submit pairing code to establish session
-      tags: [Pairing]
+      tags:
+        - Pairing
       security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PairRequest'
+              $ref: "#/components/schemas/PairRequest"
       responses:
-        '200':
+        "200":
           description: Pairing successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PairResponse'
-        '401':
+                $ref: "#/components/schemas/PairResponse"
+        "401":
           description: Invalid or expired pairing code
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '429':
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
           description: Max sessions reached (3) or rate limited
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
+                $ref: "#/components/schemas/ErrorResponse"
+      x-ossa-capability: daemon-submit-pairing-code
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Submit pairing code to establish session
   /pair/{sessionId}:
     delete:
       operationId: revokeSession
       summary: Revoke a pairing session
-      tags: [Pairing]
+      tags:
+        - Pairing
       parameters:
         - name: sessionId
           in: path
@@ -460,7 +548,7 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Session revoked
           content:
             application/json:
@@ -469,72 +557,81 @@ paths:
                 properties:
                   revoked:
                     type: boolean
-        '404':
+        "404":
           description: Session not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  # === Health ===
+                $ref: "#/components/schemas/ErrorResponse"
+      x-ossa-capability: daemon-revoke-session
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Revoke a pairing session
   /health:
     get:
       operationId: getDaemonHealth
       summary: Daemon health check and workspace info
-      tags: [Health]
+      tags:
+        - Health
       security: []
       responses:
-        '200':
+        "200":
           description: Daemon is healthy
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthResponse'
-
-  # === Workspace ===
+                $ref: "#/components/schemas/HealthResponse"
+      x-ossa-capability: daemon-get-daemon-health
+      description: Daemon health check and workspace info
   /workspace:
     get:
       operationId: getWorkspaceState
       summary: Full workspace state (files + manifests)
-      tags: [Workspace]
+      tags:
+        - Workspace
       responses:
-        '200':
+        "200":
           description: Workspace state
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkspaceState'
-        '401':
+                $ref: "#/components/schemas/WorkspaceState"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
+                $ref: "#/components/schemas/ErrorResponse"
+      x-ossa-capability: daemon-get-workspace-state
+      description: Full workspace state (files + manifests)
   /workspace/files:
     get:
       operationId: getFileTree
       summary: Workspace file tree
-      tags: [Workspace]
+      tags:
+        - Workspace
       responses:
-        '200':
+        "200":
           description: File tree
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FileTree'
-        '401':
+                $ref: "#/components/schemas/FileTree"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
+                $ref: "#/components/schemas/ErrorResponse"
+      x-ossa-capability: daemon-get-file-tree
+      description: Workspace file tree
   /workspace/files/{path}:
     put:
       operationId: writeFile
       summary: Write file to workspace (validated for OSSA manifests)
-      tags: [Workspace]
+      tags:
+        - Workspace
       parameters:
         - name: path
           in: path
@@ -547,45 +644,53 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FileWriteRequest'
+              $ref: "#/components/schemas/FileWriteRequest"
       responses:
-        '200':
+        "200":
           description: File written successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FileWriteResponse'
-        '400':
+                $ref: "#/components/schemas/FileWriteResponse"
+        "400":
           description: Path traversal attempt or invalid content
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '413':
+                $ref: "#/components/schemas/ErrorResponse"
+        "413":
           description: Content too large (max 1MB)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  # === Skills ===
+                $ref: "#/components/schemas/ErrorResponse"
+      x-ossa-capability: daemon-write-file
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Write file to workspace (validated for OSSA manifests)
   /skills:
     get:
       operationId: getSkillCatalog
       summary: Aggregated skill catalog from all sources
-      tags: [Skills]
+      tags:
+        - Skills
       parameters:
         - name: source
           in: query
           schema:
             type: string
-            enum: [local, builtin, github, registry]
+            enum:
+              - local
+              - builtin
+              - github
+              - registry
           description: Filter by source
         - name: search
           in: query
@@ -593,93 +698,104 @@ paths:
             type: string
           description: Search skills by name or description
       responses:
-        '200':
+        "200":
           description: Skill catalog
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SkillCatalog'
-        '401':
+                $ref: "#/components/schemas/SkillCatalog"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
+                $ref: "#/components/schemas/ErrorResponse"
+      x-ossa-capability: daemon-get-skill-catalog
+      description: Aggregated skill catalog from all sources
   /skills/install:
     post:
       operationId: installSkill
       summary: Install a skill to the workspace
-      tags: [Skills]
+      tags:
+        - Skills
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SkillInstallRequest'
+              $ref: "#/components/schemas/SkillInstallRequest"
       responses:
-        '200':
+        "200":
           description: Skill installed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SkillInstallResponse'
-        '400':
+                $ref: "#/components/schemas/SkillInstallResponse"
+        "400":
           description: Invalid skill or target path
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
           description: Skill not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  # === Execution ===
+                $ref: "#/components/schemas/ErrorResponse"
+      x-ossa-capability: daemon-install-skill
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Install a skill to the workspace
   /execute:
     post:
       operationId: startExecution
       summary: Start agent execution
-      tags: [Execution]
+      tags:
+        - Execution
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExecuteRequest'
+              $ref: "#/components/schemas/ExecuteRequest"
       responses:
-        '200':
+        "200":
           description: Execution started
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExecuteResponse'
-        '400':
+                $ref: "#/components/schemas/ExecuteResponse"
+        "400":
           description: Invalid manifest or runtime
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
+                $ref: "#/components/schemas/ErrorResponse"
+      x-ossa-capability: daemon-start-execution
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Start agent execution
   /execute/{executionId}:
     get:
       operationId: getExecutionStatus
       summary: Get execution status
-      tags: [Execution]
+      tags:
+        - Execution
       parameters:
         - name: executionId
           in: path
@@ -688,28 +804,31 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Execution status
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExecutionStatus'
-        '401':
+                $ref: "#/components/schemas/ExecutionStatus"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
           description: Execution not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
+      x-ossa-capability: daemon-get-execution-status
+      description: Get execution status
     delete:
       operationId: cancelExecution
       summary: Cancel a running execution
-      tags: [Execution]
+      tags:
+        - Execution
       parameters:
         - name: executionId
           in: path
@@ -718,7 +837,7 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Execution cancelled
           content:
             application/json:
@@ -729,25 +848,29 @@ paths:
                     type: boolean
                   executionId:
                     type: string
-        '401':
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
           description: Execution not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  # === SSE Streams ===
+                $ref: "#/components/schemas/ErrorResponse"
+      x-ossa-capability: daemon-cancel-execution
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Cancel a running execution
   /sse/execution/{executionId}:
     get:
       operationId: streamExecution
       summary: Stream agent execution output via SSE
-      tags: [SSE]
+      tags:
+        - SSE
       parameters:
         - name: executionId
           in: path
@@ -756,39 +879,43 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: SSE event stream
           content:
             text/event-stream:
               schema:
-                $ref: '#/components/schemas/SSEExecutionEvent'
-        '401':
+                $ref: "#/components/schemas/SSEExecutionEvent"
+        "401":
           description: Unauthorized
-        '404':
+        "404":
           description: Execution not found
-
+      x-ossa-capability: daemon-stream-execution
+      description: Stream agent execution output via SSE
   /sse/workspace:
     get:
       operationId: streamWorkspace
       summary: Stream workspace file change events via SSE
-      tags: [SSE]
+      tags:
+        - SSE
       responses:
-        '200':
+        "200":
           description: SSE event stream
           content:
             text/event-stream:
               schema:
-                $ref: '#/components/schemas/SSEWorkspaceEvent'
-        '401':
+                $ref: "#/components/schemas/SSEWorkspaceEvent"
+        "401":
           description: Unauthorized
-
+      x-ossa-capability: daemon-stream-workspace
+      description: Stream workspace file change events via SSE
   /sse/status:
     get:
       operationId: streamStatus
       summary: Stream daemon health metrics via SSE
-      tags: [SSE]
+      tags:
+        - SSE
       responses:
-        '200':
+        "200":
           description: SSE event stream
           content:
             text/event-stream:
@@ -804,23 +931,38 @@ paths:
                   timestamp:
                     type: string
                     format: date-time
-        '401':
+        "401":
           description: Unauthorized
-
-  # === WebSocket ===
+      x-ossa-capability: daemon-stream-status
+      description: Stream daemon health metrics via SSE
   /ws:
     get:
       operationId: websocketUpgrade
       summary: WebSocket upgrade for bidirectional real-time communication
-      tags: [WebSocket]
+      tags:
+        - WebSocket
       description: |
         Upgrade to WebSocket connection. Token sent via Sec-WebSocket-Protocol header.
         Events use DaemonWebSocketEvent schema. Rate limit: 1000 msg/min per session.
         Max message size: 1MB.
       responses:
-        '101':
+        "101":
           description: Switching to WebSocket protocol
-        '401':
+        "401":
           description: Invalid or missing pairing token
-        '429':
+        "429":
           description: Rate limited
+      x-ossa-capability: daemon-websocket-upgrade
+x-ossa-metadata:
+  version: 0.4.0
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: agent-platform-daemon
+    type: integrator

@@ -52,7 +52,7 @@ export interface DaemonStatusPayload {
 const SSE_HEADERS: Record<string, string> = {
   'Content-Type': 'text/event-stream',
   'Cache-Control': 'no-cache',
-  'Connection': 'keep-alive',
+  Connection: 'keep-alive',
 };
 
 const STATUS_INTERVAL_MS = 5_000;
@@ -63,20 +63,29 @@ export class SSEEndpoints {
   private activeConnections = 0;
 
   /** Event subscribers keyed by execution ID */
-  private readonly executionListeners = new Map<string, Set<(data: ExecutionEventPayload) => void>>();
+  private readonly executionListeners = new Map<
+    string,
+    Set<(data: ExecutionEventPayload) => void>
+  >();
 
   /** Workspace change subscribers */
-  private readonly workspaceListeners = new Set<(data: WorkspaceChangePayload) => void>();
+  private readonly workspaceListeners = new Set<
+    (data: WorkspaceChangePayload) => void
+  >();
 
   constructor(
-    @inject(PairingService) private readonly pairing: PairingService,
+    @inject(PairingService) private readonly pairing: PairingService
   ) {}
 
   /**
    * Stream agent execution output (stdout, stderr, tool calls, completion).
    * Client connects to /sse/execution/:id?token=<pairing-token>
    */
-  streamExecution(executionId: string, res: http.ServerResponse, token: string): void {
+  streamExecution(
+    executionId: string,
+    res: http.ServerResponse,
+    token: string
+  ): void {
     if (!this.authenticate(token, res)) return;
     this.initSSE(res);
 
@@ -177,7 +186,10 @@ export class SSEEndpoints {
   // -- Internal publish methods for other daemon services --
 
   /** Push an execution event to all listeners for the given execution ID */
-  publishExecutionEvent(executionId: string, payload: ExecutionEventPayload): void {
+  publishExecutionEvent(
+    executionId: string,
+    payload: ExecutionEventPayload
+  ): void {
     const listeners = this.executionListeners.get(executionId);
     if (listeners) {
       for (const fn of listeners) {
@@ -214,6 +226,8 @@ export class SSEEndpoints {
   /** Write a single SSE frame to the response */
   private sendEvent(res: http.ServerResponse, event: SSEEvent): void {
     if (res.writableEnded) return;
-    res.write(`event: ${event.type}\ndata: ${JSON.stringify(event)}\nid: ${event.id}\n\n`);
+    res.write(
+      `event: ${event.type}\ndata: ${JSON.stringify(event)}\nid: ${event.id}\n\n`
+    );
   }
 }

@@ -18,7 +18,7 @@ describe('AgentsMdExtension Schema Validation', () => {
     // Load schema
     const schemaPath = path.resolve(
       __dirname,
-      '../../../spec/v0.4/agent.schema.json'
+      '../../../spec/v0.5/agent.schema.json'
     );
     schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 

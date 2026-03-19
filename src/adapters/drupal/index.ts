@@ -483,6 +483,13 @@ export {
   type DrupalManifestExportOptions,
 } from './manifest-exporter.js';
 
+// Export Twig renderer (uses twig-drupal-filters for proper Drupal template generation)
+export {
+  renderTwigTemplate,
+  generateAgentTemplate,
+  generateConfigSchema,
+} from './twig-renderer.js';
+
 // Export shared Drupal utilities
 export {
   sanitizeModuleName,

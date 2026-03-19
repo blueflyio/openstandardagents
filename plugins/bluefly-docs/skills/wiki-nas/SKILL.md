@@ -194,7 +194,7 @@ buildkit research search "cedar policy gates"
 # Ranked results from: wikis → whitepapers → Zotero → Obsidian → GKG
 
 # GKG direct query
-curl "https://gkg.blueflyagents.com/api/search?q=cedar+policy&types=Document,Agent"
+curl "https://gkg.bluefly.internal/api/search?q=cedar+policy&types=Document,Agent"
 ```
 
 ## CI/CD Auto-Publish

@@ -200,12 +200,12 @@ def test_tool_model():
     tool = OSSATool.model_validate({
         "type": "mcp",
         "name": "knowledge-base",
-        "endpoint": "https://gkg.blueflyagents.com/mcp/sse",
+        "endpoint": "https://gkg.bluefly.internal/mcp/sse",
         "description": "Knowledge graph tool",
     })
     assert tool.type == "mcp"
     assert tool.name == "knowledge-base"
-    assert tool.endpoint == "https://gkg.blueflyagents.com/mcp/sse"
+    assert tool.endpoint == "https://gkg.bluefly.internal/mcp/sse"
 
 
 def test_memory_backend_enum():

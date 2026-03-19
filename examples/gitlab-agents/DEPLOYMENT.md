@@ -119,7 +119,7 @@ npm start
 
 ```bash
 # Set environment variables
-export GITLAB_API_TOKEN=SET_GITLAB_PAT_TOKEN
+export GITLAB_API_TOKEN=glpat-your-token
 export ANTHROPIC_API_KEY=sk-ant-your-key
 export WEBHOOK_SECRET=your-secret
 

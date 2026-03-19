@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.5.0/replay-packet.schema.json",
+  "title": "OSSA v0.5.0 Replay Packet Schema",
+  "description": "ReplayPacket is a portable execution artifact for audit, governance, and benchmarking. It enables high-fidelity reproduction of agent reasoning.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "pattern": "^ossa/v0\\.5.*$"
+    },
+    "kind": {
+      "type": "string",
+      "const": "ReplayPacket"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "required": [
+        "execution_id",
+        "events"
+      ],
+      "properties": {
+        "execution_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "profile_id": {
+          "type": "string",
+          "description": "The ExecutionProfile used during this execution."
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "timestamp",
+              "type"
+            ],
+            "properties": {
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "input",
+                  "output",
+                  "tool_call",
+                  "tool_result",
+                  "state_change",
+                  "metric",
+                  "human_intervention"
+                ]
+              },
+              "data": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "duration_ms": {
+              "type": "integer"
+            },
+            "input_tokens": {
+              "type": "integer"
+            },
+            "output_tokens": {
+              "type": "integer"
+            },
+            "total_cost_usd": {
+              "type": "number"
+            },
+            "efficiency_score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "signer": {
+              "type": "string",
+              "description": "DID or Public Key of the signing entity."
+            },
+            "signature": {
+              "type": "string"
+            },
+            "hash": {
+              "type": "string",
+              "description": "Content-addressable hash of the packet."
+            }
+          }
+        }
+      }
+    }
+  }
+}

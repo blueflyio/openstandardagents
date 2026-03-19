@@ -106,7 +106,7 @@ console.log(summary);
 ### Supported Providers
 
 - **OpenAI**: gpt-4, gpt-4-turbo, gpt-4o, gpt-4o-mini, gpt-3.5-turbo, o1-preview, o1-mini
-- **Anthropic**: claude-opus-4, claude-sonnet-4, claude-haiku-4, claude-3-*
+- **Anthropic**: claude-opus-4, claude-sonnet-4, claude-haiku-4, claude-3-\*
 - **Google**: gemini-1.5-pro, gemini-1.5-flash, gemini-pro
 - **Cohere**: command-r-plus, command-r, command
 - **Mistral**: mistral-large, mistral-medium, mistral-small
@@ -378,7 +378,7 @@ const manifest = {
         endpoint: 'http://api.example.com', // HTTP, not HTTPS
         auth: {
           type: 'apiKey',
-          credentials: 'sk-1234567890abcdef', // EXPOSED SECRET!
+          credentials: '<redacted-demo-key>', // EXPOSED SECRET!
         },
       },
     ],

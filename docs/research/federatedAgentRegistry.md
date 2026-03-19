@@ -103,7 +103,7 @@ The registry pod model enables **organizational patterns that traditional regist
 
 ### Relationship to existing infrastructure
 
-This architecture directly integrates with the **agent-mesh** infrastructure already deployed in the BlueFly platform. The agent-mesh handles agent-to-agent communication (A2A protocol), while the registry mesh handles agent artifact discovery and distribution. These are complementary layers:
+This architecture directly integrates with the **agent-mesh** infrastructure already deployed in the Agent Platform. The agent-mesh handles agent-to-agent communication (A2A protocol), while the registry mesh handles agent artifact discovery and distribution. These are complementary layers:
 
 - **Agent mesh**: Runtime communication between executing agents (A2A messages, streaming, capabilities negotiation)
 - **Registry mesh**: Distribution of agent artifacts, discovery of agent capabilities, provenance verification, policy enforcement

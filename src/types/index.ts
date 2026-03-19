@@ -18,86 +18,119 @@ export type { OssaTask, RuntimeBinding, TaskSpec } from './task.js';
 // Export Workflow types (v0.3.0)
 export * from './workflow.js';
 export {
-    createStep,
-    createWorkflowManifest,
-    expr,
-    isOssaWorkflow
+  createStep,
+  createWorkflowManifest,
+  expr,
+  isOssaWorkflow,
 } from './workflow.js';
 export type { OssaWorkflow, WorkflowSpec, WorkflowStep } from './workflow.js';
 
 // Export Messaging types (v0.3.0)
 export * from './messaging.js';
 export type {
-    Command,
-    MessageEnvelope,
-    MessagingExtension,
-    PublishedChannel,
-    ReliabilityConfig,
-    RoutingRule,
-    Subscription
+  Command,
+  MessageEnvelope,
+  MessagingExtension,
+  PublishedChannel,
+  ReliabilityConfig,
+  RoutingRule,
+  Subscription,
 } from './messaging.js';
 
 // Export Identity & Adapter types (v0.3.6)
 export * from './identity.js';
 export type {
-    Adapter,
-    CredentialSource,
-    GenerationContext,
-    Principal
+  Adapter,
+  CredentialSource,
+  GenerationContext,
+  Principal,
 } from './identity.js';
 
 // Export Architect types (v0.3.6)
 export * from './architect.js';
 export type {
-    ArchitectRecommendation,
-    ArchitectureConstraint,
-    Blueprint,
-    BlueprintKind
+  ArchitectRecommendation,
+  ArchitectureConstraint,
+  Blueprint,
+  BlueprintKind,
 } from './architect.js';
 
 // Export Security Posture types (v0.5)
 export * from './security.js';
 export type {
-    AuditConfig,
-    DataClassification,
-    EgressPolicy,
-    NetworkAccessConfig,
-    NetworkProtocol,
-    ResourceLimits,
-    SandboxingConfig,
-    SandboxType,
-    SecurityCapability,
-    SecurityPosture,
-    ThreatCategory,
-    ThreatModelEntry,
-    ThreatSeverity
+  AuditConfig,
+  DataClassification,
+  EgressPolicy,
+  NetworkAccessConfig,
+  NetworkProtocol,
+  ResourceLimits,
+  SandboxingConfig,
+  SandboxType,
+  SecurityCapability,
+  SecurityPosture,
+  ThreatCategory,
+  ThreatModelEntry,
+  ThreatSeverity,
 } from './security.js';
 
 // Export Skill types (AgentSkills / OSSA skills)
 export { isOssaSkill } from './skill.js';
 export type { OssaSkill } from './skill.js';
 
+// Export Role types (v0.5 — IDE operator contexts)
+export { createRoleManifest, isOssaRole } from './role.js';
+export type {
+  OssaRole,
+  RoleActivation,
+  RoleContext,
+  RoleExtension,
+  RoleHooks,
+  RoleInstructions,
+  RoleMCPServer,
+  RoleProtocols,
+  RoleSpec,
+  RoleTools,
+} from './role.js';
+
 // Export MCP server manifest types
 export { isOssaMCPServer } from './mcp-server-manifest.js';
 export type { OssaMCPServer } from './mcp-server-manifest.js';
 
+// Export Cognition types (v0.4 — CAOE)
+export * from './cognition.zod.js';
+export type {
+    ActorType,
+    CognitionEvent,
+    CognitionEventType,
+    ConflictResolutionRequest,
+    CreateSessionRequest,
+    CreateSessionResponse,
+    EmitHypothesisRequest,
+    Hypothesis,
+    HypothesisStatus,
+    LockHypothesisRequest,
+    OSSACognitionSpec,
+    PresenceSignal,
+    Session,
+} from './cognition.zod.js';
+
 // Export Protocol Declaration types (v0.5)
 export * from './protocols.js';
 export type {
-    A2AAgentCard,
-    A2AAuthentication,
-    A2ACapabilities,
-    A2AProtocol,
-    A2ASkill,
-    ANPDiscovery,
-    ANPProtocol,
-    MCPCapabilities,
-    MCPProtocol,
-    MCPRole,
-    MCPServerConfig,
-    MCPTransport,
-    ProtocolDeclarations,
-    VerifiableCredentialRef
+  A2AAgentCard,
+  A2AAuthentication,
+  A2ACapabilities,
+  A2AProtocol,
+  A2ASkill,
+  ANPDiscovery,
+  ANPProtocol,
+  MCPCapabilities,
+  MCPProtocol,
+  MCPRole,
+  MCPServerConfig,
+  MCPTransport,
+  ProtocolDeclarations,
+  VerifiableCredentialRef,
 } from './protocols.js';
 
 /**

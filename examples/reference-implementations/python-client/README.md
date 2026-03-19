@@ -27,7 +27,7 @@ pip install -e .
 from ossa_client import OSSA
 
 # Initialize the client
-client = OSSA(bearer_token='SET_OSSA_BEARER_TOKEN')
+client = OSSA(bearer_token='ossa_tok_xxx')
 
 # Search for agents
 results = client.agents.search(
@@ -57,7 +57,7 @@ Run the included examples:
 python examples/basic_usage.py
 
 # Publish an agent (requires OSSA_TOKEN)
-export OSSA_TOKEN=SET_OSSA_BEARER_TOKEN
+export OSSA_TOKEN=ossa_tok_xxx
 python examples/publish_agent.py
 ```
 
@@ -70,7 +70,7 @@ from ossa_client import OSSA
 
 client = OSSA(
     base_url='https://registry.openstandardagents.org/api/v1',  # Optional
-    bearer_token='SET_OSSA_BEARER_TOKEN',  # Optional
+    bearer_token='ossa_tok_xxx',  # Optional
     api_key='api_key_xxx',        # Alternative to bearer_token
     timeout=30,                    # Request timeout in seconds
     retries=3,                     # Number of retries
@@ -253,7 +253,7 @@ except OSSAAPIError as error:
 Use the client as a context manager for automatic cleanup:
 
 ```python
-with OSSA(bearer_token='SET_OSSA_BEARER_TOKEN') as client:
+with OSSA(bearer_token='ossa_tok_xxx') as client:
     results = client.agents.search(domain='security')
     # Session automatically closed when exiting context
 ```

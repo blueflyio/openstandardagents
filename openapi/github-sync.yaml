@@ -3,17 +3,19 @@ info:
   title: GitHub Sync API
   version: 0.3.3
   description: API for syncing GitHub PRs to GitLab
-
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 servers:
   - url: http://localhost:3000
     description: Development
-
 paths:
   /sync/pr/{number}:
     post:
       summary: Sync GitHub PR to GitLab
       operationId: syncPR
-      tags: [Sync]
+      tags:
+        - Sync
       parameters:
         - name: number
           in: path
@@ -21,18 +23,23 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: MR created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GitLabMR'
-
+                $ref: "#/components/schemas/GitLabMR"
+      x-ossa-capability: github-sync-pr
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Sync GitHub PR to GitLab
   /sync/batch:
     post:
       summary: Batch sync PRs
       operationId: batchSync
-      tags: [Sync]
+      tags:
+        - Sync
       requestBody:
         content:
           application/json:
@@ -43,38 +50,48 @@ paths:
                   type: string
                   example: app/dependabot
       responses:
-        '200':
+        "200":
           description: Batch MR created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GitLabMR'
-
+                $ref: "#/components/schemas/GitLabMR"
+      x-ossa-capability: github-batch-sync
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Batch sync PRs
   /sync/list:
     get:
       summary: List syncable PRs
       operationId: listPRs
-      tags: [Sync]
+      tags:
+        - Sync
       parameters:
         - name: author
           in: query
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: List of PRs
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/GitHubPR'
-
+                  $ref: "#/components/schemas/GitHubPR"
+      x-ossa-capability: github-list-prs
+      description: List syncable PRs
 components:
   schemas:
     GitHubPR:
       type: object
-      required: [number, title, author, state]
+      required:
+        - number
+        - title
+        - author
+        - state
       properties:
         number:
           type: integer
@@ -90,11 +107,18 @@ components:
               type: string
         state:
           type: string
-          enum: [open, closed]
-
+          enum:
+            - open
+            - closed
     GitLabMR:
       type: object
-      required: [iid, title, source_branch, target_branch, state, web_url]
+      required:
+        - iid
+        - title
+        - source_branch
+        - target_branch
+        - state
+        - web_url
       properties:
         iid:
           type: integer
@@ -109,7 +133,26 @@ components:
           type: string
         state:
           type: string
-          enum: [opened, closed, merged]
+          enum:
+            - opened
+            - closed
+            - merged
         web_url:
           type: string
           format: uri
+x-ossa-metadata:
+  version: 0.3.3
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: github-sync-api
+    type: integrator
+tags:
+  - name: Sync
+    description: Sync operations

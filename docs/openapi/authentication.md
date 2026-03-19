@@ -28,7 +28,7 @@ API keys are the simplest method for server-to-server authentication.
 Include the API key in the `X-API-Key` header:
 
 ```bash
-curl -H "X-API-Key: SET_OSSA_API_KEY" \
+curl -H "X-API-Key: ossa_ak_1234567890abcdef" \
   https://api.llm.bluefly.io/ossa/v1/agents
 ```
 
@@ -37,7 +37,7 @@ curl -H "X-API-Key: SET_OSSA_API_KEY" \
 ```typescript
 const response = await fetch('https://api.llm.bluefly.io/ossa/v1/agents', {
   headers: {
-    'X-API-Key': 'SET_OSSA_API_KEY'
+    'X-API-Key': 'ossa_ak_1234567890abcdef'
   }
 });
 ```
@@ -48,7 +48,7 @@ const response = await fetch('https://api.llm.bluefly.io/ossa/v1/agents', {
 import requests
 
 headers = {
-    'X-API-Key': 'SET_OSSA_API_KEY'
+    'X-API-Key': 'ossa_ak_1234567890abcdef'
 }
 
 response = requests.get(
@@ -86,10 +86,10 @@ Response:
 
 ```json
 {
-  "access_token": "SET_JWT_TOKEN",
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "token_type": "Bearer",
   "expires_in": 3600,
-  "refresh_token": "SET_JWT_TOKEN"
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
@@ -98,14 +98,14 @@ Response:
 Include the token in the `Authorization` header with `Bearer` prefix:
 
 ```bash
-curl -H "Authorization: Bearer SET_JWT_TOKEN" \
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
   https://api.llm.bluefly.io/ossa/v1/agents
 ```
 
 **JavaScript/TypeScript:**
 
 ```typescript
-const token = 'SET_JWT_TOKEN';
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
 
 const response = await fetch('https://api.llm.bluefly.io/ossa/v1/agents', {
   headers: {
@@ -119,7 +119,7 @@ const response = await fetch('https://api.llm.bluefly.io/ossa/v1/agents', {
 ```python
 import requests
 
-token = 'SET_JWT_TOKEN'
+token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 
 headers = {
     'Authorization': f'Bearer {token}'
@@ -139,7 +139,7 @@ When your access token expires, use the refresh token to get a new one:
 curl -X POST https://api.llm.bluefly.io/ossa/v1/auth/refresh \
   -H "Content-Type: application/json" \
   -d '{
-    "refresh_token": "SET_JWT_TOKEN"
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }'
 ```
 
@@ -292,7 +292,7 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
 
 ```bash
 # .env file (never commit this!)
-OSSA_API_KEY=SET_OSSA_API_KEY
+OSSA_API_KEY=ossa_ak_1234567890abcdef
 OSSA_CLIENT_ID=client_abc123
 OSSA_CLIENT_SECRET=secret_xyz789
 ```

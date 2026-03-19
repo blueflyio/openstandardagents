@@ -165,7 +165,7 @@ buildkit drupal sync              # Sync all_drupal_custom → llm-platform/web
 | Hostname | Service |
 |----------|---------|
 | `api.blueflyagents.com` | GitLab webhooks (3001) |
-| `mesh.blueflyagents.com` | Agent mesh API (3005) |
+| `mesh.bluefly.internal` | Agent mesh API (3005) |
 | `storage.blueflyagents.com` | MinIO S3 (9000) |
 
 ## Agent Role Separation

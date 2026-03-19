@@ -503,18 +503,18 @@ set -e
 echo "Starting ${agentName}..."
 
 # Wait for dependencies
-if [ -n "\$POSTGRES_HOST" ]; then
+if [ -n "$POSTGRES_HOST" ]; then
   echo "Waiting for PostgreSQL..."
-  until nc -z "\$POSTGRES_HOST" "\${POSTGRES_PORT:-5432}"; do
+  until nc -z "$POSTGRES_HOST" "\${POSTGRES_PORT:-5432}"; do
     echo "PostgreSQL is unavailable - sleeping"
     sleep 1
   done
   echo "PostgreSQL is up"
 fi
 
-if [ -n "\$REDIS_HOST" ]; then
+if [ -n "$REDIS_HOST" ]; then
   echo "Waiting for Redis..."
-  until nc -z "\$REDIS_HOST" "\${REDIS_PORT:-6379}"; do
+  until nc -z "$REDIS_HOST" "\${REDIS_PORT:-6379}"; do
     echo "Redis is unavailable - sleeping"
     sleep 1
   done
@@ -529,7 +529,7 @@ fi
 
 # Execute the main command
 echo "Starting application..."
-exec "\$@"
+exec "$@"
 `;
   }
 
@@ -550,13 +550,13 @@ if ! pgrep -f "node" > /dev/null; then
 fi
 
 # Check HTTP health endpoint
-response=\$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${port}/health || echo "000")
+response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${port}/health || echo "000")
 
-if [ "\$response" = "200" ]; then
+if [ "$response" = "200" ]; then
   echo "Health check passed"
   exit 0
 else
-  echo "Health check failed with status: \$response"
+  echo "Health check failed with status: $response"
   exit 1
 fi
 `;
@@ -591,7 +591,7 @@ docker build \\
 
 echo "✓ Build complete"
 echo "  Image: \${IMAGE_NAME}:\${VERSION}"
-echo "  Size: \$(docker images \${IMAGE_NAME}:\${VERSION} --format "{{.Size}}")"
+echo "  Size: $(docker images \${IMAGE_NAME}:\${VERSION} --format "{{.Size}}")"
 `;
   }
 
@@ -610,7 +610,7 @@ IMAGE_NAME="${agentName}"
 VERSION=\${VERSION:-latest}
 REGISTRY=\${REGISTRY:-docker.io}
 
-if [ -z "\$REGISTRY" ]; then
+if [ -z "$REGISTRY" ]; then
   echo "Error: REGISTRY environment variable is required"
   exit 1
 fi
@@ -746,7 +746,7 @@ REDIS_PASSWORD=
 # LLM Configuration
 LLM_PROVIDER=${llm?.provider || 'anthropic'}
 LLM_MODEL=${llm?.model || 'claude-sonnet-3-5'}
-LLM_API_KEY=SET_API_KEY
+LLM_API_KEY=your-api-key-here
 LLM_MAX_TOKENS=${llm?.maxTokens || 4000}
 LLM_TEMPERATURE=${llm?.temperature || 0.7}
 
@@ -756,7 +756,7 @@ METRICS_PORT=9090
 
 # Security
 JWT_SECRET=generate-a-secure-random-secret
-API_KEY=SET_API_KEY
+API_KEY=your-api-key-here
 
 # OSSA Configuration
 OSSA_VERSION=${manifest.apiVersion}
@@ -786,9 +786,9 @@ http {
     include /etc/nginx/mime.types;
     default_type application/octet-stream;
 
-    log_format main '\$remote_addr - \$remote_user [\$time_local] "\$request" '
-                    '\$status \$body_bytes_sent "\$http_referer" '
-                    '"\$http_user_agent" "\$http_x_forwarded_for"';
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
 
     access_log /var/log/nginx/access.log main;
 
@@ -805,7 +805,7 @@ http {
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml;
 
     # Rate limiting
-    limit_req_zone \$binary_remote_addr zone=api_limit:10m rate=10r/s;
+    limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
 
     upstream agent_backend {
         least_conn;
@@ -833,12 +833,12 @@ http {
 
             proxy_pass http://agent_backend;
             proxy_http_version 1.1;
-            proxy_set_header Upgrade \$http_upgrade;
+            proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "upgrade";
-            proxy_set_header Host \$host;
-            proxy_set_header X-Real-IP \$remote_addr;
-            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto \$scheme;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
 
             # Timeouts
             proxy_connect_timeout 60;

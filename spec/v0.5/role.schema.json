@@ -1,0 +1,268 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.5/role.schema.json",
+  "title": "OSSA v0.5 Role Manifest Schema",
+  "description": "Open Standard for Software Agents (OSSA) v0.5 - Role manifest. Defines behavioral overlays for IDE/CLI agents (Claude Code, Cursor, etc.) with instructions, tool sets, hooks, MCP connections, and activation conditions.",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "pattern": "^ossa/v[0-9]+(\\.[0-9]+)*(-[a-zA-Z0-9.]+)?$",
+      "description": "OSSA API version",
+      "examples": ["ossa/v0.5", "ossa/v1"]
+    },
+    "kind": {
+      "type": "string",
+      "const": "Role",
+      "description": "Resource type — must be Role"
+    },
+    "metadata": {
+      "$ref": "#/definitions/RoleMetadata"
+    },
+    "spec": {
+      "$ref": "#/definitions/RoleSpec"
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Platform-specific extensions",
+      "additionalProperties": true
+    }
+  },
+  "definitions": {
+    "RoleMetadata": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "DNS-style role name (lowercase, hyphens)",
+          "examples": ["drupal-developer", "security-auditor", "platform-operator"]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[a-zA-Z0-9.]+)?$",
+          "description": "Semantic version",
+          "examples": ["1.0.0", "2.1.0-beta"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Key-value labels for filtering and categorization"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Non-identifying metadata"
+        }
+      }
+    },
+    "RoleSpec": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string",
+          "description": "System prompt / persona definition"
+        },
+        "instructions": {
+          "$ref": "#/definitions/RoleInstructions"
+        },
+        "tools": {
+          "$ref": "#/definitions/RoleTools"
+        },
+        "hooks": {
+          "$ref": "#/definitions/RoleHooks"
+        },
+        "context": {
+          "$ref": "#/definitions/RoleContext"
+        },
+        "protocols": {
+          "$ref": "#/definitions/RoleProtocols"
+        },
+        "extends": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/RoleExtension" },
+          "description": "Role composition — inherit from other roles"
+        },
+        "activation": {
+          "$ref": "#/definitions/RoleActivation"
+        }
+      }
+    },
+    "RoleInstructions": {
+      "type": "object",
+      "properties": {
+        "preamble": {
+          "type": "string",
+          "description": "Markdown content prepended to every conversation"
+        },
+        "constraints": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Hard rules — MUST/MUST NOT statements"
+        }
+      }
+    },
+    "RoleTools": {
+      "type": "object",
+      "properties": {
+        "allowed": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Whitelist of allowed tool names"
+        },
+        "denied": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Blacklist of denied tool names (overrides allowed)"
+        },
+        "skills": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "References to OSSA Skill manifests"
+        }
+      }
+    },
+    "RoleHooks": {
+      "type": "object",
+      "properties": {
+        "on_activate": {
+          "type": "string",
+          "description": "Run when role is activated"
+        },
+        "on_deactivate": {
+          "type": "string",
+          "description": "Run when switching away from this role"
+        },
+        "pre_commit": {
+          "type": "string",
+          "description": "Run before git commits"
+        },
+        "post_save": {
+          "type": "string",
+          "description": "Run after file saves"
+        }
+      }
+    },
+    "RoleContext": {
+      "type": "object",
+      "properties": {
+        "schemas": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Paths to JSON Schema or OpenAPI spec files"
+        },
+        "files": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/RoleContextFile" },
+          "description": "Files to include in agent context"
+        },
+        "knowledge": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Paths to knowledge base documents"
+        }
+      }
+    },
+    "RoleContextFile": {
+      "type": "object",
+      "required": ["path"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "File path or glob pattern"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of what this file provides"
+        }
+      }
+    },
+    "RoleProtocols": {
+      "type": "object",
+      "properties": {
+        "mcp": {
+          "$ref": "#/definitions/RoleMCPConfig"
+        }
+      }
+    },
+    "RoleMCPConfig": {
+      "type": "object",
+      "properties": {
+        "servers": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/RoleMCPServer" },
+          "description": "MCP servers available when this role is active"
+        }
+      }
+    },
+    "RoleMCPServer": {
+      "type": "object",
+      "required": ["name", "transport"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Server identifier"
+        },
+        "transport": {
+          "type": "string",
+          "enum": ["stdio", "sse"],
+          "description": "Transport type"
+        },
+        "command": {
+          "type": "string",
+          "description": "Command to spawn (stdio transport)"
+        },
+        "args": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Command arguments (stdio transport)"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Endpoint URL (SSE transport)"
+        }
+      }
+    },
+    "RoleExtension": {
+      "type": "object",
+      "required": ["role"],
+      "properties": {
+        "role": {
+          "type": "string",
+          "description": "Name of the parent role to inherit from"
+        },
+        "override": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, child fields replace parent fields; if false, they merge"
+        }
+      }
+    },
+    "RoleActivation": {
+      "type": "object",
+      "properties": {
+        "file_patterns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Glob patterns — activate when matching files are open"
+        },
+        "command": {
+          "type": "string",
+          "description": "CLI command to activate (e.g., /role drupal)"
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Environment variable conditions (all must match)"
+        }
+      }
+    }
+  }
+}

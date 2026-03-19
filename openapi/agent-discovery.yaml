@@ -28,7 +28,6 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-
 servers:
   - url: https://registry.openstandardagents.org/api/v1
     description: Production Registry
@@ -36,7 +35,6 @@ servers:
     description: Staging Registry
   - url: http://localhost:3100/api/v1
     description: Local Development
-
 tags:
   - name: registry
     description: Agent registration and lifecycle
@@ -44,7 +42,6 @@ tags:
     description: Agent discovery and search
   - name: health
     description: Registry health and status
-
 paths:
   /registry/register:
     post:
@@ -53,7 +50,8 @@ paths:
         Register a new agent or update an existing agent's metadata in the registry.
         Agents self-register on startup and update their status periodically.
       operationId: registerAgent
-      tags: [registry]
+      tags:
+        - registry
       security:
         - bearerAuth: []
       requestBody:
@@ -61,7 +59,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegistrationRequest'
+              $ref: "#/components/schemas/RegistrationRequest"
             examples:
               securityAgent:
                 summary: Security scanning agent
@@ -97,7 +95,7 @@ paths:
                   status: active
                   healthEndpoint: https://agents.example.com/security-scanner/health
       responses:
-        '201':
+        "201":
           description: Agent successfully registered
           content:
             application/json:
@@ -113,7 +111,9 @@ paths:
                     description: Unique agent identifier
                   status:
                     type: string
-                    enum: [registered, updated]
+                    enum:
+                      - registered
+                      - updated
                   registeredAt:
                     type: string
                     format: date-time
@@ -121,19 +121,22 @@ paths:
                     type: string
                     format: date-time
                     description: Registration expiry (requires renewal)
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '409':
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
           description: Agent ID conflict
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: register-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /registry/unregister/{agentId}:
     delete:
       summary: Unregister agent from registry
@@ -141,7 +144,8 @@ paths:
         Remove an agent from the registry. Agents should unregister on graceful shutdown.
         The registry will also automatically expire agents that fail health checks.
       operationId: unregisterAgent
-      tags: [registry]
+      tags:
+        - registry
       security:
         - bearerAuth: []
       parameters:
@@ -150,18 +154,21 @@ paths:
           required: true
           schema:
             type: string
-            pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+            pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
           description: Unique agent identifier
       responses:
-        '204':
+        "204":
           description: Agent successfully unregistered
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: unregister-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /registry/discover:
     get:
       summary: Discover agents by criteria
@@ -176,20 +183,21 @@ paths:
         - Capabilities: `?capabilities=vulnerability-detection,dependency-audit`
         - Combined: All parameters can be combined for precise matching
       operationId: discoverAgents
-      tags: [discovery]
+      tags:
+        - discovery
       parameters:
         - name: domain
           in: query
           schema:
             type: string
-            pattern: '^domain::[a-z0-9-]+$'
+            pattern: ^domain::[a-z0-9-]+$
           description: Primary functional domain (e.g., domain::security)
           example: domain::security
         - name: subdomain
           in: query
           schema:
             type: string
-            pattern: '^subdomain::[a-z0-9-]+$'
+            pattern: ^subdomain::[a-z0-9-]+$
           description: Specialized area within domain (e.g., subdomain::scanning)
           example: subdomain::scanning
         - name: concerns
@@ -198,7 +206,7 @@ paths:
             type: array
             items:
               type: string
-              pattern: '^concern::[a-z0-9-]+$'
+              pattern: ^concern::[a-z0-9-]+$
           style: form
           explode: false
           description: Cross-cutting concerns (comma-separated)
@@ -209,7 +217,7 @@ paths:
             type: array
             items:
               type: string
-              pattern: '^[a-z][a-z0-9_-]*$'
+              pattern: ^[a-z][a-z0-9_-]*$
           style: form
           explode: false
           description: Required capabilities (comma-separated)
@@ -218,7 +226,11 @@ paths:
           in: query
           schema:
             type: string
-            enum: [active, inactive, degraded, maintenance]
+            enum:
+              - active
+              - inactive
+              - degraded
+              - maintenance
           description: Filter by agent status
         - name: limit
           in: query
@@ -236,12 +248,12 @@ paths:
             default: 0
           description: Pagination offset
       responses:
-        '200':
+        "200":
           description: Matching agents found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DiscoveryResult'
+                $ref: "#/components/schemas/DiscoveryResult"
               examples:
                 securityAgents:
                   summary: Security domain agents
@@ -264,8 +276,8 @@ paths:
                           - dependency-audit
                         status: active
                         endpoint: https://agents.example.com/security-scanner
-                        lastSeen: '2025-12-18T14:00:00Z'
-                        registeredAt: '2025-12-18T10:00:00Z'
+                        lastSeen: 2025-12-18T14:00:00Z
+                        registeredAt: 2025-12-18T10:00:00Z
                       - agentId: compliance-auditor-01
                         name: compliance-auditor
                         version: 1.0.0
@@ -281,13 +293,13 @@ paths:
                           - report-generation
                         status: active
                         endpoint: https://agents.example.com/compliance-auditor
-                        lastSeen: '2025-12-18T13:55:00Z'
-                        registeredAt: '2025-12-18T10:00:00Z'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                        lastSeen: 2025-12-18T13:55:00Z
+                        registeredAt: 2025-12-18T10:00:00Z
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: discover-agents
   /registry/health:
     get:
       summary: Registry health check
@@ -295,9 +307,10 @@ paths:
         Get the health status of the registry service.
         Returns current registry statistics and operational status.
       operationId: getRegistryHealth
-      tags: [health]
+      tags:
+        - health
       responses:
-        '200':
+        "200":
           description: Registry is healthy
           content:
             application/json:
@@ -310,7 +323,10 @@ paths:
                 properties:
                   status:
                     type: string
-                    enum: [healthy, degraded, unhealthy]
+                    enum:
+                      - healthy
+                      - degraded
+                      - unhealthy
                   timestamp:
                     type: string
                     format: date-time
@@ -337,7 +353,7 @@ paths:
                         type: integer
               example:
                 status: healthy
-                timestamp: '2025-12-18T14:00:00Z'
+                timestamp: 2025-12-18T14:00:00Z
                 version: 1.0.0
                 uptime: 86400
                 statistics:
@@ -347,7 +363,7 @@ paths:
                   degradedAgents: 2
                   totalDomains: 8
                   totalCapabilities: 125
-        '503':
+        "503":
           description: Registry is unavailable
           content:
             application/json:
@@ -356,13 +372,14 @@ paths:
                 properties:
                   status:
                     type: string
-                    enum: [unhealthy]
+                    enum:
+                      - unhealthy
                   message:
                     type: string
                   timestamp:
                     type: string
                     format: date-time
-
+      x-ossa-capability: get-registry-health
 components:
   securitySchemes:
     bearerAuth:
@@ -370,7 +387,6 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: JWT token for agent authentication
-
   schemas:
     RegistrationRequest:
       type: object
@@ -384,19 +400,19 @@ components:
       properties:
         agentId:
           type: string
-          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
           maxLength: 253
           description: Unique agent identifier (DNS-1123 subdomain format)
           example: security-scanner-01
         name:
           type: string
-          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
           maxLength: 253
           description: Agent name (from manifest.metadata.name)
           example: security-scanner
         version:
           type: string
-          pattern: '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
+          pattern: ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
           description: Semantic version (semver 2.0.0)
           example: 1.0.0
         manifest:
@@ -409,13 +425,18 @@ components:
           properties:
             apiVersion:
               type: string
-              pattern: '^ossa/v0\.3\.3$'
+              pattern: ^ossa/v0\.3\.3$
             kind:
               type: string
-              enum: [Agent, Task, Workflow]
+              enum:
+                - Agent
+                - Task
+                - Workflow
             metadata:
               type: object
-              required: [name, version]
+              required:
+                - name
+                - version
               properties:
                 name:
                   type: string
@@ -436,7 +457,7 @@ components:
           type: array
           items:
             type: string
-            pattern: '^domain::[a-z0-9-]+$'
+            pattern: ^domain::[a-z0-9-]+$
           description: Primary functional domains
           example:
             - domain::security
@@ -444,7 +465,7 @@ components:
           type: array
           items:
             type: string
-            pattern: '^subdomain::[a-z0-9-]+$'
+            pattern: ^subdomain::[a-z0-9-]+$
           description: Specialized subdomains
           example:
             - subdomain::scanning
@@ -453,7 +474,7 @@ components:
           type: array
           items:
             type: string
-            pattern: '^concern::[a-z0-9-]+$'
+            pattern: ^concern::[a-z0-9-]+$
           description: Cross-cutting concerns
           example:
             - concern::quality
@@ -462,14 +483,18 @@ components:
           type: array
           items:
             type: string
-            pattern: '^[a-z][a-z0-9_-]*$'
+            pattern: ^[a-z][a-z0-9_-]*$
           description: Capabilities provided by agent
           example:
             - vulnerability-detection
             - dependency-audit
         status:
           type: string
-          enum: [active, inactive, degraded, maintenance]
+          enum:
+            - active
+            - inactive
+            - degraded
+            - maintenance
           description: Current agent status
         healthEndpoint:
           type: string
@@ -480,7 +505,6 @@ components:
           type: object
           additionalProperties: true
           description: Additional agent metadata
-
     AgentMetadata:
       type: object
       required:
@@ -523,7 +547,11 @@ components:
           description: Agent capabilities
         status:
           type: string
-          enum: [active, inactive, degraded, maintenance]
+          enum:
+            - active
+            - inactive
+            - degraded
+            - maintenance
         endpoint:
           type: string
           format: uri
@@ -548,33 +576,36 @@ components:
           type: object
           additionalProperties: true
           description: Additional metadata
-
     DiscoveryQuery:
       type: object
       properties:
         domain:
           type: string
-          pattern: '^domain::[a-z0-9-]+$'
+          pattern: ^domain::[a-z0-9-]+$
           description: Primary functional domain filter
         subdomain:
           type: string
-          pattern: '^subdomain::[a-z0-9-]+$'
+          pattern: ^subdomain::[a-z0-9-]+$
           description: Subdomain filter
         concerns:
           type: array
           items:
             type: string
-            pattern: '^concern::[a-z0-9-]+$'
+            pattern: ^concern::[a-z0-9-]+$
           description: Concerns filter (match any)
         capabilities:
           type: array
           items:
             type: string
-            pattern: '^[a-z][a-z0-9_-]*$'
+            pattern: ^[a-z][a-z0-9_-]*$
           description: Capabilities filter (match all)
         status:
           type: string
-          enum: [active, inactive, degraded, maintenance]
+          enum:
+            - active
+            - inactive
+            - degraded
+            - maintenance
         limit:
           type: integer
           minimum: 1
@@ -584,7 +615,6 @@ components:
           type: integer
           minimum: 0
           default: 0
-
     DiscoveryResult:
       type: object
       required:
@@ -605,8 +635,7 @@ components:
         agents:
           type: array
           items:
-            $ref: '#/components/schemas/AgentMetadata'
-
+            $ref: "#/components/schemas/AgentMetadata"
     Error:
       type: object
       required:
@@ -627,14 +656,13 @@ components:
           type: string
           format: uuid
           description: Request trace ID for debugging
-
   responses:
     BadRequest:
       description: Bad request - invalid input
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             error: bad_request
             message: Invalid discovery query parameters
@@ -642,36 +670,46 @@ components:
               field: domain
               issue: Must match pattern 'domain::[a-z0-9-]+'
             trace_id: 550e8400-e29b-41d4-a716-446655440000
-
     Unauthorized:
       description: Unauthorized - missing or invalid authentication
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             error: unauthorized
             message: Missing or invalid authentication token
             trace_id: 550e8400-e29b-41d4-a716-446655440000
-
     NotFound:
       description: Resource not found
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             error: not_found
             message: Agent not found
             trace_id: 550e8400-e29b-41d4-a716-446655440000
-
     InternalError:
       description: Internal server error
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             error: internal_error
             message: An unexpected error occurred
             trace_id: 550e8400-e29b-41d4-a716-446655440000
+x-ossa-metadata:
+  version: 0.3.3
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: agent-discovery-api
+    type: gateway

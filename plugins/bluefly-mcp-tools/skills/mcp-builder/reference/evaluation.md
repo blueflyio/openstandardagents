@@ -454,7 +454,7 @@ For SSE-based MCP servers (you must start the server first):
 python scripts/evaluation.py \
   -t sse \
   -u https://example.com/mcp \
-  -H "Authorization: Bearer TEST_BEARER_TOKEN" \
+  -H "Authorization: Bearer token123" \
   -H "X-Custom-Header: value" \
   evaluation.xml
 ```
@@ -467,7 +467,7 @@ For HTTP-based MCP servers (you must start the server first):
 python scripts/evaluation.py \
   -t http \
   -u https://example.com/mcp \
-  -H "Authorization: Bearer TEST_BEARER_TOKEN" \
+  -H "Authorization: Bearer token123" \
   evaluation.xml
 ```
 

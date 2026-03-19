@@ -25,7 +25,11 @@ const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10MB
 export const daemonCommand = new Command('daemon')
   .argument('[workspace]', 'Path to workspace directory', '.')
   .option('-p, --port <port>', 'Port to bind daemon on', '4242')
-  .option('--host <host>', 'Host to bind on (127.0.0.1 for security)', '127.0.0.1')
+  .option(
+    '--host <host>',
+    'Host to bind on (127.0.0.1 for security)',
+    '127.0.0.1'
+  )
   .option('--no-pair', 'Disable pairing requirement (dev mode only)')
   .option('--no-watch', 'Disable file watching')
   .option('-v, --verbose', 'Verbose logging')
@@ -119,13 +123,21 @@ export const daemonCommand = new Command('daemon')
         }
 
         /** Send JSON response */
-        function json(res: http.ServerResponse, status: number, data: unknown): void {
+        function json(
+          res: http.ServerResponse,
+          status: number,
+          data: unknown
+        ): void {
           res.writeHead(status, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify(data));
         }
 
         /** Send error response */
-        function error(res: http.ServerResponse, status: number, msg: string): void {
+        function error(
+          res: http.ServerResponse,
+          status: number,
+          msg: string
+        ): void {
           json(res, status, { error: msg, message: msg });
         }
 
@@ -140,8 +152,14 @@ export const daemonCommand = new Command('daemon')
           const origin = req.headers['origin'] || '';
           if (pairingService.isOriginAllowed(origin) || !origin) {
             res.setHeader('Access-Control-Allow-Origin', origin || '*');
-            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+            res.setHeader(
+              'Access-Control-Allow-Methods',
+              'GET, POST, PUT, DELETE, OPTIONS'
+            );
+            res.setHeader(
+              'Access-Control-Allow-Headers',
+              'Content-Type, Authorization'
+            );
           }
 
           if (method === 'OPTIONS') {
@@ -182,7 +200,11 @@ export const daemonCommand = new Command('daemon')
               }
               const session = pairingService.pair(code, origin);
               if (!session) {
-                await auditLog.log({ action: 'pair', origin, result: 'failure' });
+                await auditLog.log({
+                  action: 'pair',
+                  origin,
+                  result: 'failure',
+                });
                 error(res, 401, 'Invalid or expired pairing code');
                 return;
               }
@@ -228,7 +250,10 @@ export const daemonCommand = new Command('daemon')
               const files = fileWatcher.getFileTree();
               const manifests = [];
               for (const file of files) {
-                if (file.path.endsWith('.ossa.yaml') || file.path.endsWith('.ossa.yml')) {
+                if (
+                  file.path.endsWith('.ossa.yaml') ||
+                  file.path.endsWith('.ossa.yml')
+                ) {
                   try {
                     const abs = path.join(workspaceRoot, file.path);
                     const manifest = await manifestRepo.load(abs);
@@ -249,7 +274,10 @@ export const daemonCommand = new Command('daemon')
 
             // GET /workspace/files
             if (pathname === '/workspace/files' && method === 'GET') {
-              json(res, 200, { root: workspaceRoot, entries: fileWatcher.getFileTree() });
+              json(res, 200, {
+                root: workspaceRoot,
+                entries: fileWatcher.getFileTree(),
+              });
               return;
             }
 
@@ -286,7 +314,11 @@ export const daemonCommand = new Command('daemon')
                 path: filePath,
                 result: 'success',
               });
-              json(res, 200, { path: filePath, written: true, validated: false });
+              json(res, 200, {
+                path: filePath,
+                written: true,
+                validated: false,
+              });
               return;
             }
 
@@ -302,7 +334,10 @@ export const daemonCommand = new Command('daemon')
               } else {
                 skills = await skillAggregator.loadAll();
               }
-              json(res, 200, { skills, sources: skillAggregator.getSourceStatus() });
+              json(res, 200, {
+                skills,
+                sources: skillAggregator.getSourceStatus(),
+              });
               return;
             }
 
@@ -315,7 +350,11 @@ export const daemonCommand = new Command('daemon')
                 path: body?.name,
                 result: 'success',
               });
-              json(res, 200, { installed: true, path: body?.targetPath || '.', files: [] });
+              json(res, 200, {
+                installed: true,
+                path: body?.targetPath || '.',
+                files: [],
+              });
               return;
             }
 
@@ -364,12 +403,18 @@ export const daemonCommand = new Command('daemon')
                   result: 'success',
                 });
               }
-              json(res, cancelled ? 200 : 404, { cancelled, executionId: execGetMatch[1] });
+              json(res, cancelled ? 200 : 404, {
+                cancelled,
+                executionId: execGetMatch[1],
+              });
               return;
             }
 
             // SSE endpoints — pass token from Authorization header
-            const token = req.headers['authorization']?.slice(7) || parsedUrl.query?.token as string || '';
+            const token =
+              req.headers['authorization']?.slice(7) ||
+              (parsedUrl.query?.token as string) ||
+              '';
             if (pathname.startsWith('/sse/execution/') && method === 'GET') {
               const execId = pathname.split('/').pop() || '';
               sseEndpoints.streamExecution(execId, res, token);
@@ -419,15 +464,17 @@ export const daemonCommand = new Command('daemon')
         // Start server
         server.listen(port, host, () => {
           console.log('');
-          console.log(
-            chalk.blue.bold('  OSSA Neural Forge Daemon')
-          );
+          console.log(chalk.blue.bold('  OSSA Neural Forge Daemon'));
           console.log(chalk.gray('  ───────────────────────────'));
           console.log(`  ${chalk.green('Server:')}    http://${host}:${port}`);
           console.log(`  ${chalk.green('WebSocket:')} ws://${host}:${port}/ws`);
           console.log(`  ${chalk.green('Workspace:')} ${workspaceRoot}`);
-          console.log(`  ${chalk.green('Watching:')}  ${options.watch !== false ? 'Yes' : 'No'}`);
-          console.log(`  ${chalk.green('Pairing:')}   ${pairingEnabled ? 'Required' : chalk.yellow('Disabled')}`);
+          console.log(
+            `  ${chalk.green('Watching:')}  ${options.watch !== false ? 'Yes' : 'No'}`
+          );
+          console.log(
+            `  ${chalk.green('Pairing:')}   ${pairingEnabled ? 'Required' : chalk.yellow('Disabled')}`
+          );
 
           if (pairingEnabled) {
             console.log('');

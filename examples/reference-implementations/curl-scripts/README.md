@@ -34,7 +34,7 @@ Set environment variables:
 
 ```bash
 # Required for authenticated operations
-export OSSA_TOKEN=SET_OSSA_BEARER_TOKEN
+export OSSA_TOKEN=ossa_tok_xxx
 
 # Optional: Override base URL
 export OSSA_BASE_URL=https://registry.openstandardagents.org/api/v1
@@ -83,7 +83,7 @@ Features:
 Publish an agent to the registry (requires authentication):
 
 ```bash
-export OSSA_TOKEN=SET_OSSA_BEARER_TOKEN
+export OSSA_TOKEN=ossa_tok_xxx
 ./03-publish-agent.sh
 ```
 
@@ -99,7 +99,7 @@ Features:
 Agent-to-agent messaging operations:
 
 ```bash
-export OSSA_TOKEN=SET_OSSA_BEARER_TOKEN
+export OSSA_TOKEN=ossa_tok_xxx
 ./04-a2a-messaging.sh
 ```
 
@@ -256,7 +256,7 @@ brew install jq  # macOS
 echo $OSSA_TOKEN
 
 # Ensure token is valid
-export OSSA_TOKEN=SET_OSSA_BEARER_TOKEN
+export OSSA_TOKEN=ossa_tok_xxx
 ```
 
 **429 Rate Limited**

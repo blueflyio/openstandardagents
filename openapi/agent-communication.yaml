@@ -21,14 +21,12 @@ info:
     2. **Task Completion**: Worker → Orchestrator (TaskCompleted)
     3. **Query/Response**: Agent A ↔ Agent B (QueryRequest/QueryResponse)
     4. **Broadcast**: Publisher → Channel → Subscribers
-
   contact:
     name: Bluefly.io LLM Platform Team
     url: https://github.com/blueflyio/openstandardagents
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-
 servers:
   - url: https://a2a.llm.bluefly.io/v1
     description: Production A2A server
@@ -36,14 +34,11 @@ servers:
     description: Development A2A server
   - url: http://localhost:3100
     description: Local development
-
 security:
   - ApiKeyAuth: []
   - BearerAuth: []
   - AgentMTLS: []
-
 paths:
-  # Direct Messaging
   /messages:
     post:
       summary: Send message to agent
@@ -53,14 +48,15 @@ paths:
 
         For async delivery, use webhookUrl in the request. The response will be
         delivered to the webhook endpoint when available.
-      tags: [Messaging]
+      tags:
+        - Messaging
       operationId: sendMessage
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SendMessageRequest'
+              $ref: "#/components/schemas/SendMessageRequest"
             examples:
               taskAssignment:
                 summary: Assign task to worker
@@ -82,37 +78,41 @@ paths:
                   from: uadp://worker-002
                   type: QueryRequest
                   payload:
-                    query: "Extract entities from text"
+                    query: Extract entities from text
                     context:
-                      text: "Apple Inc. is headquartered in Cupertino, California."
+                      text: Apple Inc. is headquartered in Cupertino, California.
                   timeout: 30000
       responses:
-        '202':
+        "202":
           description: Message accepted for delivery
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MessageResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
           description: Target agent not found
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/Problem"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: send-message
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /messages/{messageId}:
     get:
       summary: Get message status
       description: |
         Retrieve the delivery status and metadata for a previously sent message.
         Includes delivery timestamps, acknowledgment status, and any errors.
-      tags: [Messaging]
+      tags:
+        - Messaging
       operationId: getMessageStatus
       parameters:
         - name: messageId
@@ -123,24 +123,25 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Message status
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Message'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/Message"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: get-message-status
   /messages/{messageId}/acknowledge:
     post:
       summary: Acknowledge message receipt
       description: |
         Acknowledge successful processing of a received message. Required for
         at-least-once delivery guarantee. Unacknowledged messages may be redelivered.
-      tags: [Messaging]
+      tags:
+        - Messaging
       operationId: acknowledgeMessage
       parameters:
         - name: messageId
@@ -157,25 +158,30 @@ paths:
               properties:
                 result:
                   type: string
-                  enum: [success, failure]
+                  enum:
+                    - success
+                    - failure
                   default: success
                 error:
                   type: string
                   description: Error message if result is failure
       responses:
-        '204':
+        "204":
           description: Message acknowledged
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  # Pub/Sub Channels
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: acknowledge-message
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /channels:
     get:
       summary: List available channels
       description: List all communication channels the authenticated agent has access to
-      tags: [Channels]
+      tags:
+        - Channels
       operationId: listChannels
       parameters:
         - name: filter
@@ -183,31 +189,32 @@ paths:
           description: Filter channels by type or topic
           schema:
             type: string
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/Offset'
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
       responses:
-        '200':
+        "200":
           description: List of channels
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChannelsList'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/ChannelsList"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: list-channels
     post:
       summary: Create communication channel
       description: |
         Create a new pub/sub channel for message broadcasting. Channels enable
         many-to-many communication between agents.
-      tags: [Channels]
+      tags:
+        - Channels
       operationId: createChannel
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateChannelRequest'
+              $ref: "#/components/schemas/CreateChannelRequest"
             examples:
               taskUpdates:
                 summary: Task updates channel
@@ -227,74 +234,83 @@ paths:
                   retentionPolicy:
                     retentionDays: 30
       responses:
-        '201':
+        "201":
           description: Channel created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Channel'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '409':
+                $ref: "#/components/schemas/Channel"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "409":
           description: Channel already exists
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/Problem"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: create-channel
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /channels/{channelId}:
     get:
       summary: Get channel details
       description: Retrieve channel metadata, subscriber count, and configuration
-      tags: [Channels]
+      tags:
+        - Channels
       operationId: getChannel
       parameters:
-        - $ref: '#/components/parameters/ChannelId'
+        - $ref: "#/components/parameters/ChannelId"
       responses:
-        '200':
+        "200":
           description: Channel details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Channel'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
+                $ref: "#/components/schemas/Channel"
+        "404":
+          $ref: "#/components/responses/NotFound"
+      x-ossa-capability: get-channel
     delete:
       summary: Delete channel
       description: |
         Delete a communication channel. All subscriptions will be removed.
         Messages in the channel will be deleted according to retention policy.
-      tags: [Channels]
+      tags:
+        - Channels
       operationId: deleteChannel
       parameters:
-        - $ref: '#/components/parameters/ChannelId'
+        - $ref: "#/components/parameters/ChannelId"
       responses:
-        '204':
+        "204":
           description: Channel deleted
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: delete-channel
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /channels/{channelId}/subscribe:
     post:
       summary: Subscribe to channel
       description: |
         Subscribe to a channel to receive published messages. Supports both
         push (webhook) and pull (polling) delivery modes.
-      tags: [Channels]
+      tags:
+        - Channels
       operationId: subscribeToChannel
       parameters:
-        - $ref: '#/components/parameters/ChannelId'
+        - $ref: "#/components/parameters/ChannelId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SubscribeRequest'
+              $ref: "#/components/schemas/SubscribeRequest"
             examples:
               webhookSubscription:
                 summary: Webhook-based subscription
@@ -303,73 +319,85 @@ paths:
                   deliveryMode: push
                   webhookUrl: https://worker-003.example.com/channels/task-updates
                   filter:
-                    messageTypes: [TaskAssigned, TaskCompleted]
+                    messageTypes:
+                      - TaskAssigned
+                      - TaskCompleted
               pollingSubscription:
                 summary: Polling-based subscription
                 value:
                   agentId: uadp://monitor-001
                   deliveryMode: pull
                   filter:
-                    messageTypes: [TaskCompleted]
+                    messageTypes:
+                      - TaskCompleted
       responses:
-        '201':
+        "201":
           description: Subscription created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Subscription'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '404':
+                $ref: "#/components/schemas/Subscription"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
           description: Channel not found
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/Problem"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: subscribe-to-channel
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /channels/{channelId}/unsubscribe:
     post:
       summary: Unsubscribe from channel
       description: Remove subscription from a channel
-      tags: [Channels]
+      tags:
+        - Channels
       operationId: unsubscribeFromChannel
       parameters:
-        - $ref: '#/components/parameters/ChannelId'
+        - $ref: "#/components/parameters/ChannelId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [subscriptionId]
+              required:
+                - subscriptionId
               properties:
                 subscriptionId:
                   type: string
                   format: uuid
       responses:
-        '204':
+        "204":
           description: Unsubscribed successfully
-        '404':
-          $ref: '#/components/responses/NotFound'
-
+        "404":
+          $ref: "#/components/responses/NotFound"
+      x-ossa-capability: unsubscribe-from-channel
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /channels/{channelId}/publish:
     post:
       summary: Publish message to channel
       description: |
         Broadcast a message to all channel subscribers. Message will be delivered
         according to each subscriber's delivery mode (push/pull).
-      tags: [Channels]
+      tags:
+        - Channels
       operationId: publishToChannel
       parameters:
-        - $ref: '#/components/parameters/ChannelId'
+        - $ref: "#/components/parameters/ChannelId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PublishMessageRequest'
+              $ref: "#/components/schemas/PublishMessageRequest"
             examples:
               taskCompleted:
                 summary: Broadcast task completion
@@ -379,8 +407,11 @@ paths:
                     taskId: task-123
                     status: completed
                     result:
-                      entities: ["Apple Inc.", "Cupertino", "California"]
-                    completedAt: "2025-12-18T14:30:00Z"
+                      entities:
+                        - Apple Inc.
+                        - Cupertino
+                        - California
+                    completedAt: 2025-12-18T14:30:00Z
               agentStarted:
                 summary: Agent lifecycle event
                 value:
@@ -388,36 +419,42 @@ paths:
                   payload:
                     agentId: uadp://worker-005
                     version: 1.2.0
-                    capabilities: [text_analysis, entity_extraction]
-                    startedAt: "2025-12-18T14:25:00Z"
+                    capabilities:
+                      - text_analysis
+                      - entity_extraction
+                    startedAt: 2025-12-18T14:25:00Z
       responses:
-        '202':
+        "202":
           description: Message published
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PublishResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '404':
+                $ref: "#/components/schemas/PublishResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
           description: Channel not found
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/Problem"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: publish-to-channel
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /channels/{channelId}/messages:
     get:
       summary: Pull messages from channel
       description: |
         Poll for messages from a channel (pull-based delivery). Only available
         for subscriptions with deliveryMode: pull.
-      tags: [Channels]
+      tags:
+        - Channels
       operationId: pullChannelMessages
       parameters:
-        - $ref: '#/components/parameters/ChannelId'
+        - $ref: "#/components/parameters/ChannelId"
         - name: subscriptionId
           in: query
           required: true
@@ -437,10 +474,12 @@ paths:
           description: Acknowledgment mode
           schema:
             type: string
-            enum: [auto, manual]
+            enum:
+              - auto
+              - manual
             default: manual
       responses:
-        '200':
+        "200":
           description: Messages retrieved
           content:
             application/json:
@@ -450,20 +489,20 @@ paths:
                   messages:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Message'
+                      $ref: "#/components/schemas/Message"
                   hasMore:
                     type: boolean
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  # Streaming (Server-Sent Events)
+        "404":
+          $ref: "#/components/responses/NotFound"
+      x-ossa-capability: pull-channel-messages
   /stream:
     get:
       summary: Stream messages via SSE
       description: |
         Open a Server-Sent Events stream to receive real-time messages.
         Client maintains persistent connection for streaming updates.
-      tags: [Streaming]
+      tags:
+        - Streaming
       operationId: streamMessages
       parameters:
         - name: agentId
@@ -477,9 +516,9 @@ paths:
           description: Filter messages by type (comma-separated)
           schema:
             type: string
-            example: "TaskAssigned,TaskCompleted"
+            example: TaskAssigned,TaskCompleted
       responses:
-        '200':
+        "200":
           description: SSE stream
           content:
             text/event-stream:
@@ -501,26 +540,26 @@ paths:
                     event: TaskCompleted
                     id: msg-124
                     data: {"taskId":"task-456","status":"completed","result":{"summary":"Document analyzed"}}
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  # Webhooks (for async callbacks)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+      x-ossa-capability: stream-messages
   /webhooks:
     post:
       summary: Register webhook endpoint
       description: |
         Register a webhook endpoint to receive async message delivery.
         The A2A platform will POST messages to the registered URL.
-      tags: [Webhooks]
+      tags:
+        - Webhooks
       operationId: registerWebhook
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WebhookRegistration'
+              $ref: "#/components/schemas/WebhookRegistration"
       responses:
-        '201':
+        "201":
           description: Webhook registered
           content:
             application/json:
@@ -536,14 +575,18 @@ paths:
                   secret:
                     type: string
                     description: HMAC secret for verifying webhook authenticity
-        '400':
-          $ref: '#/components/responses/ValidationError'
-
+        "400":
+          $ref: "#/components/responses/ValidationError"
+      x-ossa-capability: register-webhook
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /webhooks/{webhookId}:
     delete:
       summary: Unregister webhook
       description: Remove a webhook endpoint registration
-      tags: [Webhooks]
+      tags:
+        - Webhooks
       operationId: unregisterWebhook
       parameters:
         - name: webhookId
@@ -553,24 +596,28 @@ paths:
             type: string
             format: uuid
       responses:
-        '204':
+        "204":
           description: Webhook unregistered
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  # Health
+        "404":
+          $ref: "#/components/responses/NotFound"
+      x-ossa-capability: unregister-webhook
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /health:
     get:
       summary: Health check
-      tags: [Health]
+      tags:
+        - Health
       operationId: healthCheck
       security: []
       responses:
-        '200':
-          $ref: '#/components/responses/HealthCheck'
-        '503':
-          $ref: '#/components/responses/ServiceUnavailable'
-
+        "200":
+          $ref: "#/components/responses/HealthCheck"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+      x-ossa-capability: health-check
+      description: Health check
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -586,7 +633,6 @@ components:
     AgentMTLS:
       type: mutualTLS
       description: Mutual TLS authentication for agent-to-agent trust
-
   parameters:
     ChannelId:
       name: channelId
@@ -613,9 +659,7 @@ components:
         type: integer
         minimum: 0
         default: 0
-
   schemas:
-    # Message Schemas
     SendMessageRequest:
       type: object
       required:
@@ -628,16 +672,16 @@ components:
           type: string
           format: uri
           description: Target agent URI (e.g., uadp://worker-001)
-          pattern: '^uadp://[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          pattern: ^uadp://[a-z0-9]([-a-z0-9]*[a-z0-9])?$
         from:
           type: string
           format: uri
           description: Source agent URI
-          pattern: '^uadp://[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          pattern: ^uadp://[a-z0-9]([-a-z0-9]*[a-z0-9])?$
         type:
-          $ref: '#/components/schemas/MessageType'
+          $ref: "#/components/schemas/MessageType"
         payload:
-          $ref: '#/components/schemas/MessagePayload'
+          $ref: "#/components/schemas/MessagePayload"
         correlationId:
           type: string
           description: Correlation ID for request/reply pattern
@@ -649,13 +693,16 @@ components:
           default: 30000
         priority:
           type: string
-          enum: [low, normal, high, critical]
+          enum:
+            - low
+            - normal
+            - high
+            - critical
           default: normal
         webhookUrl:
           type: string
           format: uri
           description: URL for async response delivery
-
     MessageType:
       type: string
       enum:
@@ -679,13 +726,11 @@ components:
         - AgentStopped: Agent lifecycle event (stopped)
         - AgentError: Agent error notification
         - Custom: Custom application-specific message type
-
     MessagePayload:
       type: object
       description: |
         Message payload structure varies by message type. See schemas for each type.
       additionalProperties: true
-
     Message:
       type: object
       required:
@@ -710,19 +755,27 @@ components:
           format: uri
           description: Source agent URI
         type:
-          $ref: '#/components/schemas/MessageType'
+          $ref: "#/components/schemas/MessageType"
         payload:
-          $ref: '#/components/schemas/MessagePayload'
+          $ref: "#/components/schemas/MessagePayload"
         correlationId:
           type: string
           description: Correlation ID for request/reply pattern
         status:
           type: string
-          enum: [pending, delivered, acknowledged, failed]
+          enum:
+            - pending
+            - delivered
+            - acknowledged
+            - failed
           description: Message delivery status
         priority:
           type: string
-          enum: [low, normal, high, critical]
+          enum:
+            - low
+            - normal
+            - high
+            - critical
         createdAt:
           type: string
           format: date-time
@@ -738,7 +791,6 @@ components:
         error:
           type: string
           description: Error message if status is failed
-
     MessageResponse:
       type: object
       required:
@@ -751,14 +803,14 @@ components:
           description: Unique message identifier
         status:
           type: string
-          enum: [accepted, queued]
+          enum:
+            - accepted
+            - queued
           description: Initial message status
         estimatedDelivery:
           type: string
           format: date-time
           description: Estimated delivery time
-
-    # Channel Schemas
     CreateChannelRequest:
       type: object
       required:
@@ -767,7 +819,7 @@ components:
       properties:
         name:
           type: string
-          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
           description: Channel name (lowercase, hyphen-separated)
         topic:
           type: string
@@ -775,10 +827,9 @@ components:
         description:
           type: string
         retentionPolicy:
-          $ref: '#/components/schemas/RetentionPolicy'
+          $ref: "#/components/schemas/RetentionPolicy"
         accessControl:
-          $ref: '#/components/schemas/AccessControl'
-
+          $ref: "#/components/schemas/AccessControl"
     Channel:
       type: object
       required:
@@ -803,30 +854,28 @@ components:
           type: integer
           minimum: 0
         retentionPolicy:
-          $ref: '#/components/schemas/RetentionPolicy'
+          $ref: "#/components/schemas/RetentionPolicy"
         accessControl:
-          $ref: '#/components/schemas/AccessControl'
+          $ref: "#/components/schemas/AccessControl"
         createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
-
     ChannelsList:
       type: object
       properties:
         channels:
           type: array
           items:
-            $ref: '#/components/schemas/Channel'
+            $ref: "#/components/schemas/Channel"
         total:
           type: integer
         limit:
           type: integer
         offset:
           type: integer
-
     RetentionPolicy:
       type: object
       properties:
@@ -841,7 +890,6 @@ components:
           minimum: 100
           default: 10000
           description: Maximum number of messages to retain
-
     AccessControl:
       type: object
       properties:
@@ -854,8 +902,6 @@ components:
           items:
             type: string
           description: List of agent URIs allowed to access channel
-
-    # Subscription Schemas
     SubscribeRequest:
       type: object
       required:
@@ -865,31 +911,31 @@ components:
         agentId:
           type: string
           format: uri
-          pattern: '^uadp://[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          pattern: ^uadp://[a-z0-9]([-a-z0-9]*[a-z0-9])?$
           description: Subscribing agent URI
         deliveryMode:
           type: string
-          enum: [push, pull]
+          enum:
+            - push
+            - pull
           description: Message delivery mode (push=webhook, pull=polling)
         webhookUrl:
           type: string
           format: uri
           description: Webhook URL (required if deliveryMode=push)
         filter:
-          $ref: '#/components/schemas/SubscriptionFilter'
-
+          $ref: "#/components/schemas/SubscriptionFilter"
     SubscriptionFilter:
       type: object
       properties:
         messageTypes:
           type: array
           items:
-            $ref: '#/components/schemas/MessageType'
+            $ref: "#/components/schemas/MessageType"
           description: Filter by message types
         agentFilter:
           type: string
           description: Filter by source agent pattern (supports wildcards)
-
     Subscription:
       type: object
       required:
@@ -910,23 +956,26 @@ components:
           format: uri
         deliveryMode:
           type: string
-          enum: [push, pull]
+          enum:
+            - push
+            - pull
         webhookUrl:
           type: string
           format: uri
         filter:
-          $ref: '#/components/schemas/SubscriptionFilter'
+          $ref: "#/components/schemas/SubscriptionFilter"
         status:
           type: string
-          enum: [active, paused, failed]
+          enum:
+            - active
+            - paused
+            - failed
         createdAt:
           type: string
           format: date-time
         lastDeliveryAt:
           type: string
           format: date-time
-
-    # Publish Schemas
     PublishMessageRequest:
       type: object
       required:
@@ -934,15 +983,14 @@ components:
         - payload
       properties:
         type:
-          $ref: '#/components/schemas/MessageType'
+          $ref: "#/components/schemas/MessageType"
         payload:
-          $ref: '#/components/schemas/MessagePayload'
+          $ref: "#/components/schemas/MessagePayload"
         attributes:
           type: object
           additionalProperties:
             type: string
           description: Custom message attributes
-
     PublishResponse:
       type: object
       properties:
@@ -955,8 +1003,6 @@ components:
         subscriberCount:
           type: integer
           description: Number of subscribers message was delivered to
-
-    # Webhook Schemas
     WebhookRegistration:
       type: object
       required:
@@ -970,22 +1016,23 @@ components:
         agentId:
           type: string
           format: uri
-          pattern: '^uadp://[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          pattern: ^uadp://[a-z0-9]([-a-z0-9]*[a-z0-9])?$
         description:
           type: string
         events:
           type: array
           items:
-            $ref: '#/components/schemas/MessageType'
+            $ref: "#/components/schemas/MessageType"
           description: Event types to deliver to this webhook
-
-    # Health Schema
     HealthStatus:
       type: object
       properties:
         status:
           type: string
-          enum: [healthy, degraded, unhealthy]
+          enum:
+            - healthy
+            - degraded
+            - unhealthy
         version:
           type: string
         uptime:
@@ -1000,57 +1047,50 @@ components:
             properties:
               status:
                 type: string
-                enum: [pass, fail]
+                enum:
+                  - pass
+                  - fail
               message:
                 type: string
-
-    # Error Schema (RFC7807)
     Problem:
-      $ref: './schemas/common/errors.yaml#/components/schemas/Problem'
-
+      $ref: ./schemas/common/errors.yaml#/components/schemas/Problem
   responses:
     HealthCheck:
       description: Service health status
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/HealthStatus'
-
+            $ref: "#/components/schemas/HealthStatus"
     ValidationError:
       description: Validation error
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-
+            $ref: "#/components/schemas/Problem"
     Unauthorized:
       description: Unauthorized
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-
+            $ref: "#/components/schemas/Problem"
     NotFound:
       description: Resource not found
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-
+            $ref: "#/components/schemas/Problem"
     ServiceUnavailable:
       description: Service unavailable
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-
+            $ref: "#/components/schemas/Problem"
     InternalServerError:
       description: Internal server error
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-
+            $ref: "#/components/schemas/Problem"
 tags:
   - name: Messaging
     description: Direct agent-to-agent messaging
@@ -1062,7 +1102,6 @@ tags:
     description: Webhook registration and management
   - name: Health
     description: Service health and status
-
 x-ossa-metadata:
   version: 0.3.3
   compliance:
@@ -1070,3 +1109,12 @@ x-ossa-metadata:
     frameworks:
       - OSSA v0.3.3
       - OpenAPI 3.1
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: agent-communication-api
+    type: integrator

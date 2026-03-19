@@ -170,7 +170,7 @@ Server runs on `http://localhost:3000`.
 ```bash
 curl -X POST http://localhost:3000/api/v1/chat \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: SET_API_KEY" \
+  -H "X-API-Key: your-api-key" \
   -d '{
     "messages": [
       {
@@ -204,7 +204,7 @@ curl -X POST http://localhost:3000/api/v1/chat \
 ```bash
 curl -X POST http://localhost:3000/api/v1/chat/stream \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: SET_API_KEY" \
+  -H "X-API-Key: your-api-key" \
   -d '{
     "messages": [
       {"role": "user", "content": "Write a short poem"}

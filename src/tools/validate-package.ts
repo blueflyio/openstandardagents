@@ -34,7 +34,7 @@ const CRITICAL_FILES = ['.version.json', 'dist/', 'spec/', 'bin/', 'README.md'];
 const REQUIRED_EXPORTS = [
   'dist/index.js',
   'dist/cli/index.js',
-  'spec/v0.4/agent.schema.json',
+  'spec/v0.5/agent.schema.json',
 ];
 
 class PackageValidator {

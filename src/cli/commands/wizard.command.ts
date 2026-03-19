@@ -1199,11 +1199,15 @@ export const wizardCommand = new Command('wizard')
       );
       stepNum++;
       console.log(
-        chalk.gray(`  ${stepNum}. Publish to DUADP: ossa lifecycle duadp-register <name>`)
+        chalk.gray(
+          `  ${stepNum}. Publish to DUADP: ossa lifecycle duadp-register <name>`
+        )
       );
       stepNum++;
       console.log(
-        chalk.gray(`  ${stepNum}. Export to platform: ossa export ${outputPath} --platform docker`)
+        chalk.gray(
+          `  ${stepNum}. Export to platform: ossa export ${outputPath} --platform docker`
+        )
       );
 
       rl.close();

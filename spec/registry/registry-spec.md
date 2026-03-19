@@ -148,7 +148,7 @@ Staging:     https://staging-registry.openstandardagents.org/api/v1
 All write operations require authentication via Bearer token:
 
 ```http
-Authorization: Bearer SET_OSSA_BEARER_TOKEN
+Authorization: Bearer ossa_tok_1234567890abcdef
 ```
 
 Obtain token via:
@@ -171,7 +171,7 @@ Publish a new agent or new version of existing agent.
 
 **Request Headers**:
 ```http
-Authorization: Bearer SET_OSSA_BEARER_TOKEN
+Authorization: Bearer ossa_tok_xxx
 Content-Type: application/json
 ```
 
@@ -488,7 +488,7 @@ Remove a specific version from the registry. Requires ownership.
 
 **Request Headers**:
 ```http
-Authorization: Bearer SET_OSSA_BEARER_TOKEN
+Authorization: Bearer ossa_tok_xxx
 ```
 
 **Request**:
@@ -528,7 +528,7 @@ Mark a version as deprecated (still available but discouraged).
 
 **Request Headers**:
 ```http
-Authorization: Bearer SET_OSSA_BEARER_TOKEN
+Authorization: Bearer ossa_tok_xxx
 Content-Type: application/json
 ```
 
@@ -600,7 +600,7 @@ Submit a rating and review for an agent.
 
 **Request Headers**:
 ```http
-Authorization: Bearer SET_OSSA_BEARER_TOKEN
+Authorization: Bearer ossa_tok_xxx
 Content-Type: application/json
 ```
 
@@ -1528,7 +1528,7 @@ https://registry.openstandardagents.org/oauth/authorize?client_id=...
 https://registry.openstandardagents.org/settings/tokens
 
 # Use token directly
-export OSSA_TOKEN=SET_OSSA_BEARER_TOKEN
+export OSSA_TOKEN=ossa_tok_1234567890abcdef
 ossa publish
 ```
 

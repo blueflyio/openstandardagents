@@ -55,7 +55,7 @@ variables:
 # Add to CI/CD variables
 # Settings → CI/CD → Variables → Add variable
 # Key: GITLAB_OBSERVABILITY_TOKEN
-# Value: SET_GITLAB_PAT_TOKEN
+# Value: glpat-EXAMPLE_TOKEN_REPLACE_ME
 # Protected: Yes
 # Masked: Yes
 ```

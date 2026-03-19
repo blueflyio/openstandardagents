@@ -1,8 +1,4 @@
-# OSSA-first POC: one manifest, export to kagent.dev (v1alpha2 Declarative)
-# Run: ossa export examples/kagent/ossa-kagent-poc.ossa.yaml --platform kagent --crd-version v1alpha2 -o ./poc-out
-# Deploy: kubectl apply -f poc-out/model-config.yaml; kubectl apply -f poc-out/agent.yaml
-# Invoke: kagent invoke --agent ossa-kagent-poc --task "List pods in kagent namespace"
-apiVersion: ossa/v0.4
+apiVersion: ossa/v0.5
 kind: Agent
 metadata:
   name: ossa-kagent-poc
@@ -33,14 +29,4 @@ extensions:
         cpu: 500m
         memory: 512Mi
     a2aConfig:
-      skills:
-        - id: cluster-inspection
-          name: Cluster Inspection
-          description: List and inspect Kubernetes resources (pods, deployments, services)
-          inputModes: [text]
-          outputModes: [text]
-          tags: [k8s, ossa, poc]
-          examples:
-            - "List all pods in the kagent namespace"
-            - "What API resources are available in the cluster?"
-            - "Describe the kagent-controller deployment"
+      enabled: true

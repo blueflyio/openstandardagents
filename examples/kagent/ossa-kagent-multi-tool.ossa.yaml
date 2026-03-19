@@ -1,7 +1,4 @@
-# OSSA kagent export: Multi-tool agent with multiple RemoteMCPServers
-# Run: ossa export examples/kagent/ossa-kagent-multi-tool.ossa.yaml --platform kagent -o ./multi-out
-# Deploy: kubectl apply -f multi-out/ (files are in APPLY_ORDER)
-apiVersion: ossa/v0.4
+apiVersion: ossa/v0.5
 kind: Agent
 metadata:
   name: ossa-kagent-devops
@@ -40,18 +37,5 @@ extensions:
   kagent:
     kubernetes:
       namespace: kagent
-    mcpServers:
-      gitlab-mcp:
-        url: https://your-mcp-server.example.com/api/mcp/sse
-        transport: sse
-      grafana-mcp:
-        url: http://grafana-mcp.kagent.svc.cluster.local/sse
-        transport: sse
     a2aConfig:
-      skills:
-        - id: devops-automation
-          name: DevOps Automation
-          description: CI/CD management, deployment monitoring, and incident response
-          inputModes: [text]
-          outputModes: [text]
-          tags: [devops, cicd, k8s, monitoring]
+      enabled: true

@@ -5,7 +5,9 @@ info:
   description: |
     Enterprise orchestrator managing complex multi-agent workflows across distributed systems.
     Coordinates worker agents, manages dependencies, and handles failure recovery.
-
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:
@@ -16,12 +18,15 @@ x-ossa-metadata:
   governance:
     approved: true
     approvedBy: Platform Team
-    approvalDate: "2024-01-15"
-
+    approvalDate: 2024-01-15
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
 x-ossa:
   version: 0.2.5-RC
   agent:
-    id: multi-workflow-orchestrator
+    id: reference-implementations-orchestrator-agent-api
     type: orchestrator
     compliance:
       standards:
@@ -31,14 +36,12 @@ x-ossa:
         - solid
         - type-safe
       validated: true
-      validatedAt: "2024-01-15T10:30:00Z"
-
+      validatedAt: 2024-01-15T10:30:00Z
 servers:
   - url: https://orchestrator.platform.com/api/v1
     description: Production
   - url: http://orchestrator:3000/api/v1
     description: Kubernetes internal
-
 tags:
   - name: workflows
     description: Workflow orchestration operations
@@ -46,7 +49,6 @@ tags:
     description: Agent coordination operations
   - name: resources
     description: Resource allocation operations
-
 paths:
   /workflows:
     post:
@@ -55,7 +57,8 @@ paths:
         Creates a new workflow definition and starts execution.
         Orchestrates multiple agents to complete complex multi-step processes.
       operationId: createWorkflow
-      tags: [workflows]
+      tags:
+        - workflows
       x-ossa-capability: orchestrate-workflows
       x-ossa-autonomy:
         level: semi-autonomous
@@ -74,7 +77,9 @@ paths:
           application/json:
             schema:
               type: object
-              required: [workflow_id, steps]
+              required:
+                - workflow_id
+                - steps
               properties:
                 workflow_id:
                   type: string
@@ -88,17 +93,24 @@ paths:
                         type: string
                       agent_type:
                         type: string
-                        enum: [worker, specialist, critic]
+                        enum:
+                          - worker
+                          - specialist
+                          - critic
                       capability:
                         type: string
                       input:
                         type: object
                 priority:
                   type: string
-                  enum: [low, normal, high, critical]
+                  enum:
+                    - low
+                    - normal
+                    - high
+                    - critical
                   default: normal
       responses:
-        '202':
+        "202":
           description: Workflow execution started
           content:
             application/json:
@@ -109,18 +121,22 @@ paths:
                     type: string
                   status:
                     type: string
-                    enum: [pending, running, completed, failed]
+                    enum:
+                      - pending
+                      - running
+                      - completed
+                      - failed
                   steps:
                     type: array
                     items:
                       type: object
-
   /workflows/{workflow_id}:
     get:
       summary: Get workflow status
       description: Retrieve the current status of a workflow execution
       operationId: getWorkflowStatus
-      tags: [workflows]
+      tags:
+        - workflows
       x-ossa-capability: orchestrate-workflows
       x-ossa-autonomy:
         level: autonomous
@@ -132,7 +148,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Workflow status
           content:
             application/json:
@@ -149,13 +165,13 @@ paths:
                       type: object
                   aggregated_result:
                     type: object
-
   /agents/discover:
     post:
       summary: Discover agents by capability
       description: Find agents that match specific capability requirements
       operationId: discoverAgents
-      tags: [agents]
+      tags:
+        - agents
       x-ossa-capability: coordinate-agents
       x-ossa-autonomy:
         level: autonomous
@@ -166,18 +182,23 @@ paths:
           application/json:
             schema:
               type: object
-              required: [capability]
+              required:
+                - capability
               properties:
                 capability:
                   type: string
                   description: Required capability name
                 agent_type:
                   type: string
-                  enum: [worker, specialist, critic, orchestrator]
+                  enum:
+                    - worker
+                    - specialist
+                    - critic
+                    - orchestrator
                 filters:
                   type: object
       responses:
-        '200':
+        "200":
           description: List of matching agents
           content:
             application/json:
@@ -197,13 +218,13 @@ paths:
                             type: string
                         status:
                           type: string
-
   /resources/allocate:
     post:
       summary: Allocate resources for workflow
       description: Allocate compute, memory, and token budgets for workflow execution
       operationId: allocateResources
-      tags: [resources]
+      tags:
+        - resources
       x-ossa-capability: resource-allocation
       x-ossa-autonomy:
         level: semi-autonomous
@@ -214,7 +235,9 @@ paths:
           application/json:
             schema:
               type: object
-              required: [workflow_id, resources]
+              required:
+                - workflow_id
+                - resources
               properties:
                 workflow_id:
                   type: string
@@ -228,7 +251,7 @@ paths:
                     tokens:
                       type: integer
       responses:
-        '200':
+        "200":
           description: Resources allocated
           content:
             application/json:
@@ -239,4 +262,3 @@ paths:
                     type: string
                   resources:
                     type: object
-

@@ -9,7 +9,7 @@ info:
     - Context enrichment
     - Learning & feedback loops
     - Real example generation
-    
+
     FOLLOWS DRY PRINCIPLE: Single source of truth for all CLI command schemas.
   contact:
     name: OSSA Standards Team
@@ -17,13 +17,11 @@ info:
   license:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-
 servers:
   - url: http://localhost:4000/api/v1
     description: Local development server
   - url: https://your-registry.example.com/api/v1
     description: Production API server (set OSSA_REGISTRY_URL)
-
 tags:
   - name: knowledge
     description: Knowledge base generation and management
@@ -35,7 +33,6 @@ tags:
     description: Learning loops and feedback
   - name: examples
     description: Real example generation
-
 paths:
   /knowledge/generate:
     post:
@@ -51,19 +48,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/KnowledgeGenerateRequest'
+              $ref: "#/components/schemas/KnowledgeGenerateRequest"
       responses:
-        '200':
+        "200":
           description: Knowledge base generated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/KnowledgeGenerateResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/KnowledgeGenerateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: cli-generate-knowledge-base
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /knowledge/sync:
     post:
       operationId: syncKnowledgeBase
@@ -78,19 +78,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/KnowledgeSyncRequest'
+              $ref: "#/components/schemas/KnowledgeSyncRequest"
       responses:
-        '200':
+        "200":
           description: Knowledge base synced successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/KnowledgeSyncResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/KnowledgeSyncResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: cli-sync-knowledge-base
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /enhance/agent:
     post:
       operationId: enhanceAgent
@@ -105,21 +108,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentEnhancementRequest'
+              $ref: "#/components/schemas/AgentEnhancementRequest"
       responses:
-        '200':
+        "200":
           description: Agent enhanced successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentEnhancementResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/AgentEnhancementResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: cli-enhance-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /enhance/prompts:
     post:
       operationId: enhancePrompts
@@ -134,19 +140,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PromptEnhancementRequest'
+              $ref: "#/components/schemas/PromptEnhancementRequest"
       responses:
-        '200':
+        "200":
           description: Prompts enhanced successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PromptEnhancementResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/PromptEnhancementResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: cli-enhance-prompts
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /context/analyze:
     post:
       operationId: analyzeContext
@@ -161,19 +170,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ContextAnalysisRequest'
+              $ref: "#/components/schemas/ContextAnalysisRequest"
       responses:
-        '200':
+        "200":
           description: Context analyzed successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ContextAnalysisResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/ContextAnalysisResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: cli-analyze-context
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /learn/feedback:
     post:
       operationId: recordFeedback
@@ -188,19 +200,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FeedbackRequest'
+              $ref: "#/components/schemas/FeedbackRequest"
       responses:
-        '200':
+        "200":
           description: Feedback recorded and agent improved
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FeedbackResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/FeedbackResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: cli-record-feedback
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /learn/patterns:
     post:
       operationId: extractPatterns
@@ -215,19 +230,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatternExtractionRequest'
+              $ref: "#/components/schemas/PatternExtractionRequest"
       responses:
-        '200':
+        "200":
           description: Patterns extracted successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PatternExtractionResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/PatternExtractionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: cli-extract-patterns
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /examples/generate:
     post:
       operationId: generateExamples
@@ -242,19 +260,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExampleGenerationRequest'
+              $ref: "#/components/schemas/ExampleGenerationRequest"
       responses:
-        '200':
+        "200":
           description: Examples generated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExampleGenerationResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/ExampleGenerationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: cli-generate-examples
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 components:
   schemas:
     KnowledgeGenerateRequest:
@@ -276,7 +297,10 @@ components:
           items:
             type: string
           description: Pattern types to extract
-          example: ["typescript", "react", "drupal"]
+          example:
+            - typescript
+            - react
+            - drupal
         outputPath:
           type: string
           description: Output directory path
@@ -285,7 +309,6 @@ components:
           type: boolean
           description: Sync with agent-brain/Qdrant
           default: false
-
     KnowledgeGenerateResponse:
       type: object
       properties:
@@ -306,7 +329,6 @@ components:
           type: string
         brainSync:
           type: boolean
-
     KnowledgeSyncRequest:
       type: object
       required:
@@ -320,7 +342,6 @@ components:
           example: code-quality-patterns
         knowledgePath:
           type: string
-
     KnowledgeSyncResponse:
       type: object
       properties:
@@ -330,7 +351,6 @@ components:
           type: integer
         collectionName:
           type: string
-
     AgentEnhancementRequest:
       type: object
       required:
@@ -357,7 +377,6 @@ components:
         examplesFromMRs:
           type: boolean
           description: Extract examples from merge requests
-
     AgentEnhancementResponse:
       type: object
       properties:
@@ -376,7 +395,6 @@ components:
               type: integer
             knowledgeEnriched:
               type: boolean
-
     PromptEnhancementRequest:
       type: object
       required:
@@ -392,7 +410,6 @@ components:
           type: boolean
         codebasePath:
           type: string
-
     PromptEnhancementResponse:
       type: object
       properties:
@@ -402,7 +419,6 @@ components:
           type: integer
         examplesGenerated:
           type: integer
-
     ContextAnalysisRequest:
       type: object
       required:
@@ -421,7 +437,6 @@ components:
           default: true
         outputPath:
           type: string
-
     ContextAnalysisResponse:
       type: object
       properties:
@@ -435,7 +450,6 @@ components:
           type: array
           items:
             type: string
-
     FeedbackRequest:
       type: object
       required:
@@ -463,7 +477,6 @@ components:
         updateExamples:
           type: boolean
           default: true
-
     FeedbackResponse:
       type: object
       properties:
@@ -477,7 +490,6 @@ components:
           type: array
           items:
             type: string
-
     PatternExtractionRequest:
       type: object
       required:
@@ -495,7 +507,6 @@ components:
           type: string
         outputPath:
           type: string
-
     PatternExtractionResponse:
       type: object
       properties:
@@ -516,7 +527,6 @@ components:
                 type: array
                 items:
                   type: string
-
     ExampleGenerationRequest:
       type: object
       required:
@@ -532,7 +542,6 @@ components:
           type: boolean
         outputPath:
           type: string
-
     ExampleGenerationResponse:
       type: object
       properties:
@@ -551,7 +560,6 @@ components:
                 type: string
               validated:
                 type: boolean
-
   responses:
     BadRequest:
       description: Bad request
@@ -564,7 +572,6 @@ components:
                 type: string
               details:
                 type: string
-
     NotFound:
       description: Resource not found
       content:
@@ -575,7 +582,6 @@ components:
               error:
                 type: string
                 example: Agent not found
-
     InternalServerError:
       description: Internal server error
       content:
@@ -587,3 +593,16 @@ components:
                 type: string
               details:
                 type: string
+x-ossa-metadata:
+  version: 1.0.0
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: ossa-cli-enhancements
+    type: worker

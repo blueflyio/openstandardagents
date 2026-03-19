@@ -326,7 +326,7 @@ Token saved to ~/.ossa/token
 https://registry.openstandardagents.org/settings/tokens
 
 # Use token directly
-export OSSA_TOKEN=SET_OSSA_BEARER_TOKEN
+export OSSA_TOKEN=ossa_tok_1234567890abcdef
 ossa publish
 ```
 

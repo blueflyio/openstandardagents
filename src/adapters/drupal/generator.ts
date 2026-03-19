@@ -1867,33 +1867,33 @@ class ${toolClassName}Tool extends ToolPluginBase implements ContainerFactoryPlu
   /**
    * Constructs a new ${toolClassName}Tool.
    *
-   * @param array \$configuration
+   * @param array $configuration
    *   Plugin configuration.
-   * @param string \$plugin_id
+   * @param string $plugin_id
    *   The plugin ID.
-   * @param mixed \$plugin_definition
+   * @param mixed $plugin_definition
    *   The plugin definition.
-   * @param \\Drupal\\${moduleName}\\Service\\AgentExecutorService \$agentService
+   * @param \\Drupal\\${moduleName}\\Service\\AgentExecutorService $agentService
    *   The agent executor service.
    */
   public function __construct(
-    array \$configuration,
-    string \$plugin_id,
-    mixed \$plugin_definition,
-    private readonly AgentExecutorService \$agentService,
+    array $configuration,
+    string $plugin_id,
+    mixed $plugin_definition,
+    private readonly AgentExecutorService $agentService,
   ) {
-    parent::__construct(\$configuration, \$plugin_id, \$plugin_definition);
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface \$container, array \$configuration, \$plugin_id, \$plugin_definition): static {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
-      \$configuration,
-      \$plugin_id,
-      \$plugin_definition,
-      \$container->get('${moduleName}.agent_executor'),
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('${moduleName}.agent_executor'),
     );
   }
 
@@ -1914,8 +1914,8 @@ class ${toolClassName}Tool extends ToolPluginBase implements ContainerFactoryPlu
   /**
    * {@inheritdoc}
    */
-  public function execute(array \$input): array {
-    return \$this->agentService->executeTool('${this.escapePhpString(toolName)}', \$input);
+  public function execute(array $input): array {
+    return $this->agentService->executeTool('${this.escapePhpString(toolName)}', $input);
   }
 
 }
@@ -2262,43 +2262,43 @@ class ${actionClassName}Action extends ActionBase implements ContainerFactoryPlu
   /**
    * Constructs a new ${actionClassName}Action.
    *
-   * @param array \$configuration
+   * @param array $configuration
    *   Plugin configuration.
-   * @param string \$plugin_id
+   * @param string $plugin_id
    *   The plugin ID.
-   * @param mixed \$plugin_definition
+   * @param mixed $plugin_definition
    *   The plugin definition.
-   * @param \\Drupal\\${moduleName}\\Service\\AgentExecutorService \$agentService
+   * @param \\Drupal\\${moduleName}\\Service\\AgentExecutorService $agentService
    *   The agent executor service.
    */
   public function __construct(
-    array \$configuration,
-    string \$plugin_id,
-    mixed \$plugin_definition,
-    private readonly AgentExecutorService \$agentService,
+    array $configuration,
+    string $plugin_id,
+    mixed $plugin_definition,
+    private readonly AgentExecutorService $agentService,
   ) {
-    parent::__construct(\$configuration, \$plugin_id, \$plugin_definition);
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface \$container, array \$configuration, \$plugin_id, \$plugin_definition): static {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
-      \$configuration,
-      \$plugin_id,
-      \$plugin_definition,
-      \$container->get('${moduleName}.agent_executor'),
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('${moduleName}.agent_executor'),
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function execute(\$entity = NULL): void {
-    \$this->agentService->executeTool('${this.escapePhpString(toolName)}', [
-      'entity_id' => \$entity?->id(),
-      'entity_type' => \$entity?->getEntityTypeId(),
+  public function execute($entity = NULL): void {
+    $this->agentService->executeTool('${this.escapePhpString(toolName)}', [
+      'entity_id' => $entity?->id(),
+      'entity_type' => $entity?->getEntityTypeId(),
       'operation' => '${operation}',
     ]);
   }
@@ -2306,8 +2306,8 @@ class ${actionClassName}Action extends ActionBase implements ContainerFactoryPlu
   /**
    * {@inheritdoc}
    */
-  public function access(\$object, ?AccountInterface \$account = NULL, \$return_as_object = FALSE) {
-    return \$object->access('${accessOp}', \$account, \$return_as_object);
+  public function access($object, ?AccountInterface $account = NULL, $return_as_object = FALSE) {
+    return $object->access('${accessOp}', $account, $return_as_object);
   }
 
 }
@@ -2410,33 +2410,33 @@ class AgentEnabledCondition extends ConditionPluginBase implements ContainerFact
   /**
    * Constructs a new AgentEnabledCondition.
    *
-   * @param array \$configuration
+   * @param array $configuration
    *   Plugin configuration.
-   * @param string \$plugin_id
+   * @param string $plugin_id
    *   The plugin ID.
-   * @param mixed \$plugin_definition
+   * @param mixed $plugin_definition
    *   The plugin definition.
-   * @param \\Drupal\\Core\\Config\\ConfigFactoryInterface \$configFactory
+   * @param \\Drupal\\Core\\Config\\ConfigFactoryInterface $configFactory
    *   The config factory service.
    */
   public function __construct(
-    array \$configuration,
-    string \$plugin_id,
-    mixed \$plugin_definition,
-    private readonly ConfigFactoryInterface \$configFactory,
+    array $configuration,
+    string $plugin_id,
+    mixed $plugin_definition,
+    private readonly ConfigFactoryInterface $configFactory,
   ) {
-    parent::__construct(\$configuration, \$plugin_id, \$plugin_definition);
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface \$container, array \$configuration, \$plugin_id, \$plugin_definition): static {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
-      \$configuration,
-      \$plugin_id,
-      \$plugin_definition,
-      \$container->get('config.factory'),
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('config.factory'),
     );
   }
 
@@ -2452,50 +2452,50 @@ class AgentEnabledCondition extends ConditionPluginBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array \$form, FormStateInterface \$form_state): array {
-    \$form['agent_id'] = [
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
+    $form['agent_id'] = [
       '#type' => 'textfield',
-      '#title' => \$this->t('Agent ID'),
-      '#default_value' => \$this->configuration['agent_id'],
-      '#description' => \$this->t('The OSSA agent identifier to check.'),
+      '#title' => $this->t('Agent ID'),
+      '#default_value' => $this->configuration['agent_id'],
+      '#description' => $this->t('The OSSA agent identifier to check.'),
       '#required' => TRUE,
     ];
 
-    return parent::buildConfigurationForm(\$form, \$form_state);
+    return parent::buildConfigurationForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &\$form, FormStateInterface \$form_state): void {
-    \$this->configuration['agent_id'] = \$form_state->getValue('agent_id');
-    parent::submitConfigurationForm(\$form, \$form_state);
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
+    $this->configuration['agent_id'] = $form_state->getValue('agent_id');
+    parent::submitConfigurationForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
   public function evaluate(): bool {
-    \$config = \$this->configFactory->get('${moduleName}.settings');
+    $config = $this->configFactory->get('${moduleName}.settings');
 
     // Check if auto-execution is enabled (agent is active)
-    \$enabled = (bool) \$config->get('auto_execute_on_save');
+    $enabled = (bool) $config->get('auto_execute_on_save');
 
-    return \$this->isNegated() ? !\$enabled : \$enabled;
+    return $this->isNegated() ? !$enabled : $enabled;
   }
 
   /**
    * {@inheritdoc}
    */
   public function summary(): TranslatableMarkup {
-    if (\$this->isNegated()) {
+    if ($this->isNegated()) {
       return new TranslatableMarkup('OSSA agent @agent is disabled', [
-        '@agent' => \$this->configuration['agent_id'],
+        '@agent' => $this->configuration['agent_id'],
       ]);
     }
 
     return new TranslatableMarkup('OSSA agent @agent is enabled', [
-      '@agent' => \$this->configuration['agent_id'],
+      '@agent' => $this->configuration['agent_id'],
     ]);
   }
 
@@ -2535,25 +2535,25 @@ class AgentEnabledCondition extends ConditionPluginBase implements ContainerFact
     // Build evaluation logic based on guardrail type
     let evaluateBody: string;
     if (guardType === 'input' && blockedPatterns.length > 0) {
-      evaluateBody = `    \$content = \$this->configuration['content'] ?? '';
-    \$blocked_patterns = ${patternsPhp};
+      evaluateBody = `    $content = $this->configuration['content'] ?? '';
+    $blocked_patterns = ${patternsPhp};
 
-    foreach (\$blocked_patterns as \$pattern) {
-      if (str_contains(\$content, \$pattern)) {
-        return \$this->isNegated() ? TRUE : FALSE;
+    foreach ($blocked_patterns as $pattern) {
+      if (str_contains($content, $pattern)) {
+        return $this->isNegated() ? TRUE : FALSE;
       }
     }
 
-    return \$this->isNegated() ? FALSE : TRUE;`;
+    return $this->isNegated() ? FALSE : TRUE;`;
     } else if (guardType === 'output' && maxLength) {
-      evaluateBody = `    \$content = \$this->configuration['content'] ?? '';
-    \$max_length = ${maxLength};
-    \$within_limit = mb_strlen(\$content) <= \$max_length;
+      evaluateBody = `    $content = $this->configuration['content'] ?? '';
+    $max_length = ${maxLength};
+    $within_limit = mb_strlen($content) <= $max_length;
 
-    return \$this->isNegated() ? !\$within_limit : \$within_limit;`;
+    return $this->isNegated() ? !$within_limit : $within_limit;`;
     } else {
       evaluateBody = `    // Default: condition passes
-    return !\$this->isNegated();`;
+    return !$this->isNegated();`;
     }
 
     return `<?php

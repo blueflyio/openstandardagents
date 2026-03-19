@@ -144,7 +144,7 @@ Install custom API key module or use `key_auth` contrib module.
 **Environment:**
 ```bash
 DRUPAL_AUTH_TYPE=api-key
-DRUPAL_API_KEY=SET_API_KEY
+DRUPAL_API_KEY=your-api-key
 ```
 
 ### JWT

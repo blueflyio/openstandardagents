@@ -14,7 +14,7 @@ def main():
     token = os.getenv('OSSA_TOKEN')
     if not token:
         print('❌ Error: OSSA_TOKEN environment variable is required')
-        print('   Run: export OSSA_TOKEN=SET_OSSA_BEARER_TOKEN')
+        print('   Run: export OSSA_TOKEN=ossa_tok_xxx')
         import sys
         sys.exit(1)
 

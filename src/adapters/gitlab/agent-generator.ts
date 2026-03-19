@@ -691,7 +691,8 @@ export interface WorkflowContext {
       {
         url:
           extensions?.webhook?.url ||
-          extensions?.webhook?.url || `http://localhost:8080/webhook/${agentName}`,
+          extensions?.webhook?.url ||
+          `http://localhost:8080/webhook/${agentName}`,
         token: '${WEBHOOK_SECRET}',
         enable_ssl_verification: extensions?.webhook?.ssl_verification ?? false,
         push_events: false,
@@ -856,7 +857,7 @@ CMD ["node", "dist/index.js"]
 
     let env = '# GitLab Agent Environment Variables\n\n';
     env += '# GitLab Configuration\n';
-    env += 'GITLAB_API_TOKEN=SET_GITLAB_PAT_TOKEN\n';
+    env += 'GITLAB_API_TOKEN=glpat-your-token-here\n';
     env += 'GITLAB_API_URL=https://gitlab.com/api/v4\n';
     env += 'WEBHOOK_SECRET=your-webhook-secret\n\n';
 

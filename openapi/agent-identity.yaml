@@ -26,14 +26,12 @@ info:
     - W3C Distributed Tracing (trace_id, span_id)
     - FIPS 140-2 compliant encryption (optional)
     - Comprehensive audit logging
-
   contact:
     name: Bluefly.io LLM Platform Team
     url: https://github.com/blueflyio/openstandardagents
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-
 servers:
   - url: https://api.llm.bluefly.io/ossa/v1/identity
     description: Production server
@@ -41,11 +39,9 @@ servers:
     description: Development server
   - url: http://localhost:3000/identity
     description: Local development
-
 security:
   - BearerAuth: []
   - ApiKeyAuth: []
-
 tags:
   - name: Authentication
     description: Agent authentication and token management
@@ -53,7 +49,6 @@ tags:
     description: Agent identity verification and retrieval
   - name: Tokens
     description: Token lifecycle management
-
 paths:
   /agents/{id}/authenticate:
     post:
@@ -61,83 +56,96 @@ paths:
       description: |
         Authenticate an agent instance using provided credentials and issue an access token.
         Supports multiple authentication methods: API key, OAuth2, and mTLS.
-      tags: [Authentication]
+      tags:
+        - Authentication
       operationId: authenticateAgent
-      security: []  # Authentication endpoint doesn't require auth
+      security: []
       parameters:
-        - $ref: '#/components/parameters/AgentId'
+        - $ref: "#/components/parameters/AgentId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuthenticationRequest'
+              $ref: "#/components/schemas/AuthenticationRequest"
             examples:
               apiKeyAuth:
                 summary: API Key Authentication
                 value:
-                  agent_id: "data-processor-agent"
+                  agent_id: data-processor-agent
                   credential:
-                    type: "api_key"
-                    api_key: "SET_OSSA_API_KEY"
-                  scope: ["read", "execute"]
+                    type: api_key
+                    api_key: ossa_ak_1234567890abcdef1234567890abcdef
+                  scope:
+                    - read
+                    - execute
                   context:
-                    tenant_id: "tenant-123"
-                    user_id: "user-456"
+                    tenant_id: tenant-123
+                    user_id: user-456
               oauth2Auth:
                 summary: OAuth2 Token Authentication
                 value:
-                  agent_id: "analytics-agent"
+                  agent_id: analytics-agent
                   credential:
-                    type: "oauth2"
-                    access_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
-                    token_type: "Bearer"
-                  scope: ["read", "write", "execute"]
+                    type: oauth2
+                    access_token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+                    token_type: Bearer
+                  scope:
+                    - read
+                    - write
+                    - execute
               mtlsAuth:
                 summary: mTLS Certificate Authentication
                 value:
-                  agent_id: "secure-agent"
+                  agent_id: secure-agent
                   credential:
-                    type: "mtls"
-                    certificate: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t..."
-                  scope: ["admin"]
+                    type: mtls
+                    certificate: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t...
+                  scope:
+                    - admin
       responses:
-        '200':
+        "200":
           description: Authentication successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenResponse'
+                $ref: "#/components/schemas/TokenResponse"
               examples:
                 success:
                   summary: Successful authentication
                   value:
-                    access_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZ2VudC0xMjMiLCJpYXQiOjE2MDk0NTkyMDB9.SflKxwRJSM..."
-                    token_type: "Bearer"
+                    access_token: example-access-token-redacted
+                    token_type: Bearer
                     expires_in: 3600
-                    scope: ["read", "execute"]
-                    instance_id: "550e8400-e29b-41d4-a716-446655440000"
-                    issued_at: "2025-12-18T10:00:00Z"
-                    token_id: "650e8400-e29b-41d4-a716-446655440001"
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                    scope:
+                      - read
+                      - execute
+                    instance_id: 550e8400-e29b-41d4-a716-446655440000
+                    issued_at: 2025-12-18T10:00:00Z
+                    token_id: 650e8400-e29b-41d4-a716-446655440001
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: authenticate-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /agents/{id}/identity:
     get:
       summary: Get agent identity
       description: |
         Retrieve complete identity information for an authenticated agent instance.
         Includes instance metadata, status, and tracing information.
-      tags: [Identity]
+      tags:
+        - Identity
       operationId: getAgentIdentity
       parameters:
-        - $ref: '#/components/parameters/AgentId'
+        - $ref: "#/components/parameters/AgentId"
         - name: instance_id
           in: query
           description: Optional specific instance ID to retrieve
@@ -145,50 +153,51 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Agent identity retrieved
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentIdentity'
+                $ref: "#/components/schemas/AgentIdentity"
               examples:
                 activeAgent:
                   summary: Active agent instance
                   value:
-                    agent_id: "data-processor-agent"
-                    instance_id: "550e8400-e29b-41d4-a716-446655440000"
-                    version: "ossa/v0.3.3"
-                    kind: "Agent"
-                    status: "active"
-                    tenant_id: "tenant-123"
-                    user_id: "user-456"
-                    trace_id: "4bf92f3577b34da6a3ce929d0e0e4736"
-                    span_id: "00f067aa0ba902b7"
-                    created_at: "2025-12-18T09:00:00Z"
-                    updated_at: "2025-12-18T10:00:00Z"
+                    agent_id: data-processor-agent
+                    instance_id: 550e8400-e29b-41d4-a716-446655440000
+                    version: ossa/v0.3.3
+                    kind: Agent
+                    status: active
+                    tenant_id: tenant-123
+                    user_id: user-456
+                    trace_id: 4bf92f3577b34da6a3ce929d0e0e4736
+                    span_id: 00f067aa0ba902b7
+                    created_at: 2025-12-18T09:00:00Z
+                    updated_at: 2025-12-18T10:00:00Z
                     metadata:
                       labels:
-                        environment: "production"
-                        version: "1.0.0"
+                        environment: production
+                        version: 1.0.0
                       annotations:
-                        deployed_by: "buildkit-cli"
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                        deployed_by: buildkit-cli
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: get-agent-identity
   /agents/{id}/tokens:
     post:
       summary: Issue new token
       description: |
         Issue a new authentication token for an already authenticated agent.
         Useful for token refresh or obtaining tokens with different scopes.
-      tags: [Tokens]
+      tags:
+        - Tokens
       operationId: issueToken
       parameters:
-        - $ref: '#/components/parameters/AgentId'
+        - $ref: "#/components/parameters/AgentId"
       requestBody:
         required: true
         content:
@@ -205,7 +214,9 @@ paths:
                   items:
                     type: string
                   description: Requested token scopes
-                  default: ["read", "execute"]
+                  default:
+                    - read
+                    - execute
                 expires_in:
                   type: integer
                   description: Requested token lifetime in seconds (max 86400)
@@ -218,36 +229,43 @@ paths:
               refreshToken:
                 summary: Issue refresh token
                 value:
-                  instance_id: "550e8400-e29b-41d4-a716-446655440000"
-                  scope: ["read", "write", "execute"]
+                  instance_id: 550e8400-e29b-41d4-a716-446655440000
+                  scope:
+                    - read
+                    - write
+                    - execute
                   expires_in: 7200
       responses:
-        '201':
+        "201":
           description: Token issued successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/TokenResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: issue-token
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
     get:
       summary: List active tokens
       description: |
         List all active authentication tokens for the agent instance.
         Useful for token management and audit purposes.
-      tags: [Tokens]
+      tags:
+        - Tokens
       operationId: listTokens
       parameters:
-        - $ref: '#/components/parameters/AgentId'
+        - $ref: "#/components/parameters/AgentId"
         - name: instance_id
           in: query
           description: Filter by specific instance ID
@@ -270,7 +288,7 @@ paths:
             minimum: 0
             default: 0
       responses:
-        '200':
+        "200":
           description: List of active tokens
           content:
             application/json:
@@ -307,21 +325,22 @@ paths:
                     type: integer
                   offset:
                     type: integer
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: list-tokens
   /agents/{id}/tokens/{tokenId}:
     delete:
       summary: Revoke token
       description: |
         Revoke a specific authentication token, immediately invalidating it.
         Once revoked, the token cannot be used for API requests.
-      tags: [Tokens]
+      tags:
+        - Tokens
       operationId: revokeToken
       parameters:
-        - $ref: '#/components/parameters/AgentId'
+        - $ref: "#/components/parameters/AgentId"
         - name: tokenId
           in: path
           required: true
@@ -334,71 +353,82 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenRevocationRequest'
+              $ref: "#/components/schemas/TokenRevocationRequest"
             examples:
               securityBreach:
                 summary: Revoke due to security breach
                 value:
-                  token_id: "650e8400-e29b-41d4-a716-446655440001"
-                  reason: "security_breach"
+                  token_id: 650e8400-e29b-41d4-a716-446655440001
+                  reason: security_breach
       responses:
-        '200':
+        "200":
           description: Token revoked successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenRevocationResponse'
+                $ref: "#/components/schemas/TokenRevocationResponse"
               examples:
                 success:
                   summary: Successful revocation
                   value:
                     revoked: true
-                    token_id: "650e8400-e29b-41d4-a716-446655440001"
-                    revoked_at: "2025-12-18T11:00:00Z"
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                    token_id: 650e8400-e29b-41d4-a716-446655440001
+                    revoked_at: 2025-12-18T11:00:00Z
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: revoke-token
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /agents/{id}/security-context:
     get:
       summary: Get security context
       description: |
         Retrieve the complete security and authorization context for an authenticated agent.
         Includes permissions, encryption requirements, and compliance settings.
-      tags: [Identity]
+      tags:
+        - Identity
       operationId: getSecurityContext
       parameters:
-        - $ref: '#/components/parameters/AgentId'
+        - $ref: "#/components/parameters/AgentId"
       responses:
-        '200':
+        "200":
           description: Security context retrieved
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityContext'
+                $ref: "#/components/schemas/SecurityContext"
               examples:
                 fullContext:
                   summary: Complete security context
                   value:
                     authenticated: true
                     principal:
-                      agent_id: "data-processor-agent"
-                      instance_id: "550e8400-e29b-41d4-a716-446655440000"
-                      tenant_id: "tenant-123"
-                      user_id: "user-456"
-                    scopes: ["read", "write", "execute"]
+                      agent_id: data-processor-agent
+                      instance_id: 550e8400-e29b-41d4-a716-446655440000
+                      tenant_id: tenant-123
+                      user_id: user-456
+                    scopes:
+                      - read
+                      - write
+                      - execute
                     permissions:
                       resources:
-                        - resource_type: "workflows"
+                        - resource_type: workflows
                           resource_id: "*"
-                          actions: ["read", "execute"]
-                        - resource_type: "data"
-                          resource_id: "dataset-123"
-                          actions: ["read", "write"]
-                      policy_version: "v1.0.0"
+                          actions:
+                            - read
+                            - execute
+                        - resource_type: data
+                          resource_id: dataset-123
+                          actions:
+                            - read
+                            - write
+                      policy_version: v1.0.0
                     encryption:
                       in_transit:
                         required: true
@@ -406,21 +436,21 @@ paths:
                         mtls_required: false
                       at_rest:
                         required: true
-                        algorithm: "AES-256-GCM"
+                        algorithm: AES-256-GCM
                     compliance:
                       fips_mode: false
-                      audit_level: "detailed"
+                      audit_level: detailed
                       retention_days: 90
                     session:
-                      session_id: "750e8400-e29b-41d4-a716-446655440002"
-                      created_at: "2025-12-18T10:00:00Z"
-                      expires_at: "2025-12-18T11:00:00Z"
-                      last_activity: "2025-12-18T10:30:00Z"
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                      session_id: 750e8400-e29b-41d4-a716-446655440002
+                      created_at: 2025-12-18T10:00:00Z
+                      expires_at: 2025-12-18T11:00:00Z
+                      last_activity: 2025-12-18T10:30:00Z
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: get-security-context
 components:
   securitySchemes:
     BearerAuth:
@@ -446,7 +476,6 @@ components:
             execute: Execute agent tasks and workflows
             admin: Administrative access
             messaging: Agent-to-agent messaging
-
   parameters:
     AgentId:
       name: id
@@ -455,36 +484,29 @@ components:
       description: Agent identifier from the OSSA manifest (metadata.name)
       schema:
         type: string
-        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+        pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
         minLength: 1
         maxLength: 63
       examples:
         dataProcessor:
-          value: "data-processor-agent"
+          value: data-processor-agent
           summary: Data processing agent
         analyticsAgent:
-          value: "analytics-agent"
+          value: analytics-agent
           summary: Analytics agent
-
   schemas:
     AgentIdentity:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/AgentIdentity'
-
+      $ref: https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/AgentIdentity
     AuthenticationRequest:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/AuthenticationRequest'
-
+      $ref: https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/AuthenticationRequest
     TokenResponse:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/TokenResponse'
-
+      $ref: https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/TokenResponse
     SecurityContext:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/SecurityContext'
-
+      $ref: https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/SecurityContext
     TokenRevocationRequest:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/TokenRevocationRequest'
-
+      $ref: https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/TokenRevocationRequest
     TokenRevocationResponse:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/TokenRevocationResponse'
-
+      $ref: https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/TokenRevocationResponse
     Error:
       type: object
       description: Standard error response
@@ -509,72 +531,70 @@ components:
           type: string
           format: date-time
           description: Error timestamp
-
   responses:
     BadRequest:
       description: Bad request - invalid input
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           examples:
             invalidCredentials:
               summary: Invalid credentials format
               value:
-                error: "invalid_request"
-                message: "Invalid credential format"
+                error: invalid_request
+                message: Invalid credential format
                 details:
-                  field: "credential.api_key"
-                  reason: "Must be at least 32 characters"
-                timestamp: "2025-12-18T10:00:00Z"
-
+                  field: credential.api_key
+                  reason: Must be at least 32 characters
+                timestamp: 2025-12-18T10:00:00Z
     Unauthorized:
       description: Unauthorized - authentication failed
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           examples:
             invalidToken:
               summary: Invalid or expired token
               value:
-                error: "unauthorized"
-                message: "Invalid or expired authentication token"
-                timestamp: "2025-12-18T10:00:00Z"
-
+                error: unauthorized
+                message: Invalid or expired authentication token
+                timestamp: 2025-12-18T10:00:00Z
     Forbidden:
       description: Forbidden - insufficient permissions
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           examples:
             insufficientScope:
               summary: Insufficient scope
               value:
-                error: "forbidden"
-                message: "Insufficient permissions for requested scopes"
+                error: forbidden
+                message: Insufficient permissions for requested scopes
                 details:
-                  requested: ["admin"]
-                  granted: ["read", "execute"]
-                timestamp: "2025-12-18T10:00:00Z"
-
+                  requested:
+                    - admin
+                  granted:
+                    - read
+                    - execute
+                timestamp: 2025-12-18T10:00:00Z
     NotFound:
       description: Resource not found
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           examples:
             agentNotFound:
               summary: Agent not found
               value:
-                error: "not_found"
-                message: "Agent instance not found"
+                error: not_found
+                message: Agent instance not found
                 details:
-                  agent_id: "unknown-agent"
-                timestamp: "2025-12-18T10:00:00Z"
-
+                  agent_id: unknown-agent
+                timestamp: 2025-12-18T10:00:00Z
     TooManyRequests:
       description: Rate limit exceeded
       headers:
@@ -593,28 +613,40 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           examples:
             rateLimitExceeded:
               summary: Rate limit exceeded
               value:
-                error: "rate_limit_exceeded"
-                message: "Too many authentication requests. Please try again later."
+                error: rate_limit_exceeded
+                message: Too many authentication requests. Please try again later.
                 details:
                   retry_after: 60
-                timestamp: "2025-12-18T10:00:00Z"
-
+                timestamp: 2025-12-18T10:00:00Z
     InternalServerError:
       description: Internal server error
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           examples:
             serverError:
               summary: Internal server error
               value:
-                error: "internal_server_error"
-                message: "An unexpected error occurred"
-                trace_id: "4bf92f3577b34da6a3ce929d0e0e4736"
-                timestamp: "2025-12-18T10:00:00Z"
+                error: internal_server_error
+                message: An unexpected error occurred
+                trace_id: 4bf92f3577b34da6a3ce929d0e0e4736
+                timestamp: 2025-12-18T10:00:00Z
+x-ossa-metadata:
+  version: 0.3.3
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: agent-identity-api
+    type: governor

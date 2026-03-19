@@ -355,7 +355,14 @@ validateCommand.action(
 
         // Platform-specific validation
         const platforms = options.all
-          ? ['kagent', 'langchain', 'crewai', 'agentscope', 'docker', 'kubernetes']
+          ? [
+              'kagent',
+              'langchain',
+              'crewai',
+              'agentscope',
+              'docker',
+              'kubernetes',
+            ]
           : options.platform
             ? [options.platform]
             : [];

@@ -8,7 +8,7 @@
  * import { OSSA } from '@ossa/client';
  *
  * const client = new OSSA({
- *   bearerToken: 'SET_OSSA_BEARER_TOKEN'
+ *   bearerToken: 'ossa_tok_xxx'
  * });
  *
  * // Search for agents

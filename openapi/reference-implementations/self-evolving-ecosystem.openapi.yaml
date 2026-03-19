@@ -27,7 +27,6 @@ info:
     url: https://github.com/blueflyio/openstandardagents
   license:
     name: MIT
-
 servers:
   - url: http://localhost:9000/api/v1
     description: Local development
@@ -35,7 +34,6 @@ servers:
     description: Local OrbStack
   - url: https://evolution.llm.bluefly.io/api/v1
     description: Production
-
 tags:
   - name: Ecosystem
     description: Self-evolving ecosystem management
@@ -53,11 +51,8 @@ tags:
     description: Real-time adaptation and self-improvement
   - name: Health
     description: System health and metrics
-
 components:
   schemas:
-    # MARK: - Core Ecosystem
-
     Ecosystem:
       type: object
       required:
@@ -73,31 +68,33 @@ components:
           format: uuid
         name:
           type: string
-          example: 'Production Ecosystem'
+          example: Production Ecosystem
         status:
           type: string
-          enum: [initializing, evolving, stable, optimizing, adapting]
+          enum:
+            - initializing
+            - evolving
+            - stable
+            - optimizing
+            - adapting
         agents:
           type: array
           items:
-            $ref: '#/components/schemas/Agent'
+            $ref: "#/components/schemas/Agent"
         coordinationMatrix:
-          $ref: '#/components/schemas/CoordinationMatrix'
+          $ref: "#/components/schemas/CoordinationMatrix"
         evolutionState:
-          $ref: '#/components/schemas/EvolutionState'
+          $ref: "#/components/schemas/EvolutionState"
         learningMetrics:
-          $ref: '#/components/schemas/LearningMetrics'
+          $ref: "#/components/schemas/LearningMetrics"
         performanceMetrics:
-          $ref: '#/components/schemas/PerformanceMetrics'
+          $ref: "#/components/schemas/PerformanceMetrics"
         created:
           type: string
           format: date-time
         updated:
           type: string
           format: date-time
-
-    # MARK: - Multi-Agent Coordination
-
     Agent:
       type: object
       required:
@@ -113,40 +110,49 @@ components:
           format: uuid
         name:
           type: string
-          example: 'Drupal Security Compliance Agent'
+          example: Drupal Security Compliance Agent
         type:
           type: string
-          enum: [orchestrator, worker, critic, integrator, specialist]
+          enum:
+            - orchestrator
+            - worker
+            - critic
+            - integrator
+            - specialist
           description: OSSA agent type
         role:
           type: string
           enum:
-            [
-              security_compliance,
-              performance_optimization,
-              research_innovation,
-              knowledge_management,
-              infrastructure_ops,
-              revenue_optimization,
-            ]
+            - security_compliance
+            - performance_optimization
+            - research_innovation
+            - knowledge_management
+            - infrastructure_ops
+            - revenue_optimization
         capabilities:
           type: array
           items:
             type: string
           example:
-            ['iso42001_compliance', 'nist_rmf_validation', 'audit_automation']
+            - iso42001_compliance
+            - nist_rmf_validation
+            - audit_automation
         status:
           type: string
-          enum: [active, learning, adapting, idle, error]
+          enum:
+            - active
+            - learning
+            - adapting
+            - idle
+            - error
         performance:
-          $ref: '#/components/schemas/AgentPerformance'
+          $ref: "#/components/schemas/AgentPerformance"
         learning:
-          $ref: '#/components/schemas/AgentLearning'
+          $ref: "#/components/schemas/AgentLearning"
         coordination:
           type: array
           items:
-            $ref: '#/components/schemas/CoordinationLink'
-
+            $ref: "#/components/schemas/CoordinationLink"
     CoordinationMatrix:
       type: object
       description: Hierarchical coordination between agents
@@ -169,14 +175,21 @@ components:
         dependencies:
           type: array
           items:
-            $ref: '#/components/schemas/AgentDependency'
+            $ref: "#/components/schemas/AgentDependency"
         communicationProtocol:
           type: string
-          enum: [event_driven, request_response, streaming, pub_sub]
+          enum:
+            - event_driven
+            - request_response
+            - streaming
+            - pub_sub
         conflictResolution:
           type: string
-          enum: [consensus, priority_based, ai_mediation, escalation]
-
+          enum:
+            - consensus
+            - priority_based
+            - ai_mediation
+            - escalation
     AgentDependency:
       type: object
       properties:
@@ -188,13 +201,16 @@ components:
           format: uuid
         type:
           type: string
-          enum: [requires, provides, collaborates, monitors]
+          enum:
+            - requires
+            - provides
+            - collaborates
+            - monitors
         strength:
           type: number
           minimum: 0
           maximum: 1
           description: Dependency strength (0-1)
-
     CoordinationLink:
       type: object
       properties:
@@ -203,7 +219,11 @@ components:
           format: uuid
         linkType:
           type: string
-          enum: [peer, supervisor, subordinate, collaborator]
+          enum:
+            - peer
+            - supervisor
+            - subordinate
+            - collaborator
         communicationFrequency:
           type: number
           description: Messages per hour
@@ -211,9 +231,6 @@ components:
           type: number
           minimum: 0
           maximum: 1
-
-    # MARK: - Federated Learning
-
     FederatedLearningSession:
       type: object
       required:
@@ -228,13 +245,11 @@ components:
         modelType:
           type: string
           enum:
-            [
-              code_completion,
-              bug_prediction,
-              productivity_optimization,
-              collaboration_enhancement,
-              cognitive_load_prediction,
-            ]
+            - code_completion
+            - bug_prediction
+            - productivity_optimization
+            - collaboration_enhancement
+            - cognitive_load_prediction
         participants:
           type: array
           items:
@@ -244,7 +259,7 @@ components:
         privacyBudget:
           type: number
           description: Differential privacy epsilon
-          example: 1.0
+          example: 1
         rounds:
           type: integer
           minimum: 1
@@ -254,10 +269,14 @@ components:
           default: 0.01
         status:
           type: string
-          enum: [pending, training, aggregating, completed, failed]
+          enum:
+            - pending
+            - training
+            - aggregating
+            - completed
+            - failed
         metrics:
-          $ref: '#/components/schemas/LearningMetrics'
-
+          $ref: "#/components/schemas/LearningMetrics"
     LearningMetrics:
       type: object
       properties:
@@ -279,9 +298,6 @@ components:
           type: number
         privacyBudgetUsed:
           type: number
-
-    # MARK: - Psychology & Gamification
-
     FlowStateOptimization:
       type: object
       description: Real-time flow state optimization based on Csikszentmihalyi research
@@ -295,16 +311,14 @@ components:
         currentState:
           type: string
           enum:
-            [
-              flow,
-              anxiety,
-              boredom,
-              apathy,
-              arousal,
-              control,
-              worry,
-              relaxation,
-            ]
+            - flow
+            - anxiety
+            - boredom
+            - apathy
+            - arousal
+            - control
+            - worry
+            - relaxation
         skillLevel:
           type: number
           minimum: 0
@@ -326,7 +340,6 @@ components:
           items:
             type: string
           description: AI recommendations to optimize flow
-
     GamificationEvent:
       type: object
       required:
@@ -337,20 +350,18 @@ components:
         eventType:
           type: string
           enum:
-            [
-              achievement_unlocked,
-              level_up,
-              badge_earned,
-              challenge_completed,
-              leaderboard_rank_change,
-              skill_mastered,
-              flow_state_achieved,
-            ]
+            - achievement_unlocked
+            - level_up
+            - badge_earned
+            - challenge_completed
+            - leaderboard_rank_change
+            - skill_mastered
+            - flow_state_achieved
         developerId:
           type: string
           format: uuid
         achievement:
-          $ref: '#/components/schemas/Achievement'
+          $ref: "#/components/schemas/Achievement"
         context:
           type: object
           additionalProperties: true
@@ -358,8 +369,7 @@ components:
           type: string
           format: date-time
         impact:
-          $ref: '#/components/schemas/MotivationImpact'
-
+          $ref: "#/components/schemas/MotivationImpact"
     Achievement:
       type: object
       properties:
@@ -372,23 +382,25 @@ components:
         category:
           type: string
           enum:
-            [
-              productivity,
-              quality,
-              collaboration,
-              learning,
-              innovation,
-              security,
-            ]
+            - productivity
+            - quality
+            - collaboration
+            - learning
+            - innovation
+            - security
         rarity:
           type: string
-          enum: [common, uncommon, rare, epic, legendary]
+          enum:
+            - common
+            - uncommon
+            - rare
+            - epic
+            - legendary
         points:
           type: integer
         gameCenterId:
           type: string
           description: Game Center achievement ID
-
     MotivationImpact:
       type: object
       description: Psychological impact on developer motivation
@@ -413,9 +425,6 @@ components:
           type: number
           minimum: 0
           maximum: 100
-
-    # MARK: - Cognitive Research
-
     CognitiveLoadStudy:
       type: object
       description: ResearchKit cognitive load measurement
@@ -435,17 +444,16 @@ components:
           type: string
           format: uuid
         biometricData:
-          $ref: '#/components/schemas/BiometricData'
+          $ref: "#/components/schemas/BiometricData"
         behavioralData:
-          $ref: '#/components/schemas/BehavioralData'
+          $ref: "#/components/schemas/BehavioralData"
         nasaTLX:
-          $ref: '#/components/schemas/NASATLX'
+          $ref: "#/components/schemas/NASATLX"
         cognitiveLoad:
-          $ref: '#/components/schemas/CognitiveLoad'
+          $ref: "#/components/schemas/CognitiveLoad"
         consent:
           type: boolean
           description: Participant consent status
-
     BiometricData:
       type: object
       properties:
@@ -470,7 +478,6 @@ components:
               type: number
             pauseFrequency:
               type: number
-
     BehavioralData:
       type: object
       properties:
@@ -485,7 +492,6 @@ components:
           type: integer
         codeQualityScore:
           type: number
-
     NASATLX:
       type: object
       description: NASA Task Load Index
@@ -514,7 +520,6 @@ components:
           type: integer
           minimum: 0
           maximum: 100
-
     CognitiveLoad:
       type: object
       properties:
@@ -530,14 +535,15 @@ components:
           type: number
         prediction:
           type: string
-          enum: [low, medium, high, overload]
+          enum:
+            - low
+            - medium
+            - high
+            - overload
         recommendations:
           type: array
           items:
             type: string
-
-    # MARK: - Dynamic Revenue
-
     DynamicPricing:
       type: object
       required:
@@ -547,7 +553,11 @@ components:
       properties:
         tier:
           type: string
-          enum: [freemium, developer, team, enterprise]
+          enum:
+            - freemium
+            - developer
+            - team
+            - enterprise
         basePrice:
           type: number
           format: decimal
@@ -555,9 +565,9 @@ components:
           type: number
           format: decimal
         marketConditions:
-          $ref: '#/components/schemas/MarketConditions'
+          $ref: "#/components/schemas/MarketConditions"
         customerProfile:
-          $ref: '#/components/schemas/CustomerProfile'
+          $ref: "#/components/schemas/CustomerProfile"
         willingnessToPay:
           type: number
           description: Estimated willingness to pay (ML model)
@@ -568,7 +578,6 @@ components:
         revenueImpact:
           type: number
           description: Expected revenue change
-
     MarketConditions:
       type: object
       properties:
@@ -582,13 +591,17 @@ components:
           type: string
         economicIndicators:
           type: object
-
     CustomerProfile:
       type: object
       properties:
         segment:
           type: string
-          enum: [individual, small_team, enterprise, education, open_source]
+          enum:
+            - individual
+            - small_team
+            - enterprise
+            - education
+            - open_source
         usagePatterns:
           type: object
         valueRealized:
@@ -600,9 +613,6 @@ components:
           type: number
           minimum: 0
           maximum: 1
-
-    # MARK: - Evolution State
-
     EvolutionState:
       type: object
       description: Current state of ecosystem self-evolution
@@ -617,7 +627,7 @@ components:
         adaptationHistory:
           type: array
           items:
-            $ref: '#/components/schemas/AdaptationEvent'
+            $ref: "#/components/schemas/AdaptationEvent"
         currentOptimizations:
           type: array
           items:
@@ -628,7 +638,6 @@ components:
           type: number
           minimum: 0
           maximum: 1
-
     AdaptationEvent:
       type: object
       properties:
@@ -638,21 +647,18 @@ components:
         type:
           type: string
           enum:
-            [
-              agent_added,
-              agent_removed,
-              capability_enhanced,
-              coordination_optimized,
-              performance_improved,
-              cost_reduced,
-            ]
+            - agent_added
+            - agent_removed
+            - capability_enhanced
+            - coordination_optimized
+            - performance_improved
+            - cost_reduced
         impact:
           type: number
         fitnessChange:
           type: number
         description:
           type: string
-
     AgentPerformance:
       type: object
       properties:
@@ -674,7 +680,6 @@ components:
           maximum: 1
         learningVelocity:
           type: number
-
     AgentLearning:
       type: object
       properties:
@@ -694,7 +699,6 @@ components:
         knowledgeGraph:
           type: object
           description: Agent's knowledge representation
-
     PerformanceMetrics:
       type: object
       properties:
@@ -716,9 +720,6 @@ components:
           type: number
           minimum: 0
           maximum: 5
-
-    # MARK: - Requests/Responses
-
     CreateEcosystemRequest:
       type: object
       required:
@@ -742,7 +743,12 @@ components:
                 type: string
               type:
                 type: string
-                enum: [orchestrator, worker, critic, integrator, specialist]
+                enum:
+                  - orchestrator
+                  - worker
+                  - critic
+                  - integrator
+                  - specialist
               role:
                 type: string
               capabilities:
@@ -751,7 +757,10 @@ components:
                   type: string
         coordinationStrategy:
           type: string
-          enum: [hierarchical, mesh, hybrid]
+          enum:
+            - hierarchical
+            - mesh
+            - hybrid
           default: hierarchical
         learningEnabled:
           type: boolean
@@ -759,7 +768,6 @@ components:
         gamificationEnabled:
           type: boolean
           default: true
-
     StartFederatedLearningRequest:
       type: object
       required:
@@ -769,13 +777,11 @@ components:
         modelType:
           type: string
           enum:
-            [
-              code_completion,
-              bug_prediction,
-              productivity_optimization,
-              collaboration_enhancement,
-              cognitive_load_prediction,
-            ]
+            - code_completion
+            - bug_prediction
+            - productivity_optimization
+            - collaboration_enhancement
+            - cognitive_load_prediction
         participantAgentIds:
           type: array
           items:
@@ -783,14 +789,13 @@ components:
             format: uuid
         privacyBudget:
           type: number
-          default: 1.0
+          default: 1
         rounds:
           type: integer
           default: 10
         convergenceThreshold:
           type: number
           default: 0.01
-
     OptimizeFlowStateRequest:
       type: object
       required:
@@ -816,12 +821,15 @@ components:
           properties:
             preferredChallengeLevel:
               type: string
-              enum: [easy, moderate, challenging, expert]
+              enum:
+                - easy
+                - moderate
+                - challenging
+                - expert
             learningGoals:
               type: array
               items:
                 type: string
-
     OptimizePricingRequest:
       type: object
       required:
@@ -830,17 +838,24 @@ components:
       properties:
         tier:
           type: string
-          enum: [freemium, developer, team, enterprise]
+          enum:
+            - freemium
+            - developer
+            - team
+            - enterprise
         customerId:
           type: string
           format: uuid
         marketData:
-          $ref: '#/components/schemas/MarketConditions'
+          $ref: "#/components/schemas/MarketConditions"
         targetMetric:
           type: string
-          enum: [revenue, conversion, retention, ltv]
+          enum:
+            - revenue
+            - conversion
+            - retention
+            - ltv
           default: revenue
-
     EvolutionTrigger:
       type: object
       required:
@@ -849,24 +864,25 @@ components:
         triggerType:
           type: string
           enum:
-            [
-              performance_degradation,
-              new_capability_needed,
-              cost_optimization,
-              user_feedback,
-              market_change,
-              security_threat,
-            ]
+            - performance_degradation
+            - new_capability_needed
+            - cost_optimization
+            - user_feedback
+            - market_change
+            - security_threat
         context:
           type: object
           additionalProperties: true
         priority:
           type: string
-          enum: [low, medium, high, critical]
+          enum:
+            - low
+            - medium
+            - high
+            - critical
         autoExecute:
           type: boolean
           default: false
-
     Error:
       type: object
       required:
@@ -880,26 +896,22 @@ components:
         details:
           type: object
           additionalProperties: true
-
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
 security:
   - bearerAuth: []
-
 paths:
-  # MARK: - Health
-
   /health:
     get:
-      tags: [Health]
+      tags:
+        - Health
       summary: Ecosystem health check
       security: []
       responses:
-        '200':
+        "200":
           description: Healthy
           content:
             application/json:
@@ -908,7 +920,10 @@ paths:
                 properties:
                   status:
                     type: string
-                    enum: [healthy, degraded, critical]
+                    enum:
+                      - healthy
+                      - degraded
+                      - critical
                   ecosystems:
                     type: integer
                   activeAgents:
@@ -920,21 +935,27 @@ paths:
                   timestamp:
                     type: string
                     format: date-time
-
-  # MARK: - Ecosystem Management (CRUD)
-
+      x-ossa-capability: reference-get-/health
+      description: Ecosystem health check
+      operationId: getHealth
   /ecosystems:
     get:
-      tags: [Ecosystem]
+      tags:
+        - Ecosystem
       summary: List all ecosystems
       parameters:
         - name: status
           in: query
           schema:
             type: string
-            enum: [initializing, evolving, stable, optimizing, adapting]
+            enum:
+              - initializing
+              - evolving
+              - stable
+              - optimizing
+              - adapting
       responses:
-        '200':
+        "200":
           description: List of ecosystems
           content:
             application/json:
@@ -944,30 +965,39 @@ paths:
                   ecosystems:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Ecosystem'
+                      $ref: "#/components/schemas/Ecosystem"
                   count:
                     type: integer
-
+      x-ossa-capability: reference-get-/ecosystems
+      description: List all ecosystems
+      operationId: getEcosystems
     post:
-      tags: [Ecosystem]
+      tags:
+        - Ecosystem
       summary: Create new ecosystem
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateEcosystemRequest'
+              $ref: "#/components/schemas/CreateEcosystemRequest"
       responses:
-        '201':
+        "201":
           description: Ecosystem created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Ecosystem'
-
+                $ref: "#/components/schemas/Ecosystem"
+      x-ossa-capability: reference-post-/ecosystems
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Create new ecosystem
+      operationId: postEcosystems
   /ecosystems/{ecosystemId}:
     get:
-      tags: [Ecosystem]
+      tags:
+        - Ecosystem
       summary: Get ecosystem details
       parameters:
         - name: ecosystemId
@@ -977,15 +1007,18 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Ecosystem found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Ecosystem'
-
+                $ref: "#/components/schemas/Ecosystem"
+      x-ossa-capability: reference-get-/ecosystems/{ecosystem-id}
+      description: Get ecosystem details
+      operationId: getEcosystemsEcosystemid
     put:
-      tags: [Ecosystem]
+      tags:
+        - Ecosystem
       summary: Update ecosystem
       parameters:
         - name: ecosystemId
@@ -1008,15 +1041,21 @@ paths:
                 learningEnabled:
                   type: boolean
       responses:
-        '200':
+        "200":
           description: Updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Ecosystem'
-
+                $ref: "#/components/schemas/Ecosystem"
+      x-ossa-capability: reference-put-/ecosystems/{ecosystem-id}
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Update ecosystem
+      operationId: putEcosystemsEcosystemid
     delete:
-      tags: [Ecosystem]
+      tags:
+        - Ecosystem
       summary: Delete ecosystem
       parameters:
         - name: ecosystemId
@@ -1026,14 +1065,18 @@ paths:
             type: string
             format: uuid
       responses:
-        '204':
+        "204":
           description: Deleted
-
-  # MARK: - Agent Coordination
-
+      x-ossa-capability: reference-delete-/ecosystems/{ecosystem-id}
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Delete ecosystem
+      operationId: deleteEcosystemsEcosystemid
   /ecosystems/{ecosystemId}/agents:
     get:
-      tags: [Agents]
+      tags:
+        - Agents
       summary: List agents in ecosystem
       parameters:
         - name: ecosystemId
@@ -1046,13 +1089,18 @@ paths:
           in: query
           schema:
             type: string
-            enum: [orchestrator, worker, critic, integrator, specialist]
+            enum:
+              - orchestrator
+              - worker
+              - critic
+              - integrator
+              - specialist
         - name: role
           in: query
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: List of agents
           content:
             application/json:
@@ -1062,10 +1110,13 @@ paths:
                   agents:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Agent'
-
+                      $ref: "#/components/schemas/Agent"
+      x-ossa-capability: reference-get-/ecosystems/{ecosystem-id}/agents
+      description: List agents in ecosystem
+      operationId: getEcosystemsEcosystemidAgents
     post:
-      tags: [Agents]
+      tags:
+        - Agents
       summary: Add agent to ecosystem
       parameters:
         - name: ecosystemId
@@ -1089,7 +1140,12 @@ paths:
                   type: string
                 type:
                   type: string
-                  enum: [orchestrator, worker, critic, integrator, specialist]
+                  enum:
+                    - orchestrator
+                    - worker
+                    - critic
+                    - integrator
+                    - specialist
                 role:
                   type: string
                 capabilities:
@@ -1097,16 +1153,22 @@ paths:
                   items:
                     type: string
       responses:
-        '201':
+        "201":
           description: Agent added
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Agent'
-
+                $ref: "#/components/schemas/Agent"
+      x-ossa-capability: reference-post-/ecosystems/{ecosystem-id}/agents
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Add agent to ecosystem
+      operationId: postEcosystemsEcosystemidAgents
   /ecosystems/{ecosystemId}/coordination:
     get:
-      tags: [Agents]
+      tags:
+        - Agents
       summary: Get coordination matrix
       parameters:
         - name: ecosystemId
@@ -1116,16 +1178,19 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Coordination matrix
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CoordinationMatrix'
-
+                $ref: "#/components/schemas/CoordinationMatrix"
+      x-ossa-capability: reference-get-/ecosystems/{ecosystem-id}/coordination
+      description: Get coordination matrix
+      operationId: getEcosystemsEcosystemidCoordination
   /ecosystems/{ecosystemId}/coordinate:
     post:
-      tags: [Agents]
+      tags:
+        - Agents
       summary: Coordinate agent action
       description: Coordinate complex multi-agent workflow
       parameters:
@@ -1148,13 +1213,11 @@ paths:
                 workflowType:
                   type: string
                   enum:
-                    [
-                      code_review,
-                      security_scan,
-                      performance_optimization,
-                      research_study,
-                      pricing_optimization,
-                    ]
+                    - code_review
+                    - security_scan
+                    - performance_optimization
+                    - research_study
+                    - pricing_optimization
                 targetAgents:
                   type: array
                   items:
@@ -1164,7 +1227,7 @@ paths:
                   type: object
                   additionalProperties: true
       responses:
-        '200':
+        "200":
           description: Coordination result
           content:
             application/json:
@@ -1180,30 +1243,39 @@ paths:
                     type: array
                     items:
                       type: object
-
-  # MARK: - Federated Learning
-
+      x-ossa-capability: reference-post-/ecosystems/{ecosystem-id}/coordinate
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      operationId: postEcosystemsEcosystemidCoordinate
   /learning/federated/sessions:
     post:
-      tags: [Learning]
+      tags:
+        - Learning
       summary: Start federated learning session
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StartFederatedLearningRequest'
+              $ref: "#/components/schemas/StartFederatedLearningRequest"
       responses:
-        '201':
+        "201":
           description: Session started
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FederatedLearningSession'
-
+                $ref: "#/components/schemas/FederatedLearningSession"
+      x-ossa-capability: reference-post-/learning/federated/sessions
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Start federated learning session
+      operationId: postLearningFederatedSessions
   /learning/federated/sessions/{sessionId}:
     get:
-      tags: [Learning]
+      tags:
+        - Learning
       summary: Get learning session status
       parameters:
         - name: sessionId
@@ -1213,16 +1285,19 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Session details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FederatedLearningSession'
-
+                $ref: "#/components/schemas/FederatedLearningSession"
+      x-ossa-capability: reference-get-/learning/federated/sessions/{session-id}
+      description: Get learning session status
+      operationId: getLearningFederatedSessionsSessionid
   /learning/federated/sessions/{sessionId}/results:
     get:
-      tags: [Learning]
+      tags:
+        - Learning
       summary: Get federated learning results
       parameters:
         - name: sessionId
@@ -1232,7 +1307,7 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Learning results
           content:
             application/json:
@@ -1242,33 +1317,40 @@ paths:
                   finalModel:
                     type: object
                   metrics:
-                    $ref: '#/components/schemas/LearningMetrics'
+                    $ref: "#/components/schemas/LearningMetrics"
                   privacyGuarantees:
                     type: object
-
-  # MARK: - Psychology & Flow State
-
+      x-ossa-capability: reference-get-/learning/federated/sessions/{session-id}/results
+      description: Get federated learning results
+      operationId: getLearningFederatedSessionsSessionidResults
   /psychology/flow-state:
     post:
-      tags: [Psychology]
+      tags:
+        - Psychology
       summary: Optimize developer flow state
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OptimizeFlowStateRequest'
+              $ref: "#/components/schemas/OptimizeFlowStateRequest"
       responses:
-        '200':
+        "200":
           description: Flow state optimization
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FlowStateOptimization'
-
+                $ref: "#/components/schemas/FlowStateOptimization"
+      x-ossa-capability: reference-post-/psychology/flow-state
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Optimize developer flow state
+      operationId: postPsychologyFlowState
   /psychology/motivation/{developerId}:
     get:
-      tags: [Psychology]
+      tags:
+        - Psychology
       summary: Get developer motivation profile
       parameters:
         - name: developerId
@@ -1278,48 +1360,61 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Motivation profile
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MotivationImpact'
-
+                $ref: "#/components/schemas/MotivationImpact"
+      x-ossa-capability: reference-get-/psychology/motivation/{developer-id}
+      description: Get developer motivation profile
+      operationId: getPsychologyMotivationDeveloperid
   /psychology/gamification/events:
     post:
-      tags: [Psychology]
+      tags:
+        - Psychology
       summary: Record gamification event
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GamificationEvent'
+              $ref: "#/components/schemas/GamificationEvent"
       responses:
-        '201':
+        "201":
           description: Event recorded
-
-  # MARK: - Cognitive Research
-
+      x-ossa-capability: reference-post-/psychology/gamification/events
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Record gamification event
+      operationId: postPsychologyGamificationEvents
   /research/cognitive-load:
     post:
-      tags: [Research]
+      tags:
+        - Research
       summary: Submit cognitive load study data
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CognitiveLoadStudy'
+              $ref: "#/components/schemas/CognitiveLoadStudy"
       responses:
-        '201':
+        "201":
           description: Data recorded
-        '403':
+        "403":
           description: Consent not provided
-
+      x-ossa-capability: reference-post-/research/cognitive-load
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Submit cognitive load study data
+      operationId: postResearchCognitiveLoad
   /research/studies/{studyId}/insights:
     get:
-      tags: [Research]
+      tags:
+        - Research
       summary: Get research insights
       parameters:
         - name: studyId
@@ -1329,7 +1424,7 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Research insights
           content:
             application/json:
@@ -1346,30 +1441,37 @@ paths:
                     type: array
                     items:
                       type: string
-
-  # MARK: - Dynamic Revenue
-
+      x-ossa-capability: reference-get-/research/studies/{study-id}/insights
+      description: Get research insights
+      operationId: getResearchStudiesStudyidInsights
   /revenue/pricing/optimize:
     post:
-      tags: [Revenue]
+      tags:
+        - Revenue
       summary: Optimize pricing dynamically
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OptimizePricingRequest'
+              $ref: "#/components/schemas/OptimizePricingRequest"
       responses:
-        '200':
+        "200":
           description: Optimized pricing
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DynamicPricing'
-
+                $ref: "#/components/schemas/DynamicPricing"
+      x-ossa-capability: reference-post-/revenue/pricing/optimize
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Optimize pricing dynamically
+      operationId: postRevenuePricingOptimize
   /revenue/customer/{customerId}/value:
     get:
-      tags: [Revenue]
+      tags:
+        - Revenue
       summary: Calculate customer value
       parameters:
         - name: customerId
@@ -1379,7 +1481,7 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Customer value metrics
           content:
             application/json:
@@ -1394,21 +1496,22 @@ paths:
                     type: number
                   upsellOpportunity:
                     type: object
-
-  # MARK: - Self-Evolution
-
+      x-ossa-capability: reference-get-/revenue/customer/{customer-id}/value
+      description: Calculate customer value
+      operationId: getRevenueCustomerCustomeridValue
   /evolution/trigger:
     post:
-      tags: [Evolution]
+      tags:
+        - Evolution
       summary: Trigger ecosystem evolution
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EvolutionTrigger'
+              $ref: "#/components/schemas/EvolutionTrigger"
       responses:
-        '202':
+        "202":
           description: Evolution triggered
           content:
             application/json:
@@ -1423,10 +1526,16 @@ paths:
                   estimatedCompletion:
                     type: string
                     format: date-time
-
+      x-ossa-capability: reference-post-/evolution/trigger
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Trigger ecosystem evolution
+      operationId: postEvolutionTrigger
   /evolution/{ecosystemId}/status:
     get:
-      tags: [Evolution]
+      tags:
+        - Evolution
       summary: Get evolution status
       parameters:
         - name: ecosystemId
@@ -1436,16 +1545,19 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Evolution state
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EvolutionState'
-
+                $ref: "#/components/schemas/EvolutionState"
+      x-ossa-capability: reference-get-/evolution/{ecosystem-id}/status
+      description: Get evolution status
+      operationId: getEvolutionEcosystemidStatus
   /evolution/{ecosystemId}/adapt:
     post:
-      tags: [Evolution]
+      tags:
+        - Evolution
       summary: Execute adaptation
       description: Real-time ecosystem adaptation based on feedback
       parameters:
@@ -1465,18 +1577,16 @@ paths:
                 adaptationType:
                   type: string
                   enum:
-                    [
-                      add_capability,
-                      remove_capability,
-                      optimize_coordination,
-                      enhance_performance,
-                      reduce_cost,
-                    ]
+                    - add_capability
+                    - remove_capability
+                    - optimize_coordination
+                    - enhance_performance
+                    - reduce_cost
                 parameters:
                   type: object
                   additionalProperties: true
       responses:
-        '200':
+        "200":
           description: Adaptation executed
           content:
             application/json:
@@ -1490,12 +1600,15 @@ paths:
                     type: object
                   rollbackPlan:
                     type: object
-
-  # MARK: - Metrics & Analytics
-
+      x-ossa-capability: reference-post-/evolution/{ecosystem-id}/adapt
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      operationId: postEvolutionEcosystemidAdapt
   /metrics/ecosystem/{ecosystemId}:
     get:
-      tags: [Health]
+      tags:
+        - Health
       summary: Get comprehensive ecosystem metrics
       parameters:
         - name: ecosystemId
@@ -1508,10 +1621,15 @@ paths:
           in: query
           schema:
             type: string
-            enum: [1h, 6h, 24h, 7d, 30d]
+            enum:
+              - 1h
+              - 6h
+              - 24h
+              - 7d
+              - 30d
             default: 24h
       responses:
-        '200':
+        "200":
           description: Ecosystem metrics
           content:
             application/json:
@@ -1519,12 +1637,28 @@ paths:
                 type: object
                 properties:
                   performance:
-                    $ref: '#/components/schemas/PerformanceMetrics'
+                    $ref: "#/components/schemas/PerformanceMetrics"
                   learning:
-                    $ref: '#/components/schemas/LearningMetrics'
+                    $ref: "#/components/schemas/LearningMetrics"
                   evolution:
-                    $ref: '#/components/schemas/EvolutionState'
+                    $ref: "#/components/schemas/EvolutionState"
                   agents:
                     type: array
                     items:
-                      $ref: '#/components/schemas/AgentPerformance'
+                      $ref: "#/components/schemas/AgentPerformance"
+      x-ossa-capability: reference-get-/metrics/ecosystem/{ecosystem-id}
+      description: Get comprehensive ecosystem metrics
+      operationId: getMetricsEcosystemEcosystemid
+x-ossa-metadata:
+  version: 0.3.3
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: reference-implementations-self-evolving-ecosystem
+    type: specialist

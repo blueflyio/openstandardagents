@@ -8,6 +8,7 @@
  * @since 0.5.0
  */
 
+import { trace } from '@opentelemetry/api';
 import type { AgentBatchMessage } from '../Message/AgentBatchMessage.js';
 import type { AgentExecutionResult } from './AgentExecutionHandler.js';
 import type { OssaAgent } from '../../types/index.js';
@@ -122,8 +123,8 @@ export class AgentBatchHandler {
         },
       };
 
-      // Store batch result
-      const batchId = context.requestId ?? `batch-${Date.now()}`;
+      // Store batch result — prefer OTel traceId so the storage key correlates with distributed traces
+      const batchId = trace.getActiveSpan()?.spanContext().traceId ?? context.requestId ?? `batch-${Date.now()}`;
       await this.deps.resultStorage.store(batchId, batchResult);
 
       // Dispatch completion event

@@ -328,7 +328,7 @@ REDIS_URL=redis://localhost:6379
 
 **PostgreSQL Backend:**
 ```bash
-POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/agent_memory
+POSTGRES_URL=postgresql://postgres:${POSTGRES_PASSWORD}@localhost:5432/agent_memory
 ```
 
 **OpenAI API (for Summary/Entity Memory):**

@@ -11,11 +11,9 @@ info:
     url: https://openstandardagents.org
   license:
     name: MIT
-
 servers:
   - url: http://localhost:3000
     description: Local development server
-
 tags:
   - name: Health
     description: Health and readiness checks
@@ -33,15 +31,15 @@ tags:
     description: Workspace initialization, discovery, and status
   - name: Version
     description: OSSA spec version detection and validation
-
 paths:
   /health:
     get:
       operationId: getHealth
       summary: Health check
-      tags: [Health]
+      tags:
+        - Health
       responses:
-        '200':
+        "200":
           description: Server is healthy
           content:
             application/json:
@@ -50,19 +48,24 @@ paths:
                 properties:
                   status:
                     type: string
-                    enum: [ok]
+                    enum:
+                      - ok
                   timestamp:
                     type: string
                     format: date-time
-                required: [status, timestamp]
-
+                required:
+                  - status
+                  - timestamp
+      x-ossa-capability: ossa-get-health
+      description: Health check
   /ready:
     get:
       operationId: getReady
       summary: Readiness check
-      tags: [Health]
+      tags:
+        - Health
       responses:
-        '200':
+        "200":
           description: Server is ready
           content:
             application/json:
@@ -71,64 +74,76 @@ paths:
                 properties:
                   ready:
                     type: boolean
-                required: [ready]
-
+                required:
+                  - ready
+      x-ossa-capability: ossa-get-ready
+      description: Readiness check
   /api/v1/manifests:
     get:
       operationId: listManifests
       summary: List manifests in a directory
-      tags: [Manifests]
+      tags:
+        - Manifests
       parameters:
         - name: directory
           in: query
           schema:
             type: string
-            default: '.'
+            default: .
           description: Directory to scan
         - name: recursive
           in: query
           schema:
             type: string
-            enum: ['true', 'false']
-            default: 'true'
+            enum:
+              - "true"
+              - "false"
+            default: "true"
           description: Whether to scan recursively
       responses:
-        '200':
+        "200":
           description: List of manifests found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ManifestListResult'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/ManifestListResult"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: ossa-list-manifests
+      description: List manifests in a directory
     post:
       operationId: createManifest
       summary: Scaffold a new manifest
-      tags: [Manifests]
+      tags:
+        - Manifests
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateManifestInput'
+              $ref: "#/components/schemas/CreateManifestInput"
       responses:
-        '201':
+        "201":
           description: Manifest created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateManifestResult'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/CreateManifestResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: ossa-create-manifest
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Scaffold a new manifest
   /api/v1/manifests/validate:
     post:
       operationId: validateManifest
       summary: Validate an OSSA manifest
-      tags: [Manifests]
+      tags:
+        - Manifests
       requestBody:
         required: true
         content:
@@ -151,59 +166,74 @@ paths:
                   description: Enable strict validation mode
                 reasoning:
                   type: string
-                  enum: [sequential, tree_of_thought, react, plan_and_execute]
-                  description: >
-                    Require or validate cognition pattern (v0.5.0 draft). When set,
-                    checks that manifest cognition.pattern matches this value.
-                    Fails validation if cognition block is absent or pattern mismatches.
+                  enum:
+                    - sequential
+                    - tree_of_thought
+                    - react
+                    - plan_and_execute
+                  description: |
+                    Require or validate cognition pattern (v0.5.0 draft). When set, checks that manifest cognition.pattern matches this value. Fails validation if cognition block is absent or pattern mismatches.
       responses:
-        '200':
+        "200":
           description: Validation result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationResult'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-
+                $ref: "#/components/schemas/ValidationResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+      x-ossa-capability: ossa-validate-manifest
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Validate an OSSA manifest
   /api/v1/manifests/inspect:
     post:
       operationId: inspectManifest
       summary: Inspect a manifest file
-      tags: [Manifests]
+      tags:
+        - Manifests
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [path]
+              required:
+                - path
               properties:
                 path:
                   type: string
                   description: Path to manifest file
       responses:
-        '200':
+        "200":
           description: Manifest inspection result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InspectResult'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-
+                $ref: "#/components/schemas/InspectResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+      x-ossa-capability: ossa-inspect-manifest
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Inspect a manifest file
   /api/v1/manifests/diff:
     post:
       operationId: diffManifests
       summary: Diff two manifests
-      tags: [Manifests]
+      tags:
+        - Manifests
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [path_a, path_b]
+              required:
+                - path_a
+                - path_b
               properties:
                 path_a:
                   type: string
@@ -212,27 +242,33 @@ paths:
                   type: string
                   description: Path to second manifest
       responses:
-        '200':
+        "200":
           description: Diff result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DiffResult'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-
+                $ref: "#/components/schemas/DiffResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+      x-ossa-capability: ossa-diff-manifests
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Diff two manifests
   /api/v1/manifests/migrate:
     post:
       operationId: migrateManifest
       summary: Migrate manifest to a target version
-      tags: [Manifests]
+      tags:
+        - Manifests
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [path]
+              required:
+                - path
               properties:
                 path:
                   type: string
@@ -244,53 +280,66 @@ paths:
                   type: string
                   description: Output directory for migrated manifest
       responses:
-        '200':
+        "200":
           description: Migration result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MigrateResult'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-
+                $ref: "#/components/schemas/MigrateResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+      x-ossa-capability: ossa-migrate-manifest
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Migrate manifest to a target version
   /api/v1/wizard/definitions:
     get:
       operationId: getWizardDefinitions
       summary: Get wizard step definitions for a kind and mode
       description: Returns step definitions (id, title, description, fields) without session. Use to drive UI wizards.
-      tags: [Wizard]
+      tags:
+        - Wizard
       parameters:
         - name: kind
           in: query
           schema:
             type: string
-            enum: [Agent, Skill, MCPServer]
+            enum:
+              - Agent
+              - Skill
+              - MCPServer
             default: Agent
         - name: mode
           in: query
           schema:
             type: string
-            enum: [quick, guided, expert]
+            enum:
+              - quick
+              - guided
+              - expert
             default: guided
       responses:
-        '200':
+        "200":
           description: Step definitions for the wizard
           content:
             application/json:
               schema:
                 type: object
-                required: [steps]
+                required:
+                  - steps
                 properties:
                   steps:
                     type: array
                     items:
-                      $ref: '#/components/schemas/StepDefinition'
-
+                      $ref: "#/components/schemas/StepDefinition"
+      x-ossa-capability: ossa-get-wizard-definitions
   /api/v1/wizard/sessions:
     post:
       operationId: createWizardSession
       summary: Create a new wizard session
-      tags: [Wizard]
+      tags:
+        - Wizard
       requestBody:
         required: true
         content:
@@ -300,66 +349,81 @@ paths:
               properties:
                 kind:
                   type: string
-                  enum: [Agent, Skill, MCPServer]
+                  enum:
+                    - Agent
+                    - Skill
+                    - MCPServer
                   default: Agent
                 mode:
                   type: string
-                  enum: [quick, guided, expert]
+                  enum:
+                    - quick
+                    - guided
+                    - expert
                   default: guided
                 template:
                   type: string
                   description: Template ID to pre-populate from
       responses:
-        '201':
+        "201":
           description: Session created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WizardSession'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-
+                $ref: "#/components/schemas/WizardSession"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+      x-ossa-capability: ossa-create-wizard-session
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Create a new wizard session
   /api/v1/wizard/sessions/{id}:
     get:
       operationId: getWizardSession
       summary: Get wizard session state
-      tags: [Wizard]
+      tags:
+        - Wizard
       parameters:
-        - $ref: '#/components/parameters/SessionId'
+        - $ref: "#/components/parameters/SessionId"
       responses:
-        '200':
+        "200":
           description: Session state
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WizardSession'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
+                $ref: "#/components/schemas/WizardSession"
+        "404":
+          $ref: "#/components/responses/NotFound"
+      x-ossa-capability: ossa-get-wizard-session
+      description: Get wizard session state
   /api/v1/wizard/sessions/{id}/steps/current:
     get:
       operationId: getCurrentWizardStep
       summary: Get current step definition with fields
-      tags: [Wizard]
+      tags:
+        - Wizard
       parameters:
-        - $ref: '#/components/parameters/SessionId'
+        - $ref: "#/components/parameters/SessionId"
       responses:
-        '200':
+        "200":
           description: Current step definition
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StepDefinition'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
+                $ref: "#/components/schemas/StepDefinition"
+        "404":
+          $ref: "#/components/responses/NotFound"
+      x-ossa-capability: ossa-get-current-wizard-step
+      description: Get current step definition with fields
   /api/v1/wizard/sessions/{id}/steps/{stepId}:
     post:
       operationId: submitWizardStep
       summary: Submit data for a wizard step
-      tags: [Wizard]
+      tags:
+        - Wizard
       parameters:
-        - $ref: '#/components/parameters/SessionId'
+        - $ref: "#/components/parameters/SessionId"
         - name: stepId
           in: path
           required: true
@@ -375,151 +439,182 @@ paths:
               additionalProperties: true
               description: Step field data
       responses:
-        '200':
+        "200":
           description: Step submission result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StepResult'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
+                $ref: "#/components/schemas/StepResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+      x-ossa-capability: ossa-submit-wizard-step
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Submit data for a wizard step
   /api/v1/wizard/sessions/{id}/undo:
     post:
       operationId: undoWizardStep
       summary: Undo the last completed step
-      tags: [Wizard]
+      tags:
+        - Wizard
       parameters:
-        - $ref: '#/components/parameters/SessionId'
+        - $ref: "#/components/parameters/SessionId"
       responses:
-        '200':
+        "200":
           description: Undo result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StepResult'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
+                $ref: "#/components/schemas/StepResult"
+        "404":
+          $ref: "#/components/responses/NotFound"
+      x-ossa-capability: ossa-undo-wizard-step
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Undo the last completed step
   /api/v1/wizard/sessions/{id}/complete:
     post:
       operationId: completeWizardSession
       summary: Complete wizard and generate manifest
-      tags: [Wizard]
+      tags:
+        - Wizard
       parameters:
-        - $ref: '#/components/parameters/SessionId'
+        - $ref: "#/components/parameters/SessionId"
       responses:
-        '200':
+        "200":
           description: Completed manifest
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WizardCompleteResult'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
+                $ref: "#/components/schemas/WizardCompleteResult"
+        "404":
+          $ref: "#/components/responses/NotFound"
+      x-ossa-capability: ossa-complete-wizard-session
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Complete wizard and generate manifest
   /api/v1/wizard/templates:
     get:
       operationId: listWizardTemplates
       summary: List available agent templates
-      tags: [Wizard]
+      tags:
+        - Wizard
       responses:
-        '200':
+        "200":
           description: List of templates
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AgentTemplate'
-
+                  $ref: "#/components/schemas/AgentTemplate"
+      x-ossa-capability: ossa-list-wizard-templates
+      description: List available agent templates
   /api/v1/export:
     post:
       operationId: exportManifest
       summary: Export manifest to platform-specific format
-      tags: [Export]
+      tags:
+        - Export
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExportInput'
+              $ref: "#/components/schemas/ExportInput"
       responses:
-        '200':
+        "200":
           description: Export result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExportResult'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-
+                $ref: "#/components/schemas/ExportResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+      x-ossa-capability: ossa-export-manifest
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Export manifest to platform-specific format
   /api/v1/export/platforms:
     get:
       operationId: listExportPlatforms
       summary: List available export platforms
-      tags: [Export]
+      tags:
+        - Export
       responses:
-        '200':
+        "200":
           description: Platform list
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PlatformInfo'
-
+                  $ref: "#/components/schemas/PlatformInfo"
+      x-ossa-capability: ossa-list-export-platforms
+      description: List available export platforms
   /api/v1/convert:
     post:
       operationId: convertManifest
       summary: Convert manifest to platform config
-      tags: [Convert]
+      tags:
+        - Convert
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ConvertInput'
+              $ref: "#/components/schemas/ConvertInput"
       responses:
-        '200':
+        "200":
           description: Conversion result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConvertResult'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-
+                $ref: "#/components/schemas/ConvertResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+      x-ossa-capability: ossa-convert-manifest
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Convert manifest to platform config
   /api/v1/convert/targets:
     get:
       operationId: listConvertTargets
       summary: List available conversion targets
-      tags: [Convert]
+      tags:
+        - Convert
       responses:
-        '200':
+        "200":
           description: Target list
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PlatformInfo'
-
+                  $ref: "#/components/schemas/PlatformInfo"
+      x-ossa-capability: ossa-list-convert-targets
+      description: List available conversion targets
   /api/v1/skills:
     get:
       operationId: listSkills
       summary: List skill manifests in a directory
-      tags: [Skills]
+      tags:
+        - Skills
       parameters:
         - name: directory
           in: query
           schema:
             type: string
-            default: '.'
+            default: .
       responses:
-        '200':
+        "200":
           description: List of skills
           content:
             application/json:
@@ -528,57 +623,70 @@ paths:
                 items:
                   type: object
                   additionalProperties: true
-
+      x-ossa-capability: ossa-list-skills
+      description: List skill manifests in a directory
     post:
       operationId: createSkill
       summary: Create a new skill manifest
-      tags: [Skills]
+      tags:
+        - Skills
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateSkillInput'
+              $ref: "#/components/schemas/CreateSkillInput"
       responses:
-        '201':
+        "201":
           description: Skill created
           content:
             application/json:
               schema:
                 type: object
                 additionalProperties: true
-        '400':
-          $ref: '#/components/responses/ValidationError'
-
+        "400":
+          $ref: "#/components/responses/ValidationError"
+      x-ossa-capability: ossa-create-skill
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Create a new skill manifest
   /api/v1/skills/validate:
     post:
       operationId: validateSkill
       summary: Validate a skill manifest
-      tags: [Skills]
+      tags:
+        - Skills
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [skill]
+              required:
+                - skill
               properties:
                 skill:
                   type: object
                   additionalProperties: true
       responses:
-        '200':
+        "200":
           description: Validation result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationResult'
-
+                $ref: "#/components/schemas/ValidationResult"
+      x-ossa-capability: ossa-validate-skill
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Validate a skill manifest
   /api/v1/workspace/init:
     post:
       operationId: initWorkspace
       summary: Initialize an OSSA workspace
-      tags: [Workspace]
+      tags:
+        - Workspace
       requestBody:
         required: true
         content:
@@ -588,11 +696,11 @@ paths:
               properties:
                 directory:
                   type: string
-                  default: '.'
+                  default: .
                 name:
                   type: string
       responses:
-        '200':
+        "200":
           description: Init result
           content:
             application/json:
@@ -607,12 +715,17 @@ paths:
                     type: array
                     items:
                       type: string
-
+      x-ossa-capability: ossa-init-workspace
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Initialize an OSSA workspace
   /api/v1/workspace/discover:
     post:
       operationId: discoverWorkspace
       summary: Discover agents in workspace
-      tags: [Workspace]
+      tags:
+        - Workspace
       requestBody:
         required: true
         content:
@@ -622,41 +735,48 @@ paths:
               properties:
                 directory:
                   type: string
-                  default: '.'
+                  default: .
       responses:
-        '200':
+        "200":
           description: Discovery result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DiscoveryResult'
-
+                $ref: "#/components/schemas/DiscoveryResult"
+      x-ossa-capability: ossa-discover-workspace
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Discover agents in workspace
   /api/v1/workspace/status:
     get:
       operationId: getWorkspaceStatus
       summary: Get workspace status
-      tags: [Workspace]
+      tags:
+        - Workspace
       parameters:
         - name: directory
           in: query
           schema:
             type: string
-            default: '.'
+            default: .
       responses:
-        '200':
+        "200":
           description: Workspace status
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkspaceStatus'
-
+                $ref: "#/components/schemas/WorkspaceStatus"
+      x-ossa-capability: ossa-get-workspace-status
+      description: Get workspace status
   /api/v1/version:
     get:
       operationId: getVersion
       summary: Get current OSSA spec version
-      tags: [Version]
+      tags:
+        - Version
       responses:
-        '200':
+        "200":
           description: Version info
           content:
             application/json:
@@ -669,25 +789,28 @@ paths:
                     type: array
                     items:
                       type: string
-
+      x-ossa-capability: ossa-get-version
+      description: Get current OSSA spec version
   /api/v1/version/detect:
     post:
       operationId: detectVersion
       summary: Detect the OSSA version of a manifest
-      tags: [Version]
+      tags:
+        - Version
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [manifest]
+              required:
+                - manifest
               properties:
                 manifest:
                   type: object
                   additionalProperties: true
       responses:
-        '200':
+        "200":
           description: Detected version
           content:
             application/json:
@@ -698,7 +821,11 @@ paths:
                     type: string
                   confidence:
                     type: number
-
+      x-ossa-capability: ossa-detect-version
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      description: Detect the OSSA version of a manifest
 components:
   parameters:
     SessionId:
@@ -709,7 +836,6 @@ components:
         type: string
         format: uuid
       description: Wizard session ID
-
   responses:
     ValidationError:
       description: Validation error
@@ -729,7 +855,6 @@ components:
                       type: string
                     message:
                       type: string
-
     NotFound:
       description: Resource not found
       content:
@@ -739,7 +864,6 @@ components:
             properties:
               error:
                 type: string
-
     InternalError:
       description: Internal server error
       content:
@@ -751,15 +875,15 @@ components:
                 type: string
               requestId:
                 type: string
-
   schemas:
     CreateManifestInput:
       type: object
-      required: [name]
+      required:
+        - name
       properties:
         name:
           type: string
-          pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
+          pattern: ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$
         output_dir:
           type: string
         description:
@@ -768,10 +892,15 @@ components:
           type: string
         type:
           type: string
-          enum: [worker, orchestrator, reviewer, analyzer, executor, approver]
+          enum:
+            - worker
+            - orchestrator
+            - reviewer
+            - analyzer
+            - executor
+            - approver
         version:
           type: string
-
     CreateManifestResult:
       type: object
       properties:
@@ -780,7 +909,6 @@ components:
         manifest:
           type: object
           additionalProperties: true
-
     ManifestListResult:
       type: object
       properties:
@@ -799,7 +927,6 @@ components:
                 type: string
         total:
           type: integer
-
     ValidationResult:
       type: object
       properties:
@@ -823,7 +950,6 @@ components:
                 type: string
               message:
                 type: string
-
     InspectResult:
       type: object
       properties:
@@ -835,7 +961,6 @@ components:
         stats:
           type: object
           additionalProperties: true
-
     DiffResult:
       type: object
       properties:
@@ -848,12 +973,14 @@ components:
                 type: string
               type:
                 type: string
-                enum: [added, removed, changed]
+                enum:
+                  - added
+                  - removed
+                  - changed
               oldValue: {}
               newValue: {}
         hasBreakingChanges:
           type: boolean
-
     MigrateResult:
       type: object
       properties:
@@ -865,7 +992,6 @@ components:
           type: string
         toVersion:
           type: string
-
     WizardSession:
       type: object
       properties:
@@ -883,14 +1009,19 @@ components:
           additionalProperties: true
         mode:
           type: string
-          enum: [quick, guided, expert]
+          enum:
+            - quick
+            - guided
+            - expert
         kind:
           type: string
-          enum: [Agent, Skill, MCPServer]
+          enum:
+            - Agent
+            - Skill
+            - MCPServer
         createdAt:
           type: string
           format: date-time
-
     StepDefinition:
       type: object
       properties:
@@ -903,8 +1034,7 @@ components:
         fields:
           type: array
           items:
-            $ref: '#/components/schemas/FieldDefinition'
-
+            $ref: "#/components/schemas/FieldDefinition"
     FieldDefinition:
       type: object
       properties:
@@ -912,7 +1042,13 @@ components:
           type: string
         type:
           type: string
-          enum: [text, select, multiselect, number, boolean, textarea]
+          enum:
+            - text
+            - select
+            - multiselect
+            - number
+            - boolean
+            - textarea
         label:
           type: string
         default: {}
@@ -929,16 +1065,15 @@ components:
                 type: string
               description:
                 type: string
-
     StepResult:
       type: object
       properties:
         success:
           type: boolean
         session:
-          $ref: '#/components/schemas/WizardSession'
+          $ref: "#/components/schemas/WizardSession"
         currentStep:
-          $ref: '#/components/schemas/StepDefinition'
+          $ref: "#/components/schemas/StepDefinition"
         errors:
           type: array
           items:
@@ -948,7 +1083,6 @@ components:
                 type: string
               message:
                 type: string
-
     WizardCompleteResult:
       type: object
       properties:
@@ -961,7 +1095,6 @@ components:
           type: array
           items:
             type: string
-
     AgentTemplate:
       type: object
       properties:
@@ -975,10 +1108,10 @@ components:
           type: string
         category:
           type: string
-
     ExportInput:
       type: object
-      required: [target]
+      required:
+        - target
       properties:
         manifest:
           type: object
@@ -990,7 +1123,6 @@ components:
           minLength: 1
         output_dir:
           type: string
-
     ExportResult:
       type: object
       properties:
@@ -1004,10 +1136,10 @@ components:
           type: array
           items:
             type: string
-
     ConvertInput:
       type: object
-      required: [target]
+      required:
+        - target
       properties:
         manifest:
           type: object
@@ -1019,7 +1151,6 @@ components:
           minLength: 1
         output_dir:
           type: string
-
     ConvertResult:
       type: object
       properties:
@@ -1032,7 +1163,6 @@ components:
           additionalProperties: true
         outputPath:
           type: string
-
     PlatformInfo:
       type: object
       properties:
@@ -1048,10 +1178,10 @@ components:
           type: array
           items:
             type: string
-
     CreateSkillInput:
       type: object
-      required: [name]
+      required:
+        - name
       properties:
         name:
           type: string
@@ -1063,7 +1193,6 @@ components:
             type: string
         output_dir:
           type: string
-
     DiscoveryResult:
       type: object
       properties:
@@ -1082,7 +1211,6 @@ components:
           type: integer
         directory:
           type: string
-
     WorkspaceStatus:
       type: object
       properties:
@@ -1094,3 +1222,16 @@ components:
           type: integer
         hasRegistry:
           type: boolean
+x-ossa-metadata:
+  version: 0.4.0
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: ossa-api
+    type: gateway
