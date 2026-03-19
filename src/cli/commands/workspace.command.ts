@@ -3,6 +3,7 @@
  *
  * Subcommands:
  *   ossa workspace init          - Initialize .agents-workspace/ structure
+ *   ossa workspace validate      - Run workspace health validators (from ai.json run_order or built-in)
  *   ossa workspace list          - List agents in workspace registry
  *   ossa workspace policy check  - Validate agent against workspace policies
  *   ossa workspace policy list   - List allowed/denied tools
@@ -13,7 +14,9 @@
 
 import chalk from 'chalk';
 import { Command } from 'commander';
+import { spawnSync } from 'child_process';
 import * as fs from 'fs';
+import { runWorkspaceValidate } from '../workspace-validate.js';
 import { glob } from 'glob';
 import * as path from 'path';
 import * as yaml from 'yaml';
@@ -191,6 +194,24 @@ Global conventions and standards that apply to all agents in this workspace.
       );
 
       process.exit(0);
+    } catch (error) {
+      handleCommandError(error);
+    }
+  });
+
+// ============================================================================
+// Subcommand: workspace validate
+// ============================================================================
+workspaceCommand
+  .command('validate')
+  .description(
+    'Run workspace health validators. Uses ai.json control_primitives.run_order or control_primitives_run_order if present; otherwise runs built-in layout and registry checks.'
+  )
+  .option('--json', 'Pass --json to validators that support it')
+  .action(async (options: { json?: boolean }) => {
+    try {
+      const result = runWorkspaceValidate({ cwd: process.cwd(), json: options.json });
+      process.exit(result.ok ? 0 : 1);
     } catch (error) {
       handleCommandError(error);
     }
