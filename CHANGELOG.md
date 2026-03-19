@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.8] - 2026-03-18
+
 ### Added
 - **AgentScope integration**: Add AgentScope as supported agent framework with Python adapter, Drupal module, MCP server, A2A endpoint, and example manifests
+
+### Fixed
+- **Release automation build**: Exclude `sign.command.ts` from build so `release-automation` dist is correctly emitted
 
 ## [0.4.7] - 2026-03-06
 
