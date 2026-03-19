@@ -97,6 +97,9 @@ import { langflowCommand } from './commands/langflow.command.js';
 // Lifecycle & curation commands
 import { createLifecycleCommand } from './commands/lifecycle.command.js';
 
+// Memory tier management
+import { memoryCommand } from './commands/memory.command.js';
+
 // Additional commands (previously unregistered)
 import { agentWizardCommand } from './commands/agent-wizard.command.js';
 import { docsCommand } from './commands/docs.command.js';
@@ -244,6 +247,7 @@ program.addCommand(agentsCommandGroup);
 program.addCommand(agentsLocalCommandGroup);
 program.addCommand(agentCardCommand);
 program.addCommand(generateGaidCommand);
+program.addCommand(memoryCommand);
 
 // --- Development ---
 program.addCommand(generateCommand);
