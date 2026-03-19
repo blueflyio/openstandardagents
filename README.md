@@ -73,14 +73,18 @@ OSSA natively aligns with the [NIST CAISI Request for Information on Collaborati
 - **Federated Discovery**: Integration with DUADP (`.well-known` endpoints) scales agent discovery securely across organizational boundaries without centralized lock-in.
 - **Supply Chain Security (SI-7)**: Cryptographically signed manifests (`x-signature`) and explicit OSCAL/SBOM pointers prevent tool poisoning and supply chain attacks.
 
-## What's New in v0.5.0
+## What's New in v0.5.1
 
-- **Spec and schema are aligned on `0.5.0`**. Public examples, migration commands, and SDK snippets now use `ossa/v0.5.0` and [`spec/v0.5/agent.schema.json`](./spec/v0.5/agent.schema.json).
-- **Release-facing examples are normalized**. The getting-started manifests and walkthroughs now validate cleanly as `v0.5.0` instead of mixing `v0.4.x` references into the release branch.
+- **CAOE cognition types**: `session`, `hypothesis`, and `alignment gate` JSON schema extensions for cognitive agent orchestration.
+- **kind: Role manifest spec**: New manifest kind `Role` for declarative role-based agent definitions.
+- **@better-openclaw/core integration**: 201 services and 44 skill packs wired through OpenClaw core.
+- **MCP DI services wired**: `ossa_validate` and `ossa_publish` connected to dependency injection services.
+- **proxy-agent + universal-user-agent**: Standards-compliant HTTP proxy and user-agent handling.
+- **Security**: Scrubbed hardcoded credentials from codebase.
+- **Spec and schema remain on `v0.5`**. Public examples, migration commands, and SDK snippets continue to use `ossa/v0.5.0` and [`spec/v0.5/agent.schema.json`](./spec/v0.5/agent.schema.json).
 - **OpenAI Agents SDK export remains first-class**. Use `ossa export agent.ossa.yaml --platform openai-agents-sdk` to generate a runnable `@openai/agents` TypeScript package with MCP config and guardrails.
-- **AgentScope support remains available in `v0.5.0`**. `extensions.agentscope` continues to cover agent class, orchestration, memory backend, capabilities, and compression settings for AgentScope-based deployments.
+- **AgentScope support** continues via `extensions.agentscope` for class, orchestration, memory backend, capabilities, and compression settings.
 - **Team topology stays in the core contract**. `spec.team`, `spec.subagents`, and `--perfect-agent` continue to support lead-teammate, peer, hierarchical, and swarm compositions from a single manifest.
-- **Release validation is stricter**. CI now checks the release-facing docs and getting-started examples so `README.md`, `llms.txt`, and tutorial manifests do not silently drift behind the current spec.
 
 See [CHANGELOG.md](./CHANGELOG.md) for complete details.
 
@@ -325,7 +329,7 @@ if (result.valid) {
 }
 ```
 
-## Production Status (v0.5.0)
+## Production Status (v0.5.1)
 
 ### ✅ Production-Ready (Tested & Documented)
 

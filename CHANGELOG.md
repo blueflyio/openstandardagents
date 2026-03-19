@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-03-18
+
+### Added
+- **CAOE cognition types**: `session`, `hypothesis`, and `alignment gate` JSON schema extensions for cognitive agent orchestration
+- **kind: Role manifest spec**: New manifest kind `Role` for declarative role-based agent definitions
+- **@better-openclaw/core integration**: 201 services and 44 skill packs wired through OpenClaw core
+
+### Changed
+- **MCP DI services wired**: `ossa_validate` and `ossa_publish` connected to dependency injection services
+- **proxy-agent + universal-user-agent**: Integrated for standards-compliant HTTP proxy and user-agent handling
+- **Security**: Scrubbed hardcoded credentials from codebase
+
 ## [0.5.0] - 2026-03-08
 
 ### Added
