@@ -12,6 +12,7 @@ import {
   shouldUseColor,
   ExitCode,
 } from '../utils/standard-options.js';
+import { API_VERSION } from '../../version.js';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -22,7 +23,7 @@ export const executionProfileCommand = new Command('execution-profile')
 executionProfileCommand
   .command('validate')
   .argument('<path>', 'Path to ExecutionProfile manifest (YAML or JSON)')
-  .description('Validate an ExecutionProfile against OSSA v0.5.1 standards')
+  .description(`Validate an ExecutionProfile against OSSA ${API_VERSION} standards`)
   .action(async (path: string, options: any) => {
     const useColor = shouldUseColor(options);
     const log = (msg: string, color?: (s: string) => string) => {
@@ -77,7 +78,7 @@ contextPackCommand
       // Real implementation would zip files and generate hash
       // For now, we simulate the artifact creation
       const result = {
-        apiVersion: 'ossa/v0.5.1',
+        apiVersion: API_VERSION,
         kind: 'ContextPack',
         metadata: {
           id: packId,

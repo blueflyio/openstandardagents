@@ -12,9 +12,9 @@ import { z } from 'zod';
 import { ValidateOptionsSchema, type ValidateOptions } from './schemas.js';
 import { CatalogConfig } from './config.js';
 
-// OSSA v0.3.x manifest schema (simplified)
+// OSSA manifest schema — accepts v0.3.x through v0.5.x (use API_VERSION from version.ts for generation)
 const OssaManifestSchema = z.object({
-  apiVersion: z.string().regex(/^ossa\/v0\.3/),
+  apiVersion: z.string().regex(/^ossa\/v0\.[3-9]/),
   kind: z.enum(['Agent', 'Worker', 'Orchestrator']),
   metadata: z.object({
     name: z.string().min(1),
