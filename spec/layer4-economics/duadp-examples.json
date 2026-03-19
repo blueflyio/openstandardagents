@@ -1,0 +1,44 @@
+{
+  "records": [
+    {
+      "id": "did:web:bluefly.io:execution:profiles:fast-route",
+      "type": "ExecutionProfile",
+      "data": {
+        "profile_type": "fast-route",
+        "economics": {
+          "cost_ceiling_usd": 0.05,
+          "context_budget_tokens": 4096
+        },
+        "performance": {
+          "latency_target_ms": 500,
+          "priority": 90
+        }
+      }
+    },
+    {
+      "id": "did:web:bluefly.io:execution:profiles:deep-reason",
+      "type": "ExecutionProfile",
+      "data": {
+        "profile_type": "deep-reason",
+        "economics": {
+          "cost_ceiling_usd": 2.00,
+          "context_budget_tokens": 128000
+        },
+        "performance": {
+          "latency_target_ms": 30000,
+          "priority": 50
+        },
+        "reliability": {
+          "failure_semantics": "graceful-degradation",
+          "escalation_rules": [
+            {
+              "on_failure": "timeout",
+              "action": "fallback-profile",
+              "fallback_profile_id": "balanced-work"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

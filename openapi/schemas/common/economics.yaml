@@ -1,0 +1,98 @@
+openapi: 3.1.0
+components:
+  schemas:
+    ExecutionProfile:
+      type: object
+      description: Portable contract for token/model behavior and execution economics.
+      required:
+        - intent_class
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the execution profile.
+        intent_class:
+          type: string
+          enum: [micro-audit, fast-route, balanced-work, deep-reason, long-context, strict-structured, human-gated]
+          description: Standardized token class mapping to model capability.
+        latency_sla_ms:
+          type: integer
+          description: Target latency in milliseconds.
+        max_cost_usd:
+          type: number
+          description: Maximum acceptable cost in USD for this execution.
+        max_input_tokens:
+          type: integer
+        max_output_tokens:
+          type: integer
+        max_reasoning_tokens:
+          type: integer
+        preferred_modes:
+          type: array
+          items:
+            type: string
+            enum: [structured-output, tool-use, reasoning, vision]
+        fallback_chain:
+          type: array
+          items:
+            type: string
+        compression_policy:
+          type: string
+          enum: [none, extractive, semantic-brief, schema-projection, evidence-only, risk-first, diff-only]
+        cache_policy:
+          type: string
+          enum: [none, content-addressed, ttl]
+        provenance_mode:
+          type: string
+          enum: [relaxed, strict]
+    ContextPack:
+      type: object
+      description: Portable, versioned, scoped context bundle.
+      required:
+        - id
+        - version
+      properties:
+        id:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        token_size:
+          type: integer
+        content_hash:
+          type: string
+        trust_score:
+          type: number
+        permission_scope:
+          type: array
+          items:
+            type: string
+        compression_variants:
+          type: array
+          items:
+            type: object
+            properties:
+              mode:
+                type: string
+              token_size:
+                type: integer
+              ref:
+                type: string
+    ReplayPacket:
+      type: object
+      description: Portable execution replay packet for audit and reproducibility.
+      properties:
+        compute_tokens:
+          type: integer
+        context_tokens:
+          type: integer
+        execution_profile_id:
+          type: string
+        context_pack_hashes:
+          type: array
+          items:
+            type: string
+        policy_decisions:
+          type: object
+        failure_class:
+          type: string

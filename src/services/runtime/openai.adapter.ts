@@ -3,8 +3,9 @@
  * Runs OSSA agents using OpenAI's function calling API
  */
 
+import * as crypto from 'crypto';
 import { createOpenAI } from '@ai-sdk/openai';
-import { generateText, ToolLoopAgent, stepCountIs, type ModelMessage } from 'ai';
+import { ToolLoopAgent, stepCountIs, type ModelMessage } from 'ai';
 import { z } from 'zod';
 
 export interface OssaManifest {
@@ -235,7 +236,10 @@ export class OpenAIAdapter {
       }
     });
 
-    // 4. Generate and Publish Replay Packet (Reproducibility)
+    // 4. Generate and Publish Replay Packet (Reproducibility & Escrow)
+    const reasoningTrace = JSON.stringify(this.messages);
+    const reasoningHash = crypto.createHash('sha256').update(reasoningTrace).digest('hex');
+
     await this.publishReplayPacket(contractPlaneUrl, {
       metadata: {
         id: `replay:${Math.random().toString(36).substring(7)}`,
@@ -252,6 +256,11 @@ export class OpenAIAdapter {
         accounting: {
           compute_tokens: result.usage.totalTokens,
           context_tokens: 0 // Calculated by mesh
+        },
+        escrow: {
+          mode: 'structured-only',
+          reasoning_hash: reasoningHash,
+          policy_gate: 'audit_only'
         },
         output: {
           text: result.text,
