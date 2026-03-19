@@ -6,7 +6,7 @@
 
 import { Gitlab } from '@gitbeaker/rest';
 
-const PROJECT_ID = 'blueflyio/openstandardagents';
+const PROJECT_ID = process.env.CI_PROJECT_ID || process.env.CI_PROJECT_PATH || '';
 const TOKEN =
   process.env.GITLAB_TOKEN ||
   process.env.SERVICE_ACCOUNT_OSSA_TOKEN ||

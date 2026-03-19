@@ -96,7 +96,7 @@ configCommand.addHelpText(
   'after',
   `
 Known keys (you can set any key; these are commonly used):
-  SKILLS_PATH              Directory for skills add/list (e.g. /Volumes/AgentPlatform/services/marketplace/skills)
+  SKILLS_PATH              Directory for skills add/list (e.g. /path/to/your/skills)
   BLUEFLY_SKILLS_MARKETPLACE   Set to 1 to prefer marketplace skills path in MCP
   BLUEFLY_SKILLS_CATALOG   Path to marketplace-skills-catalog.json
   BLUEFLY_SKILLS_PATH      Alias for skills path
@@ -107,7 +107,7 @@ Known keys (you can set any key; these are commonly used):
   GITLAB_TOKEN             GitLab token (prefer env for secrets)
 
 Examples:
-  ossa config set SKILLS_PATH /Volumes/AgentPlatform/services/marketplace/skills
+  ossa config set SKILLS_PATH /path/to/your/skills
   ossa config get SKILLS_PATH
   ossa config list
   ossa config unset SKILLS_PATH

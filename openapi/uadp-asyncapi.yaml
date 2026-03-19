@@ -227,7 +227,7 @@ components:
               type: Ed25519
               value: "base64encodedValue=="
               publicKey: "base64encodedPublicKey=="
-              issuer: "did:web:agents.bluefly.io:compliance-scanner"
+              issuer: "did:web:example.com:compliance-scanner"
               timestamp: '2026-03-02T23:00:00Z'
 
     AgentUpdatedMessage:

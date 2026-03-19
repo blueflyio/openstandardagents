@@ -175,10 +175,13 @@ export class GitLabCIValidator {
     ciFile: string,
     content: string
   ): Promise<void> {
+    const tokenPath =
+      process.env.GITLAB_TOKEN_PATH ||
+      `${process.env.HOME}/.config/gitlab/token`;
     const token =
       process.env.GITLAB_TOKEN ||
-      (existsSync(`${process.env.HOME}/.tokens/gitlab`)
-        ? readFileSync(`${process.env.HOME}/.tokens/gitlab`, 'utf-8').trim()
+      (existsSync(tokenPath)
+        ? readFileSync(tokenPath, 'utf-8').trim()
         : null);
 
     if (!token) {

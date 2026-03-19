@@ -408,7 +408,7 @@ export class DiscoverTypeCommand {
     const capabilities = this.typeDetector.suggestCapabilitiesForType(type);
 
     return {
-      apiVersion: 'ossa.bluefly.io/v1',
+      apiVersion: 'ossa/v0.5.1',
       kind: 'Agent',
       metadata: {
         name,

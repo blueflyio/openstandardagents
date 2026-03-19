@@ -77,8 +77,8 @@ observability:
     provider: jaeger`,
       outputPath: '.gitlab/agents/config/gitlab-agents/config.yaml',
       variables: {
-        PROJECT_ID: 'blueflyio/ossa/openstandardagents',
-        GROUP_ID: 'blueflyio',
+        PROJECT_ID: process.env.CI_PROJECT_PATH || '',
+        GROUP_ID: process.env.CI_PROJECT_NAMESPACE || '',
         REMOTE_DEV_ENABLED: 'false',
         MAX_REMOTE_DEV_PER_USER: '1',
       },

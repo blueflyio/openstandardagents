@@ -22,7 +22,7 @@ import { Gitlab } from '@gitbeaker/rest';
 import { writeFileSync } from 'fs';
 
 // Configuration
-const DEFAULT_PROJECT = 'blueflyio/openstandardagents';
+const DEFAULT_PROJECT = process.env.CI_PROJECT_PATH || '';
 const GITLAB_HOST =
   process.env.GITLAB_HOST?.replace('gitlab.com', 'https://gitlab.com') ||
   'https://gitlab.com';

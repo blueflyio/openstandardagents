@@ -13,7 +13,7 @@ info:
     FOLLOWS DRY PRINCIPLE: Single source of truth for all CLI command schemas.
   contact:
     name: OSSA Standards Team
-    email: ossa@bluefly.io
+    email: contact@openstandardagents.org
   license:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html

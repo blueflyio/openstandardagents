@@ -140,7 +140,7 @@ export class ReleaseVerifyService {
 
       const expectedRepo =
         process.env.EXPECTED_REPO_URL ||
-        'gitlab.com/blueflyio/ossa/openstandardagents';
+        process.env.CI_PROJECT_PATH || '';
       if (!remoteUrl.includes(expectedRepo)) {
         checks.push({
           name: 'Repository Identity',

@@ -2,9 +2,9 @@
  * OSSA Agents Sync Command
  *
  * Syncs platform agents between locations:
- *   NAS:    /Volumes/AgentPlatform/.agents/platform-agents/
+ *   Remote: $OSSA_AGENTS_SOURCE (e.g. a NAS or network share)
  *   Local:  ~/.agents/platform-agents/
- *   Oracle: /opt/agent-platform/.agents/platform-agents/ (via SSH)
+ *   Server: $OSSA_ORACLE_HOST (any remote host, via SSH)
  *
  * Also scans project .agents/ folders and builds a unified registry.
  *
@@ -21,9 +21,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-const NAS_AGENTS_PATH = '/Volumes/AgentPlatform/.agents/platform-agents';
+const NAS_AGENTS_PATH =
+  process.env.OSSA_AGENTS_SOURCE ||
+  path.join(os.homedir(), '.agents', 'remote');
 const LOCAL_AGENTS_PATH = path.join(os.homedir(), '.agents', 'platform-agents');
-const ORACLE_AGENTS_PATH = '/opt/agent-platform/.agents/platform-agents';
+const ORACLE_HOST = process.env.OSSA_ORACLE_HOST || '';
+const ORACLE_AGENTS_PATH =
+  process.env.OSSA_ORACLE_PATH || '/opt/ossa/.agents/platform-agents';
 
 interface SyncStats {
   copied: number;
@@ -109,15 +113,15 @@ export const agentsSyncCommand = new Command('agents-sync')
   )
   .option(
     '--source <path>',
-    'Source agents directory',
+    'Source agents directory (overrides OSSA_AGENTS_SOURCE env var)',
     NAS_AGENTS_PATH
   )
   .option(
     '--target <target>',
-    'Target: "local" (default), "oracle", or a path',
+    'Target: "local" (default), "server", or a path',
     'local'
   )
-  .option('--scan', 'Scan all WORKING_DEMOs projects for .agents/ folders')
+  .option('--scan', 'Scan all $OSSA_PROJECTS_DIR projects for .agents/ folders')
   .option('--publish <url>', 'Publish all agents to a DUADP node')
   .option('--dry-run', 'Show what would be synced without doing it')
   .option('--json', 'Output as JSON')
@@ -132,23 +136,20 @@ export const agentsSyncCommand = new Command('agents-sync')
     }) => {
       // Scan mode — find all .agents/ across projects
       if (options.scan) {
-        const workingDemos = path.join(
-          os.homedir(),
-          'Sites',
-          'blueflyio',
-          'WORKING_DEMOs'
-        );
-        if (!fs.existsSync(workingDemos)) {
-          console.error(chalk.red(`Not found: ${workingDemos}`));
+        const projectsDir =
+          process.env.OSSA_PROJECTS_DIR ||
+          path.join(os.homedir(), '.agents', 'projects');
+        if (!fs.existsSync(projectsDir)) {
+          console.error(chalk.red(`Projects directory not found: ${projectsDir}`));
+          console.error(chalk.yellow('Set OSSA_PROJECTS_DIR to your projects root directory.'));
           process.exit(1);
         }
-
-        const projects = fs.readdirSync(workingDemos, { withFileTypes: true });
+        const projects = fs.readdirSync(projectsDir, { withFileTypes: true });
         const allAgents: Record<string, string[]> = {};
 
         for (const project of projects) {
           if (!project.isDirectory()) continue;
-          const projectPath = path.join(workingDemos, project.name);
+          const projectPath = path.join(projectsDir, project.name);
 
           // Check .agents/
           const dotAgents = path.join(projectPath, '.agents');
@@ -233,16 +234,22 @@ export const agentsSyncCommand = new Command('agents-sync')
         case 'local':
           destPath = LOCAL_AGENTS_PATH;
           break;
-        case 'oracle':
-          // For Oracle, we'd need SSH — show the rsync command instead
-          console.log(chalk.cyan('Oracle sync requires rsync over SSH:'));
+        case 'server':
+        case 'oracle': {
+          // For remote servers, show the rsync command instead of executing it
+          if (!ORACLE_HOST) {
+            console.error(chalk.red('Set OSSA_ORACLE_HOST to your remote server hostname.'));
+            process.exit(1);
+          }
+          console.log(chalk.cyan('Remote server sync via rsync over SSH:'));
           console.log(
             chalk.white(
-              `  rsync -avz --delete ${sourcePath}/ ubuntu@oracle-platform.tailcf98b3.ts.net:${ORACLE_AGENTS_PATH}/`
+              `  rsync -avz --delete ${sourcePath}/ ${ORACLE_HOST}:${ORACLE_AGENTS_PATH}/`
             )
           );
           process.exit(0);
           break;
+        }
         default:
           destPath = options.target;
       }
@@ -252,7 +259,7 @@ export const agentsSyncCommand = new Command('agents-sync')
           chalk.red(`Source not found: ${sourcePath}`)
         );
         console.error(
-          chalk.yellow('Is the NAS mounted at /Volumes/AgentPlatform/?')
+          chalk.yellow('Is the remote source directory accessible? Set OSSA_AGENTS_SOURCE to override.')
         );
         process.exit(1);
       }

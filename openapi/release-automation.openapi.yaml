@@ -9,7 +9,7 @@ info:
     FOLLOWS DRY PRINCIPLE: Single source of truth for release automation schemas.
   contact:
     name: OSSA Release Team
-    email: release@bluefly.io
+    email: contact@openstandardagents.org
   license:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html

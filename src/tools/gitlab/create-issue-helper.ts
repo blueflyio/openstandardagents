@@ -124,7 +124,7 @@ function getConfig(): Config {
   const projectId =
     process.env.CI_PROJECT_ID ||
     process.env.GITLAB_PROJECT_ID ||
-    'blueflyio/openstandardagents';
+    process.env.CI_PROJECT_PATH || '';
 
   // Get API URL
   const gitlabApiUrl =

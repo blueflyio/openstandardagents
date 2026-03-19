@@ -30,7 +30,7 @@ export class CatalogConfig {
     this.duoOutputPath =
       process.env.GITLAB_DUO_OUTPUT_PATH || './.gitlab/duo/agents';
     this.gitlabTokenPath =
-      process.env.GITLAB_TOKEN_PATH || path.join(home, '.tokens/gitlab');
+      process.env.GITLAB_TOKEN_PATH || path.join(home, '.config', 'gitlab', 'token');
     this.ossaNamespace = process.env.OSSA_NAMESPACE || 'bluefly';
     this.gitlabApiUrl =
       process.env.GITLAB_API_URL || 'https://gitlab.com/api/v4';

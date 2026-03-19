@@ -9,8 +9,22 @@ import { AgentCard } from './types.js';
 export class GkgMatchmaker {
   private gkgEndpoint: string;
 
-  constructor(gkgEndpoint: string = 'https://gkg.blueflyagents.com/api') {
-    this.gkgEndpoint = gkgEndpoint;
+  /**
+   * @param gkgEndpoint - GKG API base URL.
+   *   Defaults to `OSSA_GKG_ENDPOINT` env var.
+   *   Set this to your own GKG-compatible knowledge graph endpoint.
+   */
+  constructor(gkgEndpoint?: string) {
+    this.gkgEndpoint =
+      gkgEndpoint ??
+      process.env.OSSA_GKG_ENDPOINT ??
+      '';
+    if (!this.gkgEndpoint) {
+      throw new Error(
+        'GkgMatchmaker requires a GKG endpoint. ' +
+        'Pass it to the constructor or set the OSSA_GKG_ENDPOINT environment variable.'
+      );
+    }
   }
 
   /**
@@ -69,7 +83,7 @@ export class GkgMatchmaker {
 
   private mapToAgentCard(raw: any): AgentCard {
     return {
-      uri: raw.uri || `did:web:blueflyagents.com:agent:${raw.metadata?.name}`,
+      uri: raw.uri || (raw.metadata?.name ? `did:web:${raw.metadata.name}` : undefined),
       name: raw.metadata?.name || 'anonymous',
       version: raw.metadata?.version || '1.0.0',
       ossaVersion: raw.apiVersion || 'ossa/v0.5.1',

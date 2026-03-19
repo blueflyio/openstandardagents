@@ -14,8 +14,8 @@
 import { createInterface } from 'readline';
 
 const GITLAB_API = 'https://gitlab.com/api/v4';
-const GROUP_PATH = 'blueflyio';
-const PROJECT_PATH = 'blueflyio/ossa/openstandardagents';
+const GROUP_PATH = process.env.CI_PROJECT_NAMESPACE_PATH || process.env.GITLAB_GROUP || '';
+const PROJECT_PATH = process.env.CI_PROJECT_PATH || '';
 
 interface Variable {
   key: string;

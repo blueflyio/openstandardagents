@@ -3,9 +3,9 @@
  *
  * Usage:
  *   ossa verify <gaid>
- *   ossa verify did:ossa:blueflyio:agent-123
- *   ossa verify did:ossa:blueflyio:agent-123 --card ./agent-card.yaml
- *   ossa verify did:ossa:blueflyio:agent-123 --json
+ *   ossa verify did:ossa:<your-namespace>:agent-123
+ *   ossa verify did:ossa:<your-namespace>:agent-123 --card ./agent-card.yaml
+ *   ossa verify did:ossa:<your-namespace>:agent-123 --json
  */
 
 import { DuadpClient, resolveGaid } from '@bluefly/duadp';

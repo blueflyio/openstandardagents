@@ -372,7 +372,7 @@ export interface components {
             content: {
                 /**
                  * @example {
-                 *       "type": "https://api.llm.bluefly.io/problems/bad-request",
+                 *       "type": "https://problems.openstandardagents.org/bad-request",
                  *       "title": "Bad Request",
                  *       "status": 400,
                  *       "detail": "Invalid query parameter 'limit' - must be between 1 and 100",
@@ -390,7 +390,7 @@ export interface components {
             content: {
                 /**
                  * @example {
-                 *       "type": "https://api.llm.bluefly.io/problems/validation-error",
+                 *       "type": "https://problems.openstandardagents.org/validation-error",
                  *       "title": "Validation Error",
                  *       "status": 400,
                  *       "detail": "Agent manifest validation failed",
@@ -416,7 +416,7 @@ export interface components {
             content: {
                 /**
                  * @example {
-                 *       "type": "https://api.llm.bluefly.io/problems/unauthorized",
+                 *       "type": "https://problems.openstandardagents.org/unauthorized",
                  *       "title": "Unauthorized",
                  *       "status": 401,
                  *       "detail": "Valid authentication credentials required",
@@ -434,7 +434,7 @@ export interface components {
             content: {
                 /**
                  * @example {
-                 *       "type": "https://api.llm.bluefly.io/problems/not-found",
+                 *       "type": "https://problems.openstandardagents.org/not-found",
                  *       "title": "Not Found",
                  *       "status": 404,
                  *       "detail": "Agent with ID 550e8400-e29b-41d4-a716-446655440000 not found",
@@ -452,7 +452,7 @@ export interface components {
             content: {
                 /**
                  * @example {
-                 *       "type": "https://api.llm.bluefly.io/problems/conflict",
+                 *       "type": "https://problems.openstandardagents.org/conflict",
                  *       "title": "Conflict",
                  *       "status": 409,
                  *       "detail": "Agent with name 'security-scanner' already exists in version 1.0.0",
@@ -470,7 +470,7 @@ export interface components {
             content: {
                 /**
                  * @example {
-                 *       "type": "https://api.llm.bluefly.io/problems/internal-error",
+                 *       "type": "https://problems.openstandardagents.org/internal-error",
                  *       "title": "Internal Server Error",
                  *       "status": 500,
                  *       "detail": "An unexpected error occurred while processing your request",

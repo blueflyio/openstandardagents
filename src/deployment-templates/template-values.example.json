@@ -22,7 +22,7 @@
       "type": "string",
       "description": "GitHub repository (org/repo format)",
       "pattern": "^[a-zA-Z0-9-]+/[a-zA-Z0-9-]+$",
-      "examples": ["your-org/ossa-buildkit", "blueflyio/openstandardagents"]
+      "examples": ["your-org/ossa-buildkit", "your-org/openstandardagents"]
     },
     "branch": {
       "type": "string",

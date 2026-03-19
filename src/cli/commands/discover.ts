@@ -4,7 +4,7 @@
  * Usage:
  *   ossa discover [query]
  *   ossa discover "machine learning" --capability nlp
- *   ossa discover --org blueflyio --min-trust 0.8
+ *   ossa discover --org <your-org> --min-trust 0.8
  *   ossa discover --json
  */
 

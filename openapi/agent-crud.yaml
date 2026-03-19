@@ -16,14 +16,14 @@ info:
     - **Standards Compliance**: Full OSSA v0.3.0 and RFC7807 error handling
   contact:
     name: Bluefly.io LLM Platform Team
-    url: https://github.com/blueflyio/openstandardagents
+    url: https://github.com/openstandardagents/openstandardagents
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
 servers:
-  - url: https://api.llm.bluefly.io/ossa/v1
+  - url: https://api.example.com/ossa/v1
     description: Production server
-  - url: https://api-dev.llm.bluefly.io/ossa/v1
+  - url: https://api-dev.example.com/ossa/v1
     description: Development server
   - url: http://localhost:3000
     description: Local development
@@ -238,8 +238,8 @@ components:
       type: oauth2
       flows:
         authorizationCode:
-          authorizationUrl: https://auth.llm.bluefly.io/oauth/authorize
-          tokenUrl: https://auth.llm.bluefly.io/oauth/token
+          authorizationUrl: https://auth.example.com/oauth/authorize
+          tokenUrl: https://auth.example.com/oauth/token
           scopes:
             read: Read access to agents
             write: Write access to create and update agents
@@ -782,7 +782,7 @@ components:
           schema:
             $ref: "#/components/schemas/Problem"
           example:
-            type: https://api.llm.bluefly.io/problems/bad-request
+            type: https://problems.openstandardagents.org/bad-request
             title: Bad Request
             status: 400
             detail: Invalid query parameter 'limit' - must be between 1 and 100
@@ -794,7 +794,7 @@ components:
           schema:
             $ref: "#/components/schemas/Problem"
           example:
-            type: https://api.llm.bluefly.io/problems/validation-error
+            type: https://problems.openstandardagents.org/validation-error
             title: Validation Error
             status: 400
             detail: Agent manifest validation failed
@@ -811,7 +811,7 @@ components:
           schema:
             $ref: "#/components/schemas/Problem"
           example:
-            type: https://api.llm.bluefly.io/problems/unauthorized
+            type: https://problems.openstandardagents.org/unauthorized
             title: Unauthorized
             status: 401
             detail: Valid authentication credentials required
@@ -823,7 +823,7 @@ components:
           schema:
             $ref: "#/components/schemas/Problem"
           example:
-            type: https://api.llm.bluefly.io/problems/not-found
+            type: https://problems.openstandardagents.org/not-found
             title: Not Found
             status: 404
             detail: Agent with ID 550e8400-e29b-41d4-a716-446655440000 not found
@@ -835,7 +835,7 @@ components:
           schema:
             $ref: "#/components/schemas/Problem"
           example:
-            type: https://api.llm.bluefly.io/problems/conflict
+            type: https://problems.openstandardagents.org/conflict
             title: Conflict
             status: 409
             detail: Agent with name 'security-scanner' already exists in version 1.0.0
@@ -847,7 +847,7 @@ components:
           schema:
             $ref: "#/components/schemas/Problem"
           example:
-            type: https://api.llm.bluefly.io/problems/internal-error
+            type: https://problems.openstandardagents.org/internal-error
             title: Internal Server Error
             status: 500
             detail: An unexpected error occurred while processing your request

@@ -13,7 +13,7 @@ const GITLAB_TOKEN =
   process.env.GITLAB_TOKEN ||
   process.env.GITLAB_PUSH_TOKEN ||
   '';
-const PROJECT_ID = process.env.CI_PROJECT_ID || 'blueflyio/openstandardagents';
+const PROJECT_ID = process.env.CI_PROJECT_ID || '';
 
 async function createIssue(
   title: string,

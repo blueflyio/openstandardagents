@@ -139,7 +139,7 @@ paths:
                         type: Ed25519
                         value: base64encodedSignaturePayload==
                         publicKey: base64encodedPublicKey==
-                        issuer: did:web:agents.bluefly.io:compliance-scanner
+                        issuer: did:web:example.com:compliance-scanner
                         timestamp: 2026-03-02T00:00:00Z
                   endpoint: https://agents.example.com/compliance-scanner
                   domains:
@@ -559,7 +559,7 @@ components:
         issuer:
           type: string
           description: DID or URI of the entity that issued the signature
-          example: did:web:agents.bluefly.io:my-agent
+          example: did:web:example.com:my-agent
         timestamp:
           type: string
           format: date-time

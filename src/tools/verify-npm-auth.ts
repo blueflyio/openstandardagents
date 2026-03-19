@@ -32,7 +32,7 @@ if (!token.startsWith('npm_')) {
   console.error('Current token format:', token.substring(0, 10) + '...');
   console.error('');
   console.error(
-    'Create token at: https://www.npmjs.com/settings/blueflyio/tokens'
+    'Create token at: https://www.npmjs.com/settings/<your-org>/tokens'
   );
   process.exit(1);
 }
@@ -102,7 +102,7 @@ async function verifyToken() {
       console.error('     (creates granular publish token)');
       console.error('');
       console.error('  2. OR create Automation token via web:');
-      console.error('     https://www.npmjs.com/settings/blueflyio/tokens');
+      console.error('     https://www.npmjs.com/settings/<your-org>/tokens');
       console.error('');
       console.error('  3. Copy the new token (starts with npm_)');
       console.error('  4. Update NPM_TOKEN in GitLab CI/CD variables');

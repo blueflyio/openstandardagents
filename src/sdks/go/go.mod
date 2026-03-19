@@ -1,4 +1,4 @@
-module github.com/blueflyio/ossa-sdk-go
+module github.com/openstandardagents/ossa-sdk-go
 
 go 1.22
 

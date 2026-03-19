@@ -110,14 +110,14 @@ async function releaseToGitHub() {
     `gh release create ${tag} \
     --title "Release ${version}" \
     --notes "${releaseNotes}" \
-    --repo blueflyio/openstandardagents`,
+    --repo $(CI_PROJECT_PATH)`,
     { stdio: 'inherit' }
   );
 
   // 2. Upload artifacts
   execSync(
     `gh release upload ${tag} dist/*.tgz \
-    --repo blueflyio/openstandardagents`,
+    --repo $(CI_PROJECT_PATH)`,
     { stdio: 'inherit' }
   );
 
@@ -171,7 +171,7 @@ npm install openstandardagents@${version}
 
 ### 🔗 Links
 - [npm Package](https://www.npmjs.com/package/openstandardagents/v/${version})
-- [GitHub Release](https://github.com/blueflyio/openstandardagents/releases/tag/v${version})
+- [GitHub Release](https://github.com/$(CI_PROJECT_PATH)/releases/tag/v${version})
 - [Documentation](https://openstandardagents.org/docs)
 - [Changelog](https://openstandardagents.org/docs/changelog)
 

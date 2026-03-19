@@ -211,7 +211,7 @@ export async function handleBuilderRoute(
 
     // Check for GitLab pipeline trigger
     const exportTriggerToken = process.env.EXPORT_TRIGGER_TOKEN || process.env.GITLAB_TOKEN;
-    const exportProjectPath = process.env.EXPORT_GITLAB_PROJECT_PATH || 'blueflyio%2Fossa%2Flab%2Fopenstandard-generated-agents';
+    const exportProjectPath = process.env.EXPORT_GITLAB_PROJECT_PATH || '';
     const exportRef = process.env.EXPORT_REF || 'main';
 
     if (exportTriggerToken && (manifestYaml ?? '').trim().length > 0) {
