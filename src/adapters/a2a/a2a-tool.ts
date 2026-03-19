@@ -6,6 +6,7 @@
  * @module adapters/a2a/a2a-tool
  */
 
+import { trace } from '@opentelemetry/api';
 import type { Tool } from '../../types/tool.js';
 import type {
   A2AMessage,
@@ -392,8 +393,9 @@ export class A2AToolHandler {
   }
 
   private createTraceContext(): any {
-    const traceId = this.generateHex(32);
-    const spanId = this.generateHex(16);
+    const activeSpan = trace.getActiveSpan();
+    const traceId = activeSpan?.spanContext().traceId ?? this.generateHex(32);
+    const spanId = activeSpan?.spanContext().spanId ?? this.generateHex(16);
     return {
       traceparent: `00-${traceId}-${spanId}-01`,
       traceId,

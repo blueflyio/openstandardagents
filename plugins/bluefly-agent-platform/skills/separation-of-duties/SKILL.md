@@ -134,7 +134,7 @@ The Agent Mesh (port 3005) enforces SoD at routing time:
 
 ```bash
 # Check SoD violations in audit log
-curl "https://compliance.blueflyagents.com/api/audit?type=sod_violation"
+curl "https://compliance.bluefly.internal/api/audit?type=sod_violation"
 
 # View conflict matrix
 buildkit agents conflicts --agent vulnerability-scanner
@@ -189,13 +189,13 @@ buildkit agents validate-chain \
 ### Compliance Queries
 ```bash
 # All SoD events last 30 days
-curl "https://compliance.blueflyagents.com/api/audit?type=sod&window=30d"
+curl "https://compliance.bluefly.internal/api/audit?type=sod&window=30d"
 
 # Violations by agent
-curl "https://compliance.blueflyagents.com/api/audit?type=sod_violation&agent=pipeline-remediation"
+curl "https://compliance.bluefly.internal/api/audit?type=sod_violation&agent=pipeline-remediation"
 
 # Human overrides
-curl "https://compliance.blueflyagents.com/api/audit?type=human_override&window=7d"
+curl "https://compliance.bluefly.internal/api/audit?type=human_override&window=7d"
 
 # Via BuildKit
 buildkit observe compliance --sod --window 30d

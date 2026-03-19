@@ -29,8 +29,8 @@ Use this skill when the user is working in the BlueFly Agent Platform workspace 
 | Service | URL |
 |---------|-----|
 | MCP (SSE) | https://mcp.blueflyagents.com/api/mcp/sse |
-| GKG | https://gkg.blueflyagents.com |
-| Agent Mesh | https://mesh.blueflyagents.com |
+| GKG | https://gkg.bluefly.internal |
+| Agent Mesh | https://mesh.bluefly.internal |
 | Grafana | https://grafana.blueflyagents.com |
 | A2A stream | https://dashboard.mcp.blueflyagents.com/a2a/stream or https://a2a-stream.blueflyagents.com/a2a/stream |
 

@@ -28,7 +28,7 @@ MCP config: `~/.cursor/mcp.json`
     },
     "bluefly-gkg": {
       "transport": "sse",
-      "url": "https://gkg.blueflyagents.com/sse"
+      "url": "https://gkg.bluefly.internal/sse"
     },
     "wikis": {
       "command": "node",
@@ -58,7 +58,7 @@ MCP config: `~/.cursor/mcp.json`
 
 ### bluefly-gkg (Knowledge Graph)
 - **Transport**: SSE
-- **URL**: https://gkg.blueflyagents.com/sse
+- **URL**: https://gkg.bluefly.internal/sse
 - **Capabilities**: Semantic search, entity lookup, relationship traversal
 - **Tools**: `search`, `get_entity`, `traverse`, `related_entities`
 
@@ -138,7 +138,7 @@ kubectl get pods -n bluefly-agents -l app={agent}
 kubectl logs -n bluefly-agents -l app={agent} --tail=100
 
 # 3. Check mesh routing
-curl https://mesh.blueflyagents.com/api/routes | jq '.[] | select(.agent=="{agent}")'
+curl https://mesh.bluefly.internal/api/routes | jq '.[] | select(.agent=="{agent}")'
 
 # 4. Check Cloudflare tunnel
 kubectl logs -n cloudflared -l app=cloudflared --tail=50 | grep {agent}
@@ -157,7 +157,7 @@ buildkit gitlab pipeline status
 glab ci trace
 
 # 3. Check for SoD violations
-curl "https://compliance.blueflyagents.com/api/audit?type=gate_decision&status=deny&window=1h"
+curl "https://compliance.bluefly.internal/api/audit?type=gate_decision&status=deny&window=1h"
 
 # 4. Retry if transient
 glab ci retry

@@ -90,23 +90,23 @@ buildkit observe dora --team platform
 
 ## Tracing
 
-- **Service**: Tracer (https://tracer.blueflyagents.com, port 3013)
+- **Service**: Tracer (https://tracer.bluefly.internal, port 3013)
 - **Protocol**: OpenTelemetry-compatible
 - **Storage**: Qdrant (vector traces) + PostgreSQL (structured spans)
 
 ### Trace Queries
 ```bash
 # Recent traces
-curl https://tracer.blueflyagents.com/api/traces?limit=20
+curl https://tracer.bluefly.internal/api/traces?limit=20
 
 # Traces by agent
-curl "https://tracer.blueflyagents.com/api/traces?agent=code-reviewer&window=1h"
+curl "https://tracer.bluefly.internal/api/traces?agent=code-reviewer&window=1h"
 
 # Slow traces (>5s)
-curl "https://tracer.blueflyagents.com/api/traces?min_duration=5000"
+curl "https://tracer.bluefly.internal/api/traces?min_duration=5000"
 
 # Error traces
-curl "https://tracer.blueflyagents.com/api/traces?status=error"
+curl "https://tracer.bluefly.internal/api/traces?status=error"
 ```
 
 ## Cost Intelligence
@@ -136,21 +136,21 @@ buildkit observe cost --alerts
 
 ## Compliance Audit
 
-The Compliance Engine (https://compliance.blueflyagents.com, port 3009) maintains an immutable audit log.
+The Compliance Engine (https://compliance.bluefly.internal, port 3009) maintains an immutable audit log.
 
 ### Audit Queries
 ```bash
 # Recent audit events
-curl https://compliance.blueflyagents.com/api/audit?limit=50
+curl https://compliance.bluefly.internal/api/audit?limit=50
 
 # By agent
-curl "https://compliance.blueflyagents.com/api/audit?agent=pipeline-remediation"
+curl "https://compliance.bluefly.internal/api/audit?agent=pipeline-remediation"
 
 # Policy violations
-curl "https://compliance.blueflyagents.com/api/audit?type=violation"
+curl "https://compliance.bluefly.internal/api/audit?type=violation"
 
 # Gate decisions
-curl "https://compliance.blueflyagents.com/api/audit?type=gate_decision&window=24h"
+curl "https://compliance.bluefly.internal/api/audit?type=gate_decision&window=24h"
 ```
 
 ## 360 Feedback Loop

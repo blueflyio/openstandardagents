@@ -58,7 +58,7 @@ function makeValidSession(overrides: Record<string, unknown> = {}) {
     participants: [],
     activeHypothesisIds: [],
     alignmentCheckpoints: [],
-    wsEndpoint: 'wss://mesh.blueflyagents.com/session/123/sync',
+    wsEndpoint: 'wss://mesh.bluefly.internal/session/123/sync',
     createdAt: validDatetime,
     updatedAt: validDatetime,
     ...overrides,

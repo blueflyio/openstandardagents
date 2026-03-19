@@ -8,7 +8,7 @@ image: node:22-alpine
 injectGatewayToken: true
 
 variables:
-  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://mesh.blueflyagents.com}
+  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://mesh.bluefly.internal}
 
 commands:
   - echo "Starting Self-Healing Flow"

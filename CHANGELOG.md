@@ -512,7 +512,7 @@ Complete agent registration infrastructure enabling global agent discovery, veri
 - HTTP client for registry API integration (248 lines)
 - Axios-based with TypeScript types
 - Methods: `registerAgent()`, `discoverAgents()`, `verifyAgent()`, `getAgentCard()`
-- Configurable base URL (default: https://mesh.blueflyagents.com)
+- Configurable base URL (default: https://mesh.bluefly.internal)
 - Comprehensive error handling
 - Exported from index.ts for SDK consumption
 
@@ -523,7 +523,7 @@ Complete agent registration infrastructure enabling global agent discovery, veri
   - Organization name for GAID (default: blueflyio)
   - Serial number prefix (default: AG)
   - 📡 Register agent to platform registry? (default: no)
-  - Registry API URL (default: https://mesh.blueflyagents.com)
+  - Registry API URL (default: https://mesh.bluefly.internal)
 - Serial number format: `{PREFIX}-{TIMESTAMP}-{RANDOM}`
   - Example: `AG-1K2L3M-4N5P`
   - Unique, time-sortable, URL-safe
@@ -536,7 +536,7 @@ Complete agent registration infrastructure enabling global agent discovery, veri
       ossa.org/organization: blueflyio
       ossa.org/registered-at: 2026-02-06T...
       ossa.org/registered: "true"
-      ossa.org/registry-url: https://mesh.blueflyagents.com
+      ossa.org/registry-url: https://mesh.bluefly.internal
       ossa.org/signature: sha256:abc...
   ```
 - GAID info file: Saves `.gaid.json` with registration metadata
@@ -667,7 +667,7 @@ ossa validate creative-agent-naming.ossa.yaml
 ossa generate-gaid creative-agent-naming.ossa.yaml --org blueflyio
 
 # Register to platform
-ossa register creative-agent-naming.ossa.yaml --registry https://mesh.blueflyagents.com
+ossa register creative-agent-naming.ossa.yaml --registry https://mesh.bluefly.internal
 
 # Discover agents
 ossa discover --capability compliance-audit

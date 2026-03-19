@@ -38,7 +38,7 @@ VALID_MANIFEST_YAML = textwrap.dedent("""\
       tools:
         - type: mcp
           name: knowledge-base
-          endpoint: https://gkg.blueflyagents.com/mcp/sse
+          endpoint: https://gkg.bluefly.internal/mcp/sse
           description: "Graph knowledge base"
         - type: mcp
           name: web-search

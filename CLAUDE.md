@@ -47,7 +47,7 @@ Source of truth: **ai.json → control_primitives** (run order: **control_primit
 - `node .agents-workspace/validate-three-layer.mjs` — OSSA three-layer (workspace_semantics, spec docs, plans/ossa-three-layer/)
 - `node .agents-workspace/check-ownership.mjs <service> <concern>` — ownership boundary check
 - `node .agents-workspace/workspace-status.mjs` [--json] — read-only status from ai.json
-- GKG MCP: `gkg.blueflyagents.com/mcp/sse` — cross-repo code intelligence. **MANDATORY before modifying shared code.**
+- GKG MCP: `gkg.bluefly.internal/mcp/sse` — cross-repo code intelligence. **MANDATORY before modifying shared code.**
 
 ## Skills packaging (same as agents: build once, all formats and tools)
 

@@ -124,11 +124,11 @@ PULSE detects drift → auto-DESCRIBE correction → GENERATE fix → CLASSIFY �
 | Service | URL | Role in Fleet |
 |---------|-----|---------------|
 | Orchestrator | https://orchestrator.blueflyagents.com | Executes rollout plans |
-| Compliance Engine | https://compliance.blueflyagents.com | Cedar policy evaluation |
-| Workflow Engine | https://workflow.blueflyagents.com | State machine for flows |
+| Compliance Engine | https://compliance.bluefly.internal | Cedar policy evaluation |
+| Workflow Engine | https://workflow.bluefly.internal | State machine for flows |
 | A2A Collector | https://a2a-collector.blueflyagents.com | Post-deploy verification |
 | A2A Stream | https://a2a-stream.blueflyagents.com | Continuous PULSE monitoring |
-| Agent Router | https://router.blueflyagents.com | Traffic shifting for canary |
+| Agent Router | https://router.bluefly.internal | Traffic shifting for canary |
 
 ## Commands
 
