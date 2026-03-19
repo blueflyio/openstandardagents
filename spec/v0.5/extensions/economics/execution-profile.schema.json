@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.5.0/execution-profile.schema.json",
+  "title": "OSSA v0.5.0 Execution Profile Schema",
+  "description": "ExecutionProfile defines the runtime economic and performance policy for an agent execution. It abstracts model selection into intent-based profiles.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "pattern": "^ossa/v0\\.5.*$"
+    },
+    "kind": {
+      "type": "string",
+      "const": "ExecutionProfile"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "required": [
+        "profile_type"
+      ],
+      "properties": {
+        "profile_type": {
+          "type": "string",
+          "enum": [
+            "micro-audit",
+            "fast-route",
+            "balanced-work",
+            "deep-reason",
+            "long-context",
+            "strict-structured",
+            "human-gated"
+          ]
+        },
+        "economics": {
+          "type": "object",
+          "properties": {
+            "cost_ceiling_usd": {
+              "type": "number",
+              "minimum": 0
+            },
+            "context_budget_tokens": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "compute_budget_units": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "token_sovereignty": {
+              "type": "string",
+              "enum": [
+                "provider-managed",
+                "local-encrypted",
+                "ephemeral"
+              ]
+            }
+          }
+        },
+        "performance": {
+          "type": "object",
+          "properties": {
+            "latency_target_ms": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        },
+        "reliability": {
+          "type": "object",
+          "properties": {
+            "max_retries": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "failure_semantics": {
+              "type": "string",
+              "enum": [
+                "fail-fast",
+                "graceful-degradation",
+                "retry-with-fallback"
+              ]
+            },
+            "escalation_rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "on_failure": {
+                    "type": "string"
+                  },
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "retry",
+                      "fail",
+                      "escalate-to-human",
+                      "fallback-profile"
+                    ]
+                  },
+                  "fallback_profile_id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "audit": {
+          "type": "object",
+          "properties": {
+            "replay_required": {
+              "type": "boolean",
+              "default": false
+            },
+            "compression_policy": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

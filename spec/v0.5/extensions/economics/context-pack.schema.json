@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.5.0/context-pack.schema.json",
+  "title": "OSSA v0.5.0 Context Pack Schema",
+  "description": "ContextPack defines a reusable, versioned, and token-scored bundle of context to reduce redundancy and increase determinism.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "pattern": "^ossa/v0\\.5.*$"
+    },
+    "kind": {
+      "type": "string",
+      "const": "ContextPack"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "required": [
+        "content"
+      ],
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "type",
+              "value"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "text",
+                  "code",
+                  "file",
+                  "embedding",
+                  "reference",
+                  "dynamic-query"
+                ]
+              },
+              "value": {
+                "type": "string"
+              },
+              "token_score": {
+                "type": "integer",
+                "description": "The measured token cost of this specific content block."
+              },
+              "metadata": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "total_tokens": {
+          "type": "integer"
+        },
+        "ttl_seconds": {
+          "type": "integer",
+          "default": 3600
+        },
+        "compression_policy": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

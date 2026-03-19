@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schema.openstandardagents.org/v0.5.0/extensions/economics/failure-semantics.json",
+  "title": "Failure Semantics",
+  "description": "Standardized failure classes for agent executions.",
+  "type": "object",
+  "properties": {
+    "failure_class": {
+      "type": "string",
+      "enum": [
+        "context_insufficient",
+        "policy_denied",
+        "budget_exceeded",
+        "capability_unavailable",
+        "projection_conflict",
+        "state_challenged",
+        "confidence_too_low",
+        "human_required",
+        "provider_degraded"
+      ]
+    },
+    "details": {
+      "type": "string"
+    },
+    "recoverable": {
+      "type": "boolean"
+    },
+    "escalation_path": {
+      "type": "string"
+    }
+  }
+}
