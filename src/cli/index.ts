@@ -64,6 +64,11 @@ import { standardizeCommand } from './commands/standardize.command.js';
 import { testCommand } from './commands/test.command.js';
 import { updateCommand } from './commands/update.command.js';
 import { validateCommand } from './commands/validate.command.js';
+import {
+  executionProfileCommand,
+  contextPackCommand,
+  taskCommand,
+} from './commands/economics.command.js';
 import { wizardAPIFirstCommand } from './commands/wizard-api-first.command.js';
 import { wizardCommand } from './commands/wizard.command.js';
 
@@ -283,6 +288,9 @@ program.addCommand(governanceCommand);
 program.addCommand(contractCommand);
 program.addCommand(signCommand);
 program.addCommand(policyCommand);
+program.addCommand(executionProfileCommand);
+program.addCommand(contextPackCommand);
+program.addCommand(taskCommand);
 
 // --- Advanced (hidden from main --help, still fully accessible) ---
 for (const cmd of [
