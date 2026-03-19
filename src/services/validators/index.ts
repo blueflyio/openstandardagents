@@ -4,6 +4,7 @@
  * Exports all platform-specific validators
  */
 
+export { createValidatorRegistry, type PlatformValidator } from './registry.js';
 export { CursorValidator } from './cursor.validator.js';
 export { OpenAIValidator } from './openai.validator.js';
 export { CrewAIValidator } from './crewai.validator.js';

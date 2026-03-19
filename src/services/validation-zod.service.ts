@@ -18,16 +18,10 @@ import type {
 } from '../types/index.js';
 import type { ErrorObject } from 'ajv';
 import { MessagingValidator } from './validators/messaging.validator.js';
-import { CursorValidator } from './validators/cursor.validator.js';
-import { OpenAIValidator } from './validators/openai.validator.js';
-import { CrewAIValidator } from './validators/crewai.validator.js';
-import { LangChainValidator } from './validators/langchain.validator.js';
-import { AnthropicValidator } from './validators/anthropic.validator.js';
-import { LangflowValidator } from './validators/langflow.validator.js';
-import { AutoGenValidator } from './validators/autogen.validator.js';
-import { VercelAIValidator } from './validators/vercel-ai.validator.js';
-import { LlamaIndexValidator } from './validators/llamaindex.validator.js';
-import { LangGraphValidator } from './validators/langgraph.validator.js';
+import {
+  createValidatorRegistry,
+  type PlatformValidator,
+} from './validators/registry.js';
 
 /**
  * Convert Zod error to Ajv ErrorObject format for compatibility
@@ -86,26 +80,13 @@ async function loadZodSchema(version: string): Promise<z.ZodType<unknown>> {
 
 @injectable()
 export class ValidationZodService implements IValidationService {
-  private platformValidators: Map<
-    string,
-    { validate: (manifest: OssaAgent) => ValidationResult }
-  >;
+  private platformValidators: Map<string, PlatformValidator>;
 
   constructor(
     @inject(SchemaRepository) private schemaRepository: SchemaRepository
   ) {
-    // Initialize platform validators
-    this.platformValidators = new Map();
-    this.platformValidators.set('cursor', new CursorValidator());
-    this.platformValidators.set('openai_agents', new OpenAIValidator());
-    this.platformValidators.set('crewai', new CrewAIValidator());
-    this.platformValidators.set('langchain', new LangChainValidator());
-    this.platformValidators.set('anthropic', new AnthropicValidator());
-    this.platformValidators.set('langflow', new LangflowValidator());
-    this.platformValidators.set('autogen', new AutoGenValidator());
-    this.platformValidators.set('vercel_ai', new VercelAIValidator());
-    this.platformValidators.set('llamaindex', new LlamaIndexValidator());
-    this.platformValidators.set('langgraph', new LangGraphValidator());
+    // Single source of truth: all platform validators live in registry.ts
+    this.platformValidators = createValidatorRegistry();
   }
 
   /**
