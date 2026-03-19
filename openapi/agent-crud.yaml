@@ -2,7 +2,7 @@ openapi: 3.1.0
 jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
 info:
   title: OSSA Agent CRUD API
-  version: 0.3.3
+  version: 0.5.1
   description: |
     # OSSA Agent CRUD Operations API
 
@@ -291,7 +291,7 @@ components:
       properties:
         apiVersion:
           type: string
-          const: ossa/v0.3.3
+          const: ossa/v0.5.1
           description: OSSA specification version
         kind:
           type: string
@@ -343,7 +343,7 @@ components:
           description: Unique identifier for the agent
         apiVersion:
           type: string
-          const: ossa/v0.3.3
+          const: ossa/v0.5.1
         kind:
           type: string
           const: Agent
@@ -856,7 +856,7 @@ components:
     CreateWorkerAgentExample:
       summary: Create a worker agent
       value:
-        apiVersion: ossa/v0.3.3
+        apiVersion: ossa/v0.5.1
         kind: Agent
         metadata:
           name: security-scanner
@@ -908,7 +908,7 @@ components:
     CreateOrchestratorAgentExample:
       summary: Create an orchestrator agent
       value:
-        apiVersion: ossa/v0.3.3
+        apiVersion: ossa/v0.5.1
         kind: Agent
         metadata:
           name: workflow-orchestrator
@@ -960,7 +960,7 @@ components:
       summary: Complete agent response
       value:
         id: 550e8400-e29b-41d4-a716-446655440000
-        apiVersion: ossa/v0.3.3
+        apiVersion: ossa/v0.5.1
         kind: Agent
         metadata:
           name: security-scanner
@@ -1024,7 +1024,7 @@ components:
       value:
         agents:
           - id: 550e8400-e29b-41d4-a716-446655440000
-            apiVersion: ossa/v0.3.3
+            apiVersion: ossa/v0.5.1
             kind: Agent
             metadata:
               name: security-scanner
@@ -1047,7 +1047,7 @@ components:
             createdAt: 2025-12-18T10:30:00Z
             updatedAt: 2025-12-18T10:30:00Z
           - id: 660e8400-e29b-41d4-a716-446655440001
-            apiVersion: ossa/v0.3.3
+            apiVersion: ossa/v0.5.1
             kind: Agent
             metadata:
               name: code-reviewer
@@ -1076,7 +1076,7 @@ tags:
   - name: Agents
     description: Agent lifecycle management (CRUD operations)
 x-ossa-metadata:
-  version: 0.3.3
+  version: 0.5.1
   compliance:
     level: enterprise
     frameworks:
