@@ -345,7 +345,7 @@ if (result.valid) {
 - `npm` (production) - TypeScript package with manifest
 - `agent-skills` (production) - SKILL.md for Claude Code
 
-**Skills Pipeline** (✅ Current in v0.5.0):
+**Skills Pipeline** (✅ Current in v0.5.1):
 - `ossa skills research` - Index skills from curated sources (cached locally at ~/.ossa/skills-index.json)
 - `ossa skills generate` - Auto-detects input format (OSSA, Oracle Agent Spec, AGENTS.md)
 - `ossa skills export` - Package as npm, install to ~/.claude/skills/, publish to registry
