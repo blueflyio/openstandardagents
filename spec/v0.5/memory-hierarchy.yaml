@@ -1,0 +1,120 @@
+# OSSA Memory Hierarchy Contracts v0.5.0
+# ============================================================================
+# Document: memory tier conventions, directory structure, naming contracts.
+# These are contracts only — HierarchicalMemoryResolver implementation deferred
+# to P7 (agent-brain service, brain.bluefly.internal:6333).
+# ============================================================================
+#
+# Per COMPLETION_REPORT_AGENT_BUILDER.md Phase 5 (contracts-only). Resolver
+# deferred — implement ONLY after P1–P4 are green and passing CI.
+
+memory_hierarchy:
+  apiVersion: "ossa/v0.5.0"
+  kind: MemoryContracts
+  description: |
+    Three-tier memory system for OSSA agents. Each tier is isolated by scope:
+    global (platform-wide shared state), domain (capability-scoped working
+    memory), and agent (per-agent private context). Tiers merge at runtime
+    via the HierarchicalMemoryResolver — lower tiers cannot overwrite higher.
+
+  tiers:
+    global:
+      description: "Platform-wide shared memory. Read by all agents. Written only by operators."
+      directory: ".agents-workspace/memory/"
+      naming_scheme: "global.<collection>"
+      examples:
+        - "global.policies"
+        - "global.cedar-rules"
+        - "global.compliance-baseline"
+      gitignore_rules:
+        - ".agents-workspace/memory/*.db"
+        - ".agents-workspace/memory/*.sqlite"
+        - ".agents-workspace/memory/.cache/"
+      commit_rule: "Schemas and seed data MUST be committed. Cache and runtime state MUST NOT."
+
+    domain:
+      description: "Capability-scoped working memory. Shared within a domain (e.g. gitlab, drupal, security)."
+      directory: ".agents/workspace/memory/"
+      naming_scheme: "<domain>.<collection>"
+      examples:
+        - "gitlab.mr-context"
+        - "drupal.module-catalog"
+        - "security.vuln-signatures"
+      gitignore_rules:
+        - ".agents/workspace/memory/*.db"
+        - ".agents/workspace/memory/*.sqlite"
+        - ".agents/workspace/memory/.cache/"
+      commit_rule: "Domain-scoped seed data committed. Runtime embeddings excluded."
+
+    agent:
+      description: "Per-agent private context. Not shared across agents. Scoped to agent lifecycle."
+      directory: ".agents/agents/<agent-name>/memory/"
+      naming_scheme: "<domain>.<agent>.<collection>"
+      examples:
+        - "gitlab.mr-reviewer.recent-reviews"
+        - "drupal.module-generator.scaffold-history"
+        - "security.scanner.false-positive-index"
+      gitignore_rules:
+        - ".agents/agents/*/memory/*.db"
+        - ".agents/agents/*/memory/*.sqlite"
+        - ".agents/agents/*/memory/.cache/"
+        - ".agents/agents/*/memory/embeddings/"
+      commit_rule: "Only seed data committed. All runtime state excluded."
+
+# =============================================================================
+# Canonical .gitignore block — copy into consuming repos
+# =============================================================================
+gitignore_block: |
+  # OSSA Memory Hierarchy — runtime state excluded, schemas committed
+  .agents-workspace/memory/*.db
+  .agents-workspace/memory/*.sqlite
+  .agents-workspace/memory/.cache/
+  .agents/workspace/memory/*.db
+  .agents/workspace/memory/*.sqlite
+  .agents/workspace/memory/.cache/
+  .agents/agents/*/memory/*.db
+  .agents/agents/*/memory/*.sqlite
+  .agents/agents/*/memory/.cache/
+  .agents/agents/*/memory/embeddings/
+
+# =============================================================================
+# Resolver contract (deferred P7 implementation in agent-brain)
+# =============================================================================
+resolver:
+  service: "agent-brain"
+  endpoint: "http://brain.bluefly.internal:6333"
+  protocol: "REST"
+  merge_order:
+    - "global"   # lowest precedence (base layer)
+    - "domain"   # mid layer
+    - "agent"    # highest precedence (wins on conflict)
+  implementation: "DEFERRED — implement after P1-P4 green"
+  interface:
+    resolve:
+      method: "GET"
+      path: "/api/v1/memory/{collection}"
+      description: "Merge tiers and return resolved context for a named collection."
+    index:
+      method: "POST"
+      path: "/api/v1/memory/{tier}/{collection}/index"
+      description: "Vector-index a memory collection for semantic retrieval."
+    promote:
+      method: "POST"
+      path: "/api/v1/memory/{collection}/promote"
+      description: "Promote agent memory to domain tier (requires operator approval)."
+
+# =============================================================================
+# ossa scaffold extension — directory scaffold
+# =============================================================================
+scaffold:
+  description: |
+    `ossa scaffold` MUST emit memory/ directories when generating a new agent workspace.
+    Add to ossa scaffold templates when implementing CLI extension (P5 CLI work).
+  directories:
+    - ".agents-workspace/memory/"
+    - ".agents/workspace/memory/"
+    # Per-agent dirs created by ossa scaffold --agent <name>:
+    # .agents/agents/<name>/memory/
+  seed_files:
+    global_readme: ".agents-workspace/memory/README.md"
+    domain_readme: ".agents/workspace/memory/README.md"
