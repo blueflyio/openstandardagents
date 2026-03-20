@@ -38,10 +38,8 @@ export function createApp(opts?: CreateAppOptions): express.Application {
   // Routes
   app.use('/', healthRouter());
   app.use('/api/v1/manifests', manifestsRouter());
-  // Agent builder routes (canonical path per OWNERSHIP.md)
+  // Agent builder routes (canonical path per OWNERSHIP.md + BIBLE_OSSA_AGENT_BUILDER.md)
   app.use('/api/agent-builder', wizardRouter());
-  // Backward-compat alias during client migration (deprecated — remove in v0.6)
-  app.use('/api/v1/wizard', wizardRouter());
   app.use('/api/v1/export', exportRouter());
   app.use('/api/v1/convert', convertRouter());
   app.use('/api/v1/skills', skillsRouter());
