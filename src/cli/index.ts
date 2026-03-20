@@ -83,6 +83,7 @@ import { manifestCommandGroup } from './commands/manifest/index.js';
 import { mcpCommand } from './commands/mcp.command.js';
 import { registerCommand } from './commands/register.js';
 import { skillsCommandGroup } from './commands/skills.command.js';
+import { usieSkillsCommandGroup } from './commands/usie-skills.command.js';
 import { taxonomyCommandGroup } from './commands/taxonomy.command.js';
 import { templateCommandGroup } from './commands/template.command.js';
 import { toolCommandGroup } from './commands/tool/index.js';
@@ -278,6 +279,7 @@ program.addCommand(platformsCommand);
 
 // --- Skills & Templates ---
 program.addCommand(skillsCommandGroup);
+program.addCommand(usieSkillsCommandGroup()); // USIE: ingest/sync/list/preview on the mesh
 program.addCommand(templateCommandGroup);
 
 // --- Tool & Capability Management ---
