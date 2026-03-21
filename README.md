@@ -300,7 +300,7 @@ Upgrade manifests to the latest spec version:
 
 ```bash
 # Migrate from older version to current
-ossa migrate agent.ossa.yaml --to 0.5.0
+ossa migrate agent.ossa.yaml --to 0.5.1
 
 # List available migration paths
 ossa migrate --list
@@ -408,7 +408,7 @@ OSSA complements MCP and A2A by adding the packaging and deployment layer they d
 ### Manifest Format
 
 ```yaml
-apiVersion: ossa/v0.5.0
+apiVersion: ossa/v0.5.1
 kind: Agent
 metadata:
   name: code-reviewer
@@ -435,7 +435,7 @@ spec:
 #### Team Manifest Example
 
 ```yaml
-apiVersion: ossa/v0.5.0
+apiVersion: ossa/v0.5.1
 kind: Agent
 metadata:
   name: dev-team
@@ -529,7 +529,7 @@ import { validateManifest } from '@bluefly/openstandardagents/validation';
 import type { OssaAgent } from '@bluefly/openstandardagents/types';
 
 const agent: OssaAgent = {
-  apiVersion: 'ossa/v0.5.0',
+  apiVersion: 'ossa/v0.5.1',
   kind: 'Agent',
   metadata: { name: 'creative-agent-naming', version: '1.0.0' },
   spec: {
@@ -575,7 +575,7 @@ OSSA is designed to work **alongside** existing agent protocols, not replace the
 **Example**: An OSSA manifest can declare that an agent uses MCP tools and A2A messaging, then export that configuration to Docker, Kubernetes, or LangChain deployment packages.
 
 ```yaml
-apiVersion: ossa/v0.5.0
+apiVersion: ossa/v0.5.1
 kind: Agent
 metadata:
   name: code-reviewer
@@ -629,7 +629,7 @@ ossa export agent.ossa.yaml --platform docker --output ./docker-deploy
 ossa export --list-platforms
 ossa lint agent.ossa.yaml
 ossa diff old.ossa.yaml new.ossa.yaml
-ossa migrate agent.ossa.yaml --to 0.5.0
+ossa migrate agent.ossa.yaml --to 0.5.1
 ossa generate-gaid agent.ossa.yaml
 ossa export agent.ossa.yaml --perfect-agent
 ossa export agent.ossa.yaml --include-agents-md --include-team --include-evals
