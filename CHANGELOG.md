@@ -7,17 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.5.1] - 2026-03-18
+## [0.5.1] - 2026-03-21
 
 ### Added
-- **CAOE cognition types**: `session`, `hypothesis`, and `alignment gate` JSON schema extensions for cognitive agent orchestration
-- **kind: Role manifest spec**: New manifest kind `Role` for declarative role-based agent definitions
-- **@better-openclaw/core integration**: 201 services and 44 skill packs wired through OpenClaw core
+- **Memory Hierarchy (P5)**: Three-tier memory contracts (`spec/v0.5/memory-hierarchy.yaml`) — working, episodic, and long-term layers with promotion rules
+- **`ossa memory` CLI subcommand**: `init`, `index`, `resolve`, `promote` — wire agents to the three-tier memory spec
+- **Execution Economics (Layer 4)**: `ExecutionProfile`, `ContextPack`, and `ReplayPacket` schemas for portable execution intent and cost-aware agent design
+- **Reasoning Escrow**: Cryptographic hash of reasoning traces via the AI SDK v6 `ToolLoopAgent` — auditable yet private agent decisions
+- **StateMesh Integration**: Agents publish `StateClaims` (Evidence/Intent) to the mesh during runtime; governed state exchange via `extensions.statemesh`
+- **AI SDK v6 Loop**: Native `ToolLoopAgent` in the production `OpenAIAdapter`; `@ai-sdk/anthropic` and `@ai-sdk/google` adapters added
+- **DUADP Trust Tiers**: Native four-tier model (Official → Verified → Community → Unverified) wired into discovery and GKG Matchmaker
+- **Agent Builder API**: `/api/agent-builder` route replaces deprecated `/api/v1/wizard`; `apiVersion >= ossa/v0.5.0` enforced at scaffold time
+- **CAOE cognition types**: `session`, `hypothesis`, and `alignment gate` JSON schema extensions (`spec/v0.5/extensions/cognition/`)
+- **`kind: Role` manifest**: Declarative role-based agent identity (`spec/v0.5/role.schema.json`)
+- **Agent Builder OpenAPI spec**: `spec/v0.5/agent-builder-openapi.yaml` — frozen builder contract
+- **Registry API v0.5.1**: `spec/registry/openapi.yaml` bumped; `agent-crud` generated types updated
+- **Skills CLI (6 commands)**: `ossa skills research | generate | export | list | validate | sync` — full skills pipeline production-ready; 19 tests, 100% passing
+- **5 new skills plugin files**: `database-migration`, `chaos-engineering`, `performance-profiling`, `compliance-auditing`, `incident-response`
+- **`ossa execution-profile validate`**, **`ossa context-pack build`**, **`ossa task quote`** CLI commands
 
 ### Changed
-- **MCP DI services wired**: `ossa_validate` and `ossa_publish` connected to dependency injection services
-- **proxy-agent + universal-user-agent**: Integrated for standards-compliant HTTP proxy and user-agent handling
-- **Security**: Scrubbed hardcoded credentials from codebase
+- `uuid` dependency: `^11.0.5` → `^11.1.0` (platform `dependency_standards` compliance)
+- `@modelcontextprotocol/sdk`: aligned to `^1.26.0`
+- MCP DI services wired: `ossa_validate` and `ossa_publish` connected to dependency injection
+- Open-source publication: removed all internal paths, private domains, and platform-specific references
+
+### Fixed
+- Test framework: 3 test files using `vitest` in Jest runner corrected to `@jest/globals`; 76/76 suites, 1305 tests, 0 failures
+- `OssaApiVersionSchema`: union accepts `ossa/v0.5.0` and `ossa/v0.3.2` for migration compatibility
+- Registry and agent-crud OpenAPI versions bumped `0.3.3` → `0.5.1`
+- `undici` vulnerability overrides applied; `postgres` password parameterized in Docker generator
 
 ## [0.5.0] - 2026-03-08
 

@@ -75,14 +75,17 @@ OSSA natively aligns with the [NIST CAISI Request for Information on Collaborati
 
 ## What's New in v0.5.1
 
-- **Layer 4: Execution Economics**: Portable execution intent via `ExecutionProfile`, `ContextPack`, and `ReplayPacket`.
-- **StateMesh Integration**: Support for governed agent state exchange (`extensions.statemesh`).
-- **Active Operational Memory**: Agents now publish `StateClaims` (Evidence/Intent) to the mesh during runtime.
-- **AI SDK v6 Loop**: Native `ToolLoopAgent` implementation in the production `OpenAIAdapter`.
-- **Reasoning Escrow**: Cryptographic hashing of reasoning traces for auditable yet private agent decisions.
-- **DUADP Trust Tiers**: Native alignment with DUADP's four-tier trust model (Official, Verified, Community, Unverified).
-- **CLI Economics**: New commands: `ossa execution-profile validate`, `ossa context-pack build`, `ossa task quote`.
-- **CAOE cognition types**: `session`, `hypothesis`, and `alignment gate` JSON schema extensions.
+- **Memory Hierarchy (P5)**: Three-tier memory contracts (working → episodic → long-term) with `ossa memory init|index|resolve|promote` CLI.
+- **Execution Economics (Layer 4)**: `ExecutionProfile`, `ContextPack`, `ReplayPacket` schemas; `ossa execution-profile validate`, `ossa context-pack build`, `ossa task quote`.
+- **StateMesh Integration**: Agents publish `StateClaims` to the mesh at runtime; governed state exchange via `extensions.statemesh`.
+- **Reasoning Escrow**: Cryptographic hashing of reasoning traces in the AI SDK v6 `ToolLoopAgent` — auditable yet private.
+- **AI SDK v6 Loop**: Native `ToolLoopAgent` in `OpenAIAdapter`; `@ai-sdk/anthropic` and `@ai-sdk/google` adapters added.
+- **DUADP Trust Tiers**: Native four-tier trust model (Official → Verified → Community → Unverified) wired into discovery.
+- **Agent Builder API**: `/api/agent-builder` canonical route; `apiVersion >= ossa/v0.5.0` enforced at scaffold time.
+- **CAOE cognition types**: `session`, `hypothesis`, `alignment gate` JSON schema extensions + `kind: Role` manifest.
+- **Skills Pipeline (6 commands)**: `ossa skills research|generate|export|list|validate|sync` — production-ready, 19 tests passing.
+- **5 new skill plugins**: `database-migration`, `chaos-engineering`, `performance-profiling`, `compliance-auditing`, `incident-response`.
+- **Dependency compliance**: `uuid ^11.1.0`, `@modelcontextprotocol/sdk ^1.26.0`.
 
 See [CHANGELOG.md](./CHANGELOG.md) for complete details.
 
