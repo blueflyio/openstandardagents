@@ -1,7 +1,7 @@
 # OSSA - Open Standard for Software Agents
 
-> **Development happens on [GitLab](https://gitlab.com/blueflyio/ossa/openstandardagents).** This repo is a read-only mirror.
-> [Source](https://gitlab.com/blueflyio/ossa/openstandardagents) | [Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues) | [npm](https://www.npmjs.com/package/@bluefly/openstandardagents)
+> **Source of truth**: [GitLab](https://gitlab.com/blueflyio/ossa/openstandardagents) — development, issues, and CI happen here.
+> [GitLab](https://gitlab.com/blueflyio/ossa/openstandardagents) | [Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues) | [npm](https://www.npmjs.com/package/@bluefly/openstandardagents)
 
 **The infrastructure bridge between agent protocols and deployment platforms.**
 

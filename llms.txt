@@ -71,7 +71,7 @@ Single JSON with OSSA contract, A2A skills, MCP tools, and 12 platform adapters 
 
 ### Resources
 
-- `ossa://schema/v0.4/agent` — JSON Schema
+- `ossa://schema/v0.5.1/agent` — JSON Schema
 - `ossa://template/minimal` — Minimal manifest template
 - `ossa://template/full` — Full manifest with all sections
 - `ossa://guide/mcp-ossa-a2a` — MCP → OSSA → A2A guide
