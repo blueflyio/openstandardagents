@@ -53,16 +53,16 @@ AI agents need the same foundational infrastructure the internet has: **identity
 
 | Security requirement | OSSA | DUADP |
 |---|---|---|
-| Agent identity & authentication | ✅ W3C DID (GAID) per agent | ✅ DID-verified nodes |
-| Authorization & least-privilege | ✅ AWS Cedar policies in manifest | ✅ Trust-tier gating |
-| Governance & human oversight | ✅ Signed manifests + OSCAL pointers | ✅ Audit log + attestation API |
-| Cross-system interoperability | ✅ Multi-platform exports | ✅ Federated gossip discovery |
-| Monitoring & incident response | ✅ Observability config in spec | ✅ Revocation + incident endpoints |
-| Supply chain security | ✅ `x-signature` + SBOM | ✅ Signed resource registry |
+| Agent identity & authentication | W3C DID (GAID) per agent | DID-verified nodes |
+| Authorization & least-privilege | AWS Cedar policies in manifest | Trust-tier gating |
+| Governance & human oversight | Signed manifests + OSCAL pointers | Audit log + attestation API |
+| Cross-system interoperability | Multi-platform exports | Federated gossip discovery |
+| Monitoring & incident response | Observability config in spec | Revocation + incident endpoints |
+| Supply chain security | `x-signature` + SBOM | Signed resource registry |
 
 > [openstandardagents.org/specification →](https://openstandardagents.org/specification) | [duadp.org →](https://duadp.org)
 
-## 🇺🇸 NIST CAISI Alignment (NIST-2025-0035)
+## NIST CAISI Alignment (NIST-2025-0035)
 
 If you're evaluating OSSA/DUADP for federal or regulated deployments, see the detailed alignment documentation:
 
@@ -332,7 +332,7 @@ if (result.valid) {
 
 ## Production Status (v0.5.1)
 
-### ✅ Production-Ready (Tested & Documented)
+### Production-Ready (Tested & Documented)
 
 **Core CLI Commands**:
 - `ossa validate` - Validate manifests against JSON Schema
@@ -348,7 +348,7 @@ if (result.valid) {
 - `npm` (production) - TypeScript package with manifest
 - `agent-skills` (production) - SKILL.md for Claude Code
 
-**Skills Pipeline** (✅ Current in v0.5.1):
+**Skills Pipeline** (Current in v0.5.1):
 - `ossa skills research` - Index skills from curated sources (cached locally at ~/.ossa/skills-index.json)
 - `ossa skills generate` - Auto-detects input format (OSSA, Oracle Agent Spec, AGENTS.md)
 - `ossa skills export` - Package as npm, install to ~/.claude/skills/, publish to registry
@@ -362,7 +362,7 @@ if (result.valid) {
 - Type definitions (`@bluefly/openstandardagents/types`)
 - JSON Schema access (`@bluefly/openstandardagents/schema`)
 
-### 🚧 Beta (Functional but needs testing)
+### Beta (Functional but needs testing)
 
 - `ossa agents-local` - Local `.agents/` folder management
 - `ossa agents-md` - Generate, validate, sync [agents.md](https://agents.md) files (standard: [agentsmd/agents.md](https://github.com/agentsmd/agents.md)); customize via wizard step or `ossa agents-md generate|validate|sync`
