@@ -49,6 +49,7 @@ tests/**/*.d.ts.map
 .cache/
 .turbo/
 .eslintcache
+.firecrawl/
 
 # Shell scripts (FORBIDDEN - use .gitlab-ci.yml instead)
 *.sh
