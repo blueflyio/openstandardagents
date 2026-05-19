@@ -4,17 +4,17 @@ Compiled on May 19, 2026.
 
 ## Protocol comparison
 
-| Standard | Primary scope | Format / transport | Discovery | Adoption status |
-| --- | --- | --- | --- | --- |
-| MCP | Agent to tools/data/context | JSON-RPC; stdio, Streamable HTTP, legacy SSE | Client lists server tools/resources/prompts | Broad support; npm SDK 1.29.0 has 36.0M weekly downloads [S03][S37] |
-| A2A | Agent to agent task delegation | HTTP, SSE, JSON-RPC; gRPC added in v0.3 | Agent Cards | Google-launched; 150+ org support by July 2025 [S04][S05] |
-| AG-UI | Agent to user interface | Event stream over HTTP SSE, WebSocket, webhooks, binary HTTP | Compatible clients/agents | SDK and framework integrations; `@ag-ui/client` 0.0.53 has 526.1K weekly downloads [S07][S35] |
-| OSSA | Agent contract and export | YAML manifest, JSON Schema, CLI exports | DUADP, manifests, registries | npm `@bluefly/openstandardagents` 0.5.1; 23+ export targets [S01][S25] |
-| DUADP | Agent/skill/tool discovery | DNS TXT, WebFinger, REST, MCP tools, gossip | GAID, `.well-known`, federation | npm `@bluefly/duadp` 0.1.4; live site indexes 36 resources [S02][S26] |
-| ANP | Open agent network | DID, encrypted communication, meta-protocol, semantic app layer | P2P/DID/capability descriptions | GitHub 1,296 stars; v1.0 release May 2025 [S09][S24] |
-| ACP | REST-native agent messaging | HTTP REST, MIME messages, SSE streaming | Online and offline agent manifests | Now part of A2A under Linux Foundation [S08] |
-| LangChain Agent Protocol | Agent server API | OpenAPI for runs, threads, store | API endpoints | GitHub 588 stars; LangGraph Platform superset [S10][S24] |
-| ATP | Code-first tool execution | TypeScript/JavaScript in sandbox; OpenAPI/MCP adapters | API search and type definitions | npm server 0.25.0 has 7.1K weekly downloads [S11][S36] |
+| Standard                 | Primary scope                  | Format / transport                                              | Discovery                                   | Adoption status                                                                               |
+| ------------------------ | ------------------------------ | --------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| MCP                      | Agent to tools/data/context    | JSON-RPC; stdio, Streamable HTTP, legacy SSE                    | Client lists server tools/resources/prompts | Broad support; npm SDK 1.29.0 has 36.0M weekly downloads [S03][S37]                           |
+| A2A                      | Agent to agent task delegation | HTTP, SSE, JSON-RPC; gRPC added in v0.3                         | Agent Cards                                 | Google-launched; 150+ org support by July 2025 [S04][S05]                                     |
+| AG-UI                    | Agent to user interface        | Event stream over HTTP SSE, WebSocket, webhooks, binary HTTP    | Compatible clients/agents                   | SDK and framework integrations; `@ag-ui/client` 0.0.53 has 526.1K weekly downloads [S07][S35] |
+| OSSA                     | Agent contract and export      | YAML manifest, JSON Schema, CLI exports                         | DUADP, manifests, registries                | npm `@bluefly/openstandardagents` 0.5.1; 23+ export targets [S01][S25]                        |
+| DUADP                    | Agent/skill/tool discovery     | DNS TXT, WebFinger, REST, MCP tools, gossip                     | GAID, `.well-known`, federation             | npm `@bluefly/duadp` 0.1.4; live site indexes 36 resources [S02][S26]                         |
+| ANP                      | Open agent network             | DID, encrypted communication, meta-protocol, semantic app layer | P2P/DID/capability descriptions             | GitHub 1,296 stars; v1.0 release May 2025 [S09][S24]                                          |
+| ACP                      | REST-native agent messaging    | HTTP REST, MIME messages, SSE streaming                         | Online and offline agent manifests          | Now part of A2A under Linux Foundation [S08]                                                  |
+| LangChain Agent Protocol | Agent server API               | OpenAPI for runs, threads, store                                | API endpoints                               | GitHub 588 stars; LangGraph Platform superset [S10][S24]                                      |
+| ATP                      | Code-first tool execution      | TypeScript/JavaScript in sandbox; OpenAPI/MCP adapters          | API search and type definitions             | npm server 0.25.0 has 7.1K weekly downloads [S11][S36]                                        |
 
 ## MCP: Model Context Protocol
 

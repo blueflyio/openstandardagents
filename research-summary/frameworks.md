@@ -6,18 +6,18 @@ Compiled on May 19, 2026.
 
 GitHub counts were gathered with GitHub CLI on May 19, 2026 [S24].
 
-| Project | Purpose | Stars | Latest release observed | License |
-| --- | --- | ---: | --- | --- |
-| openai/openai-agents-python | Python multi-agent SDK | 26,464 | v0.17.3, May 19, 2026 | MIT |
-| openai/openai-agents-js | TypeScript/JavaScript Agents SDK | 3,061 | v0.11.4, May 12, 2026 | MIT |
-| langchain-ai/langgraph | Graph runtime for stateful agents | 32,397 | 1.2.0, May 12, 2026 | MIT |
-| crewAIInc/crewAI | Role/task-based multi-agent framework | 51,709 | 1.14.5, May 18, 2026 | MIT |
-| microsoft/autogen | Multi-agent programming framework | 58,169 | python-v0.7.5, Sep 30, 2025 | CC-BY-4.0, MIT |
-| run-llama/llama_index | RAG, workflows, and agent framework | 49,501 | v0.14.22, May 14, 2026 | MIT |
-| langchain-ai/agent-protocol | Framework-agnostic agent server API | 588 | langchain-protocol 0.0.15, May 1, 2026 | MIT |
-| agent-network-protocol/AgentNetworkProtocol | Agent network protocol | 1,296 | V1.0, May 19, 2025 | Apache-2.0 |
-| ag-ui-protocol/ag-ui | Agent-user interaction protocol | 13,645 | release/2026-05-18 | MIT |
-| mondaycom/agent-tool-protocol | Code-first tool execution protocol | 96 | none observed | MIT |
+| Project                                     | Purpose                               |  Stars | Latest release observed                | License        |
+| ------------------------------------------- | ------------------------------------- | -----: | -------------------------------------- | -------------- |
+| openai/openai-agents-python                 | Python multi-agent SDK                | 26,464 | v0.17.3, May 19, 2026                  | MIT            |
+| openai/openai-agents-js                     | TypeScript/JavaScript Agents SDK      |  3,061 | v0.11.4, May 12, 2026                  | MIT            |
+| langchain-ai/langgraph                      | Graph runtime for stateful agents     | 32,397 | 1.2.0, May 12, 2026                    | MIT            |
+| crewAIInc/crewAI                            | Role/task-based multi-agent framework | 51,709 | 1.14.5, May 18, 2026                   | MIT            |
+| microsoft/autogen                           | Multi-agent programming framework     | 58,169 | python-v0.7.5, Sep 30, 2025            | CC-BY-4.0, MIT |
+| run-llama/llama_index                       | RAG, workflows, and agent framework   | 49,501 | v0.14.22, May 14, 2026                 | MIT            |
+| langchain-ai/agent-protocol                 | Framework-agnostic agent server API   |    588 | langchain-protocol 0.0.15, May 1, 2026 | MIT            |
+| agent-network-protocol/AgentNetworkProtocol | Agent network protocol                |  1,296 | V1.0, May 19, 2025                     | Apache-2.0     |
+| ag-ui-protocol/ag-ui                        | Agent-user interaction protocol       | 13,645 | release/2026-05-18                     | MIT            |
+| mondaycom/agent-tool-protocol               | Code-first tool execution protocol    |     96 | none observed                          | MIT            |
 
 ## OpenAI Agents SDK
 
@@ -173,13 +173,13 @@ protocol conformance tests [S26].
 
 ## Other npm packages
 
-| Package | Purpose | Version observed | Weekly downloads | Notes |
-| --- | --- | --- | ---: | --- |
-| `@modelcontextprotocol/sdk` | MCP TypeScript SDK | 1.29.0 | 36.0M | Tools, resources, prompts, Streamable HTTP [S37] |
-| `@openai/agents` | OpenAI Agents SDK for JS/TS | 0.11.4 | not shown by latest endpoint | MIT, npm provenance attestation [S34] |
-| `@ag-ui/client` | AG-UI client SDK | 0.0.53 | 526.1K | HttpAgent, middleware, event/state handling [S35] |
-| `@mondaydotcomorg/atp-server` | ATP server | 0.25.0 | 7.1K | Sandbox execution, OpenAPI/MCP, audit [S36] |
-| `@mondaydotcomorg/atp-client` | ATP client | 0.24.0 | 7.0K | Execute code, pause/resume, LLM/approval handlers [S38] |
+| Package                       | Purpose                     | Version observed |             Weekly downloads | Notes                                                   |
+| ----------------------------- | --------------------------- | ---------------- | ---------------------------: | ------------------------------------------------------- |
+| `@modelcontextprotocol/sdk`   | MCP TypeScript SDK          | 1.29.0           |                        36.0M | Tools, resources, prompts, Streamable HTTP [S37]        |
+| `@openai/agents`              | OpenAI Agents SDK for JS/TS | 0.11.4           | not shown by latest endpoint | MIT, npm provenance attestation [S34]                   |
+| `@ag-ui/client`               | AG-UI client SDK            | 0.0.53           |                       526.1K | HttpAgent, middleware, event/state handling [S35]       |
+| `@mondaydotcomorg/atp-server` | ATP server                  | 0.25.0           |                         7.1K | Sandbox execution, OpenAPI/MCP, audit [S36]             |
+| `@mondaydotcomorg/atp-client` | ATP client                  | 0.24.0           |                         7.0K | Execute code, pause/resume, LLM/approval handlers [S38] |
 
 ## Parlay / Parlant note
 

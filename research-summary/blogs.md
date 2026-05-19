@@ -11,12 +11,12 @@ proofs of concept, and a production deployment for a global insurance company
 
 The post's strongest production lesson is that agent autonomy is a spectrum:
 
-| Level | Pattern | Production note |
-| --- | --- | --- |
-| 1 | Prompt chaining | Predictable and easy to debug |
-| 2 | Workflows with branching | Good for quality gates and controlled loops |
-| 3 | Tool-using agents | Practical sweet spot with guardrails |
-| 4 | Multi-agent systems | Powerful but expensive and difficult to debug |
+| Level | Pattern                  | Production note                               |
+| ----- | ------------------------ | --------------------------------------------- |
+| 1     | Prompt chaining          | Predictable and easy to debug                 |
+| 2     | Workflows with branching | Good for quality gates and controlled loops   |
+| 3     | Tool-using agents        | Practical sweet spot with guardrails          |
+| 4     | Multi-agent systems      | Powerful but expensive and difficult to debug |
 
 47Billion recommends Level 2-3 for most production use cases in 2026 and warns
 that Level 4 is often better for demos than critical paths unless heavy
@@ -37,12 +37,12 @@ The framework comparison is practical:
 
 47Billion also provides useful cost ranges:
 
-| Approach | Cost per task | Tokens per task | Best fit |
-| --- | ---: | ---: | --- |
-| Simple workflow | $0.10-$0.50 | 1,000-3,000 | Linear deterministic tasks |
-| CrewAI multi-agent | $0.50-$2.00 | 3,000-10,000 | Structured multi-step tasks |
-| AutoGen multi-agent | $2.00-$5.00 | 5,000-25,000 | Exploratory collaboration |
-| LlamaIndex RAG | $0.20-$1.00 | 1,000-5,000 | Document queries |
+| Approach            | Cost per task | Tokens per task | Best fit                    |
+| ------------------- | ------------: | --------------: | --------------------------- |
+| Simple workflow     |   $0.10-$0.50 |     1,000-3,000 | Linear deterministic tasks  |
+| CrewAI multi-agent  |   $0.50-$2.00 |    3,000-10,000 | Structured multi-step tasks |
+| AutoGen multi-agent |   $2.00-$5.00 |    5,000-25,000 | Exploratory collaboration   |
+| LlamaIndex RAG      |   $0.20-$1.00 |     1,000-5,000 | Document queries            |
 
 Their reliability playbook is concise: validate structured outputs, use
 conservative temperature settings for deterministic tasks, constrain tools,

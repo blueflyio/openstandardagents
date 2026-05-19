@@ -56,15 +56,15 @@ LangGraph, CrewAI, Claude, OpenAI Agents SDK, Drupal, or GitLab Duo execute it
 
 ## Architectural map
 
-| Layer | Main standard or project | Role |
-| --- | --- | --- |
-| Agent contract | OSSA | Portable manifest, compliance, trust, export targets |
-| Discovery | DUADP, ANP | Find and verify agents across domains or open networks |
-| Tool/context access | MCP | Connect agents to tools, resources, prompts, data |
-| Agent collaboration | A2A, ACP | Delegate tasks and exchange messages across agents |
-| User interaction | AG-UI | Stream state, messages, tool calls, and HITL events to frontends |
-| Runtime/framework | OpenAI Agents SDK, LangGraph, CrewAI, AutoGen, LlamaIndex | Build, orchestrate, run, and observe agents |
-| Governance/security | NIST, OWASP, Gravitee, MIT Index | Identity, authorization, least privilege, safety evaluation |
+| Layer               | Main standard or project                                  | Role                                                             |
+| ------------------- | --------------------------------------------------------- | ---------------------------------------------------------------- |
+| Agent contract      | OSSA                                                      | Portable manifest, compliance, trust, export targets             |
+| Discovery           | DUADP, ANP                                                | Find and verify agents across domains or open networks           |
+| Tool/context access | MCP                                                       | Connect agents to tools, resources, prompts, data                |
+| Agent collaboration | A2A, ACP                                                  | Delegate tasks and exchange messages across agents               |
+| User interaction    | AG-UI                                                     | Stream state, messages, tool calls, and HITL events to frontends |
+| Runtime/framework   | OpenAI Agents SDK, LangGraph, CrewAI, AutoGen, LlamaIndex | Build, orchestrate, run, and observe agents                      |
+| Governance/security | NIST, OWASP, Gravitee, MIT Index                          | Identity, authorization, least privilege, safety evaluation      |
 
 ## Key opportunities
 

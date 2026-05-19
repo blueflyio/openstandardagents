@@ -25,17 +25,17 @@ The recurring threat model is:
 Gravitee's State of AI Agent Security 2026 report surveyed more than 900
 executives and technical practitioners [S28]. Its main statistics are:
 
-| Finding | Value |
-| --- | ---: |
-| Technical teams past planning into testing or production | 80.9% |
-| Organizations with full security/IT approval for all agents | 14.4% |
-| Organizations with confirmed or suspected agent incidents in prior year | 88% |
-| Healthcare organizations with confirmed or suspected incidents | 92.7% |
-| Average share of agents actively monitored or secured | 47.1% |
-| Teams treating agents as independent identities | 21.9% |
-| Teams using shared API keys for agent-to-agent auth | 45.6% |
-| Technical teams using custom hardcoded authorization logic | 27.2% |
-| Deployed agents able to create and task other agents | 25.5% |
+| Finding                                                                 | Value |
+| ----------------------------------------------------------------------- | ----: |
+| Technical teams past planning into testing or production                | 80.9% |
+| Organizations with full security/IT approval for all agents             | 14.4% |
+| Organizations with confirmed or suspected agent incidents in prior year |   88% |
+| Healthcare organizations with confirmed or suspected incidents          | 92.7% |
+| Average share of agents actively monitored or secured                   | 47.1% |
+| Teams treating agents as independent identities                         | 21.9% |
+| Teams using shared API keys for agent-to-agent auth                     | 45.6% |
+| Technical teams using custom hardcoded authorization logic              | 27.2% |
+| Deployed agents able to create and task other agents                    | 25.5% |
 
 Gravitee's incident follow-up found six common patterns: agents with broader
 access than intended, governance arriving after deployment, third-party AI
@@ -163,17 +163,17 @@ actions that affect regulated data [S27][S30][S31][S42].
 
 ## Threat and control matrix
 
-| Threat | Failure mode | Controls |
-| --- | --- | --- |
-| Direct prompt injection | User text overrides agent behavior | Instruction/data separation, output validation, policy checks [S30] |
-| Indirect prompt injection | Web/email/document/tool output contains hidden commands | Treat external content as untrusted, sandbox tools, adversarial tests [S30][S41] |
-| Excessive agency | Agent takes damaging valid actions | Minimize tools, permissions, autonomy; complete mediation [S31] |
-| Tool inversion | Legitimate tool used for illegitimate purpose | Intent validation, tool-specific policies, approval gates [S41] |
-| Shared credentials | No attribution or blast-radius control | Agent identities, scoped tokens, rotation, audit trails [S20][S28] |
-| Multi-agent lateral movement | Compromised agent influences peers | Signed inter-agent calls, trust boundaries, least privilege [S18][S42] |
-| Cost attack | Looping tools/tokens/runaway calls | Max iterations, budget thresholds, rate limits, anomaly alerts [S27] |
-| Data leakage | Sensitive data in prompts, logs, outputs, messages | Data classification, context filtering, redaction, retention limits [S40][S42] |
-| Hallucinated action | Agent invents a tool, API, or authority | Strict tool registry, schema validation, deterministic error handling [S27][S31] |
+| Threat                       | Failure mode                                            | Controls                                                                         |
+| ---------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Direct prompt injection      | User text overrides agent behavior                      | Instruction/data separation, output validation, policy checks [S30]              |
+| Indirect prompt injection    | Web/email/document/tool output contains hidden commands | Treat external content as untrusted, sandbox tools, adversarial tests [S30][S41] |
+| Excessive agency             | Agent takes damaging valid actions                      | Minimize tools, permissions, autonomy; complete mediation [S31]                  |
+| Tool inversion               | Legitimate tool used for illegitimate purpose           | Intent validation, tool-specific policies, approval gates [S41]                  |
+| Shared credentials           | No attribution or blast-radius control                  | Agent identities, scoped tokens, rotation, audit trails [S20][S28]               |
+| Multi-agent lateral movement | Compromised agent influences peers                      | Signed inter-agent calls, trust boundaries, least privilege [S18][S42]           |
+| Cost attack                  | Looping tools/tokens/runaway calls                      | Max iterations, budget thresholds, rate limits, anomaly alerts [S27]             |
+| Data leakage                 | Sensitive data in prompts, logs, outputs, messages      | Data classification, context filtering, redaction, retention limits [S40][S42]   |
+| Hallucinated action          | Agent invents a tool, API, or authority                 | Strict tool registry, schema validation, deterministic error handling [S27][S31] |
 
 ## Governance checklist
 
