@@ -47,6 +47,7 @@ tests/**/*.d.ts.map
 
 # Cache
 .cache/
+.firecrawl/
 .turbo/
 .eslintcache
 
