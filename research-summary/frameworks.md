@@ -4,20 +4,20 @@ Research current as of 2026-06-10. Source keys refer to `reading-list.md`. GitHu
 
 ## Repository maturity snapshot
 
-| Project | Stars | License | Last push checked | Main purpose |
-| --- | ---: | --- | --- | --- |
-| microsoft/autogen | 58,834 | CC-BY-4.0 repo metadata | 2026-04-15 | Conversational/event-driven multi-agent framework [S30]. |
-| crewAIInc/crewAI | 53,195 | MIT | 2026-06-10 | Role-based autonomous agent teams [S29]. |
-| run-llama/llama_index | 50,058 | MIT | 2026-06-10 | Document agents, RAG, data and retrieval framework [S31]. |
-| langchain-ai/langgraph | 34,340 | MIT | 2026-06-09 | Stateful graph workflows and resilient agents [S28]. |
-| openai/openai-agents-python | 27,053 | MIT | 2026-06-09 | Lightweight multi-agent workflows with handoffs, guardrails, tracing [S27]. |
-| a2aproject/A2A | 24,220 | Apache-2.0 | 2026-06-05 | Agent-to-agent protocol and specification [S18]. |
-| ag-ui-protocol/ag-ui | 14,183 | MIT | 2026-06-10 | Agent-to-UI event protocol [S20]. |
-| microsoft/agent-framework | 11,217 | MIT | 2026-06-10 | Python/.NET agent orchestration and deployment [S33]. |
-| facebookresearch/ParlAI | 10,626 | MIT | 2023-11-03 | Dialogue model research framework [S32]. |
-| agent-network-protocol/AgentNetworkProtocol | 1,319 | Apache-2.0 | 2026-06-08 | Agentic-web protocol stack [S21]. |
-| langchain-ai/agent-protocol | 605 | MIT | 2026-06-07 | Agent serving API for runs, threads, store [S23]. |
-| mondaycom/agent-tool-protocol | 98 | MIT | 2026-05-05 | Sandboxed code-execution protocol for tools/API aggregation [S26]. |
+| Project                                     |  Stars | License                 | Last push checked | Main purpose                                                                |
+| ------------------------------------------- | -----: | ----------------------- | ----------------- | --------------------------------------------------------------------------- |
+| microsoft/autogen                           | 58,834 | CC-BY-4.0 repo metadata | 2026-04-15        | Conversational/event-driven multi-agent framework [S30].                    |
+| crewAIInc/crewAI                            | 53,195 | MIT                     | 2026-06-10        | Role-based autonomous agent teams [S29].                                    |
+| run-llama/llama_index                       | 50,058 | MIT                     | 2026-06-10        | Document agents, RAG, data and retrieval framework [S31].                   |
+| langchain-ai/langgraph                      | 34,340 | MIT                     | 2026-06-09        | Stateful graph workflows and resilient agents [S28].                        |
+| openai/openai-agents-python                 | 27,053 | MIT                     | 2026-06-09        | Lightweight multi-agent workflows with handoffs, guardrails, tracing [S27]. |
+| a2aproject/A2A                              | 24,220 | Apache-2.0              | 2026-06-05        | Agent-to-agent protocol and specification [S18].                            |
+| ag-ui-protocol/ag-ui                        | 14,183 | MIT                     | 2026-06-10        | Agent-to-UI event protocol [S20].                                           |
+| microsoft/agent-framework                   | 11,217 | MIT                     | 2026-06-10        | Python/.NET agent orchestration and deployment [S33].                       |
+| facebookresearch/ParlAI                     | 10,626 | MIT                     | 2023-11-03        | Dialogue model research framework [S32].                                    |
+| agent-network-protocol/AgentNetworkProtocol |  1,319 | Apache-2.0              | 2026-06-08        | Agentic-web protocol stack [S21].                                           |
+| langchain-ai/agent-protocol                 |    605 | MIT                     | 2026-06-07        | Agent serving API for runs, threads, store [S23].                           |
+| mondaycom/agent-tool-protocol               |     98 | MIT                     | 2026-05-05        | Sandboxed code-execution protocol for tools/API aggregation [S26].          |
 
 ## OpenAI Agents SDK
 
@@ -136,16 +136,16 @@ DUADP is earlier-stage than OSSA, but it is more operational: it defines HTTP su
 
 ## Framework selection guidance
 
-| Use case | Prefer | Why |
-| --- | --- | --- |
-| Production stateful workflow with branches, retries, HITL | LangGraph | Explicit graph/state model and observability ecosystem [S28], [S36]. |
-| Fast role-based multi-agent prototype | CrewAI | Natural crew/role abstraction and large community [S29]. |
-| Research or dialogue-heavy multi-agent exploration | AutoGen | Conversational agent coordination pattern [S30]. |
-| New Microsoft/.NET/Python enterprise agent work | Microsoft Agent Framework | Current Microsoft direction for production orchestration [S33]. |
-| RAG-heavy knowledge assistant | LlamaIndex | Retrieval/data stack is the core strength [S31]. |
-| OpenAI-centered lightweight handoffs and guardrails | OpenAI Agents SDK | Small primitives and built-in tracing/guardrails [S27]. |
-| Standards-first portable agent definitions | OSSA | Contract, validation, governance, exports [S03], [S04]. |
-| Federated discovery of agents, skills, tools | DUADP | GAID/DID/WebFinger/gossip discovery and trust evidence [S01], [S02]. |
+| Use case                                                  | Prefer                    | Why                                                                  |
+| --------------------------------------------------------- | ------------------------- | -------------------------------------------------------------------- |
+| Production stateful workflow with branches, retries, HITL | LangGraph                 | Explicit graph/state model and observability ecosystem [S28], [S36]. |
+| Fast role-based multi-agent prototype                     | CrewAI                    | Natural crew/role abstraction and large community [S29].             |
+| Research or dialogue-heavy multi-agent exploration        | AutoGen                   | Conversational agent coordination pattern [S30].                     |
+| New Microsoft/.NET/Python enterprise agent work           | Microsoft Agent Framework | Current Microsoft direction for production orchestration [S33].      |
+| RAG-heavy knowledge assistant                             | LlamaIndex                | Retrieval/data stack is the core strength [S31].                     |
+| OpenAI-centered lightweight handoffs and guardrails       | OpenAI Agents SDK         | Small primitives and built-in tracing/guardrails [S27].              |
+| Standards-first portable agent definitions                | OSSA                      | Contract, validation, governance, exports [S03], [S04].              |
+| Federated discovery of agents, skills, tools              | DUADP                     | GAID/DID/WebFinger/gossip discovery and trust evidence [S01], [S02]. |
 
 ## Cost and reliability considerations
 

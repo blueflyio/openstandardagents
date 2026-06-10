@@ -12,12 +12,12 @@ Research current as of 2026-06-10. Source keys refer to `reading-list.md`.
 
 The most useful contribution is its production-readiness table:
 
-| System type | Production view |
-| --- | --- |
-| Simple workflows | Ready with error handling, input validation, monitoring. |
-| Tool-using agents | Ready with guardrails, output validation, cost limits, fallbacks. |
+| System type                    | Production view                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------ |
+| Simple workflows               | Ready with error handling, input validation, monitoring.                       |
+| Tool-using agents              | Ready with guardrails, output validation, cost limits, fallbacks.              |
 | Structured multi-agent systems | Cautiously ready with heavy guardrails, HITL checkpoints, progressive rollout. |
-| Open-ended multi-agent systems | Not ready for critical paths because of unpredictability [S36]. |
+| Open-ended multi-agent systems | Not ready for critical paths because of unpredictability [S36].                |
 
 Recommended actions include structured outputs, conservative model settings for deterministic tasks, tool whitelisting, progressive rollout, internal pilots, cost monitoring before production, and early documentation of internal APIs that could become MCP servers [S36].
 
@@ -27,11 +27,11 @@ Ruh.ai’s 2026 guide positions protocols as the answer to integration barriers.
 
 Its decision framework:
 
-| Need | Protocol |
-| --- | --- |
-| Agents need tools, data, APIs, applications | MCP |
-| Multiple agents must coordinate across vendors or systems | A2A |
-| Lightweight HTTP-based messaging or quick prototypes | ACP |
+| Need                                                      | Protocol |
+| --------------------------------------------------------- | -------- |
+| Agents need tools, data, APIs, applications               | MCP      |
+| Multiple agents must coordinate across vendors or systems | A2A      |
+| Lightweight HTTP-based messaging or quick prototypes      | ACP      |
 
 The blog’s most important recommendation is sequencing. Do not implement every protocol because it exists. Start with the boundary that is blocking the product, then add layers as complexity grows [S37].
 

@@ -22,13 +22,13 @@ The 2025 AI Agent Index documents 30 prominent deployed agentic AI systems. It t
 
 The core findings are governance-relevant:
 
-| Finding | Why it matters |
-| --- | --- |
-| 24 of 30 indexed agents were released or received major agentic updates in 2024-2025 | Deployment is moving faster than governance [S09]. |
-| Only 4 of 13 agents with frontier autonomy disclose any agentic safety evaluations | Safety evidence is scarce for the systems with greatest autonomy [S09]. |
-| 25 of 30 disclose no internal safety results and 23 of 30 have no third-party testing information | Empirical safety evidence is mostly absent [S09]. |
-| For 227 of 1,350 fields, no public information was found | Transparency gaps concentrate in ecosystem interaction and safety [S09]. |
-| There are no established standards for web conduct | Websites cannot reliably distinguish legitimate agents, malicious bots, and human traffic [S09], [S11]. |
+| Finding                                                                                           | Why it matters                                                                                          |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| 24 of 30 indexed agents were released or received major agentic updates in 2024-2025              | Deployment is moving faster than governance [S09].                                                      |
+| Only 4 of 13 agents with frontier autonomy disclose any agentic safety evaluations                | Safety evidence is scarce for the systems with greatest autonomy [S09].                                 |
+| 25 of 30 disclose no internal safety results and 23 of 30 have no third-party testing information | Empirical safety evidence is mostly absent [S09].                                                       |
+| For 227 of 1,350 fields, no public information was found                                          | Transparency gaps concentrate in ecosystem interaction and safety [S09].                                |
+| There are no established standards for web conduct                                                | Websites cannot reliably distinguish legitimate agents, malicious bots, and human traffic [S09], [S11]. |
 
 MIT Sloan's 2026 guidance is more operational. It argues that agentic AI is not ready for prime time because hallucinations and prompt-injection hijacking remain serious. At the same time, it predicts agents will handle most transactions in many large-scale business processes within five years, so organizations should build reusable internal capability and keep humans in the loop while reliability improves [S10].
 
@@ -36,12 +36,12 @@ MIT Sloan's 2026 guidance is more operational. It argues that agentic AI is not 
 
 The broader research literature increasingly treats agents as a systems-security and internet-infrastructure problem rather than only a model-behavior problem.
 
-| Source | Contribution | Implication |
-| --- | --- | --- |
-| Agentic Web: Weaving the Next Web with AI Agents | Describes the agentic web as a shift from human-centric browsing to autonomous, agent-driven coordination; identifies intelligence, interaction, and economics as core dimensions [S12]. | Protocols and economic rules will shape whether agents act as interoperable user delegates or platform-controlled bots. |
-| Systematic Survey of Security Threats and Defenses in LLM-Based AI Agents | Proposes a seven-layer attack surface: foundation, cognitive, memory, tool execution, multi-agent coordination, ecosystem, governance [S13]. | A control at one layer does not automatically defend another; prompt filters are not enough for tool or identity abuse. |
-| Governance Architecture for Autonomous Agent Systems | Proposes a layered governance architecture: execution sandboxing, intent verification, zero-trust inter-agent authorization, immutable audit logging [S14]. | Secure agents require non-bypassable runtime controls around side effects. |
-| Agent Network Protocol white paper | Frames agents as new internet entities and proposes identity/encrypted communication, meta-protocol negotiation, and application-layer descriptions [S21], [S22]. | Agent identity, capability discovery, and protocol negotiation are converging into an “agentic web” stack. |
+| Source                                                                    | Contribution                                                                                                                                                                             | Implication                                                                                                             |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Agentic Web: Weaving the Next Web with AI Agents                          | Describes the agentic web as a shift from human-centric browsing to autonomous, agent-driven coordination; identifies intelligence, interaction, and economics as core dimensions [S12]. | Protocols and economic rules will shape whether agents act as interoperable user delegates or platform-controlled bots. |
+| Systematic Survey of Security Threats and Defenses in LLM-Based AI Agents | Proposes a seven-layer attack surface: foundation, cognitive, memory, tool execution, multi-agent coordination, ecosystem, governance [S13].                                             | A control at one layer does not automatically defend another; prompt filters are not enough for tool or identity abuse. |
+| Governance Architecture for Autonomous Agent Systems                      | Proposes a layered governance architecture: execution sandboxing, intent verification, zero-trust inter-agent authorization, immutable audit logging [S14].                              | Secure agents require non-bypassable runtime controls around side effects.                                              |
+| Agent Network Protocol white paper                                        | Frames agents as new internet entities and proposes identity/encrypted communication, meta-protocol negotiation, and application-layer descriptions [S21], [S22].                        | Agent identity, capability discovery, and protocol negotiation are converging into an “agentic web” stack.              |
 
 ## Themes across academia
 

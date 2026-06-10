@@ -8,13 +8,13 @@ Agentic AI is shifting from isolated assistants to networked software actors. Th
 
 The ecosystem is converging into layers:
 
-| Layer | Main question | Representative standards |
-| --- | --- | --- |
-| Tool and context access | What can this agent use? | MCP, ATP |
-| Agent-to-agent work exchange | How do agents delegate tasks? | A2A, ACP |
-| Agent-to-user interaction | How does an agent stream state into UI? | AG-UI |
-| Discovery and identity | How does an agent find and trust another actor? | DUADP, ANP, Agent Cards, DIDs, GAIDs |
-| Contract and governance | What is this agent authorized to be and do? | OSSA, Cedar/policy bindings, NIST/NCCoE identity work |
+| Layer                        | Main question                                   | Representative standards                              |
+| ---------------------------- | ----------------------------------------------- | ----------------------------------------------------- |
+| Tool and context access      | What can this agent use?                        | MCP, ATP                                              |
+| Agent-to-agent work exchange | How do agents delegate tasks?                   | A2A, ACP                                              |
+| Agent-to-user interaction    | How does an agent stream state into UI?         | AG-UI                                                 |
+| Discovery and identity       | How does an agent find and trust another actor? | DUADP, ANP, Agent Cards, DIDs, GAIDs                  |
+| Contract and governance      | What is this agent authorized to be and do?     | OSSA, Cedar/policy bindings, NIST/NCCoE identity work |
 
 OSSA and DUADP fit into this map as complementary infrastructure, not as replacements for MCP or A2A. OSSA is a portable contract layer for identity, capabilities, governance metadata, validation, and export across runtimes. DUADP is a federated discovery layer that uses DNS/WebFinger/gossip, GAIDs, DIDs, signatures, and trust tiers to help agents find and evaluate published resources [S01], [S02], [S03], [S04].
 

@@ -6,17 +6,17 @@ Research current as of 2026-06-10. Source keys refer to `reading-list.md`.
 
 The major protocols are complementary. Most confusion comes from treating all agent standards as competitors.
 
-| Protocol | Primary boundary | Core artifact or message | Transport or format | Adoption status |
-| --- | --- | --- | --- | --- |
-| MCP | Agent to tools/data | Tools, resources, prompts | JSON-RPC-style protocol over stdio/HTTP transports | Dominant tool/context standard; early adopters include Block, Apollo, Replit, Sourcegraph [S16]. |
-| A2A | Agent to agent | Agent Card, tasks, messages, artifacts | HTTP(S), JSON-RPC 2.0, SSE; v1 adds broader bindings | Linux Foundation project; 24,220 GitHub stars; broad partner ecosystem [S17], [S18]. |
-| AG-UI | Agent backend to UI | Typed event stream | HTTP, WebSockets, SSE, webhooks | Fast-growing UI protocol; 14,183 GitHub stars [S19], [S20]. |
-| DUADP | Discovery, federation, identity | GAID, DID, `.well-known`, WebFinger, registry resources | HTTP endpoints, DNS TXT, WebFinger, gossip, MCP tools | Emerging Bluefly protocol; npm 0.1.7, 17 MCP tools on public node [S01], [S02]. |
-| OSSA | Agent contract and governance | YAML/JSON manifest, schemas, policy bindings | JSON Schema, CLI, export targets | npm 0.5.6; contract layer for identity, capabilities, governance, export [S03], [S04]. |
-| ANP | Agentic-web identity and communication | DID identities, meta-protocol negotiation, agent descriptions | W3C DID, semantic web/JSON-LD, application protocols | 1,319 GitHub stars; ambitious three-layer protocol suite [S21], [S22]. |
-| LangChain Agent Protocol | Agent serving API | Runs, threads, store, agents | HTTP API/OpenAPI style | 605 GitHub stars; used by LangGraph Studio and framework adapters [S23]. |
-| ACP | Lightweight agent communication | REST messages/runs | REST HTTP, SSE, optional SDKs | IBM/BeeAI-originated; now part of A2A under Linux Foundation [S24], [S25]. |
-| ATP | Agent-to-tools via code execution | Sandboxed TypeScript/JavaScript programs | Secure V8 isolate runtime, API/MCP aggregation | Very early; 98 GitHub stars; strong design experiment [S26]. |
+| Protocol                 | Primary boundary                       | Core artifact or message                                      | Transport or format                                   | Adoption status                                                                                  |
+| ------------------------ | -------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| MCP                      | Agent to tools/data                    | Tools, resources, prompts                                     | JSON-RPC-style protocol over stdio/HTTP transports    | Dominant tool/context standard; early adopters include Block, Apollo, Replit, Sourcegraph [S16]. |
+| A2A                      | Agent to agent                         | Agent Card, tasks, messages, artifacts                        | HTTP(S), JSON-RPC 2.0, SSE; v1 adds broader bindings  | Linux Foundation project; 24,220 GitHub stars; broad partner ecosystem [S17], [S18].             |
+| AG-UI                    | Agent backend to UI                    | Typed event stream                                            | HTTP, WebSockets, SSE, webhooks                       | Fast-growing UI protocol; 14,183 GitHub stars [S19], [S20].                                      |
+| DUADP                    | Discovery, federation, identity        | GAID, DID, `.well-known`, WebFinger, registry resources       | HTTP endpoints, DNS TXT, WebFinger, gossip, MCP tools | Emerging Bluefly protocol; npm 0.1.7, 17 MCP tools on public node [S01], [S02].                  |
+| OSSA                     | Agent contract and governance          | YAML/JSON manifest, schemas, policy bindings                  | JSON Schema, CLI, export targets                      | npm 0.5.6; contract layer for identity, capabilities, governance, export [S03], [S04].           |
+| ANP                      | Agentic-web identity and communication | DID identities, meta-protocol negotiation, agent descriptions | W3C DID, semantic web/JSON-LD, application protocols  | 1,319 GitHub stars; ambitious three-layer protocol suite [S21], [S22].                           |
+| LangChain Agent Protocol | Agent serving API                      | Runs, threads, store, agents                                  | HTTP API/OpenAPI style                                | 605 GitHub stars; used by LangGraph Studio and framework adapters [S23].                         |
+| ACP                      | Lightweight agent communication        | REST messages/runs                                            | REST HTTP, SSE, optional SDKs                         | IBM/BeeAI-originated; now part of A2A under Linux Foundation [S24], [S25].                       |
+| ATP                      | Agent-to-tools via code execution      | Sandboxed TypeScript/JavaScript programs                      | Secure V8 isolate runtime, API/MCP aggregation        | Very early; 98 GitHub stars; strong design experiment [S26].                                     |
 
 ## Model Context Protocol (MCP)
 

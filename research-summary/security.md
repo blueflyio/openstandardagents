@@ -6,31 +6,31 @@ Research current as of 2026-06-10. Source keys refer to `reading-list.md`.
 
 Agent adoption is ahead of security governance. Gravitee’s 2026 report is the clearest quantitative snapshot:
 
-| Metric | Reported value | Source |
-| --- | ---: | --- |
-| Technical teams beyond planning | 80.9% | [S39] |
-| Teams with full IT/security approval for the entire agent fleet | 14.4% | [S38], [S39] |
-| Average share of agents actively monitored or secured | 47.1% | [S39] |
-| Organizations with confirmed or suspected incidents in the last year | 88% | [S38], [S39] |
-| Healthcare organizations with confirmed or suspected incidents | 92.7% | [S39] |
-| Teams treating agents as independent identities | 21.9% | [S38], [S39] |
-| Teams using shared API keys for agent-to-agent authentication | 45.6% | [S38], [S39] |
-| Technical teams using custom, hardcoded authorization logic | 27.2% | [S39] |
+| Metric                                                               | Reported value | Source       |
+| -------------------------------------------------------------------- | -------------: | ------------ |
+| Technical teams beyond planning                                      |          80.9% | [S39]        |
+| Teams with full IT/security approval for the entire agent fleet      |          14.4% | [S38], [S39] |
+| Average share of agents actively monitored or secured                |          47.1% | [S39]        |
+| Organizations with confirmed or suspected incidents in the last year |            88% | [S38], [S39] |
+| Healthcare organizations with confirmed or suspected incidents       |          92.7% | [S39]        |
+| Teams treating agents as independent identities                      |          21.9% | [S38], [S39] |
+| Teams using shared API keys for agent-to-agent authentication        |          45.6% | [S38], [S39] |
+| Technical teams using custom, hardcoded authorization logic          |          27.2% | [S39]        |
 
 The central conclusion is that many incidents are not caused by “rogue models.” They are caused by missing governance, identity, authorization, logging, and runtime policy enforcement [S38], [S39].
 
 ## Major threat classes
 
-| Threat | Description | Why agents amplify it |
-| --- | --- | --- |
-| Prompt injection and goal hijack | Malicious instructions in user input, documents, websites, emails, tool outputs, or peer-agent messages alter the agent's goal. | The agent can act, not just answer; a hijacked plan can trigger API calls, emails, transactions, or deployments [S40], [S42]. |
-| Excessive agency | Too much functionality, permission, or autonomy. | Hallucinations or injected instructions become damaging actions when broad tools and credentials are available [S41]. |
-| Tool poisoning | Malicious tool descriptions, metadata, or outputs steer the model toward unsafe calls. | Agents often trust tool metadata as instruction-like context [S13], [S41]. |
-| Identity and privilege abuse | Shared keys, inherited user credentials, generic service accounts, or agent impersonation. | Accountability and revocation fail when multiple agents share credentials [S15], [S38]. |
-| Memory and context poisoning | Persistent or retrieved content carries malicious instructions or false data. | Poisoning can persist across sessions and propagate through RAG or memory systems [S13], [S42]. |
-| Insecure inter-agent communication | Spoofed, tampered, or untrusted peer-agent messages. | Multi-agent systems create trust chains and cascading failure modes [S13], [S42]. |
-| Unexpected code execution | Agents generate or run commands/code without adequate sandboxing. | Coding agents and ATP-like systems need strict execution isolation [S14], [S26], [S42]. |
-| Cascading failures | Small errors propagate through planning, delegation, retries, or agent teams. | Multi-agent systems can amplify a bad assumption or unbounded loop [S13], [S42]. |
+| Threat                             | Description                                                                                                                     | Why agents amplify it                                                                                                         |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Prompt injection and goal hijack   | Malicious instructions in user input, documents, websites, emails, tool outputs, or peer-agent messages alter the agent's goal. | The agent can act, not just answer; a hijacked plan can trigger API calls, emails, transactions, or deployments [S40], [S42]. |
+| Excessive agency                   | Too much functionality, permission, or autonomy.                                                                                | Hallucinations or injected instructions become damaging actions when broad tools and credentials are available [S41].         |
+| Tool poisoning                     | Malicious tool descriptions, metadata, or outputs steer the model toward unsafe calls.                                          | Agents often trust tool metadata as instruction-like context [S13], [S41].                                                    |
+| Identity and privilege abuse       | Shared keys, inherited user credentials, generic service accounts, or agent impersonation.                                      | Accountability and revocation fail when multiple agents share credentials [S15], [S38].                                       |
+| Memory and context poisoning       | Persistent or retrieved content carries malicious instructions or false data.                                                   | Poisoning can persist across sessions and propagate through RAG or memory systems [S13], [S42].                               |
+| Insecure inter-agent communication | Spoofed, tampered, or untrusted peer-agent messages.                                                                            | Multi-agent systems create trust chains and cascading failure modes [S13], [S42].                                             |
+| Unexpected code execution          | Agents generate or run commands/code without adequate sandboxing.                                                               | Coding agents and ATP-like systems need strict execution isolation [S14], [S26], [S42].                                       |
+| Cascading failures                 | Small errors propagate through planning, delegation, retries, or agent teams.                                                   | Multi-agent systems can amplify a bad assumption or unbounded loop [S13], [S42].                                              |
 
 ## NIST/NCCoE identity and authorization framework
 
@@ -73,18 +73,18 @@ These categories align with the academic layered attack-surface model: defenses 
 
 The strongest pattern is layered, deterministic enforcement around a probabilistic agent.
 
-| Control | Purpose | Sources |
-| --- | --- | --- |
-| Distinct agent identity | Separate humans, agents, services, and workloads; enable audit and revocation. | [S15], [S38], [S40] |
-| Short-lived, scoped credentials | Reduce blast radius and prevent shared-key sprawl. | [S15], [S40] |
-| Tool allowlists and capability manifests | Prevent agents from discovering or invoking tools outside their role. | [S03], [S40], [S41] |
-| Schema validation and typed outputs | Stop hallucinated parameters and malformed side effects. | [S36], [S40] |
-| Human-in-the-loop gates | Require explicit approval for irreversible or high-impact actions. | [S05], [S10], [S40], [S41] |
-| Sandboxing and isolation | Contain code execution, browser actions, and untrusted plugins. | [S14], [S26], [S42] |
-| Runtime intent verification | Check proposed actions against the original user goal and policy. | [S14], [S40], [S42] |
-| Zero-trust inter-agent authorization | Do not trust peer agents by default; authenticate, authorize, and scope every delegation. | [S14], [S15], [S42] |
-| Immutable audit logging | Reconstruct what the agent saw, decided, and did. | [S14], [S40] |
-| Observability and SLOs | Trace steps, tool calls, costs, latency, and failures. | [S36] |
+| Control                                  | Purpose                                                                                   | Sources                    |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------- | -------------------------- |
+| Distinct agent identity                  | Separate humans, agents, services, and workloads; enable audit and revocation.            | [S15], [S38], [S40]        |
+| Short-lived, scoped credentials          | Reduce blast radius and prevent shared-key sprawl.                                        | [S15], [S40]               |
+| Tool allowlists and capability manifests | Prevent agents from discovering or invoking tools outside their role.                     | [S03], [S40], [S41]        |
+| Schema validation and typed outputs      | Stop hallucinated parameters and malformed side effects.                                  | [S36], [S40]               |
+| Human-in-the-loop gates                  | Require explicit approval for irreversible or high-impact actions.                        | [S05], [S10], [S40], [S41] |
+| Sandboxing and isolation                 | Contain code execution, browser actions, and untrusted plugins.                           | [S14], [S26], [S42]        |
+| Runtime intent verification              | Check proposed actions against the original user goal and policy.                         | [S14], [S40], [S42]        |
+| Zero-trust inter-agent authorization     | Do not trust peer agents by default; authenticate, authorize, and scope every delegation. | [S14], [S15], [S42]        |
+| Immutable audit logging                  | Reconstruct what the agent saw, decided, and did.                                         | [S14], [S40]               |
+| Observability and SLOs                   | Trace steps, tool calls, costs, latency, and failures.                                    | [S36]                      |
 
 The Layered Governance Architecture paper operationalizes this as four layers: execution sandboxing, intent verification, zero-trust inter-agent authorization, and immutable audit logging. In its benchmark, combining layers performed better than relying on a single judge or prompt-level defense [S14].
 
