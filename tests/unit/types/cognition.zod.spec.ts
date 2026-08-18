@@ -4,7 +4,7 @@
  * Validates cognition type schemas wired into release/v0.5.x exports.
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from '@jest/globals';
 import {
   CreateSessionRequestSchema,
   HypothesisSchema,

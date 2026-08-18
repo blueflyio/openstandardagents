@@ -3,9 +3,12 @@
   "kind": "Project",
   "metadata": {
     "name": "openstandardagents",
-    "description": "Decentralized AI project operating within the OSSA/Bluefly ecosystem.",
+    "description": "OSSA spec, CLI, MCP server, and TypeScript/Python SDKs for the Open Standard for Software Agents.",
     "uri": "duadp://bluefly.io/projects/openstandardagents",
-    "trust_tier": "verified-signature"
+    "trust_tier": "verified-signature",
+    "npm": "@bluefly/openstandardagents",
+    "version": "0.5.1",
+    "gitlab": "https://gitlab.com/blueflyio/ossa/openstandardagents"
   },
   "spec": {
     "discovery": {
@@ -25,5 +28,56 @@
     },
     "training_license": "Permissive (See repository LICENSE)",
     "model_requirements": []
+  },
+  "control_primitives": {
+    "full_health": "npm run ci:validate",
+    "fast_check": "npm run ci:validate:fast",
+    "run_order": [
+      "validate:schema",
+      "typecheck",
+      "test:unit",
+      "validate:deps",
+      "validate:examples",
+      "validate:openapi",
+      "validate:versions"
+    ],
+    "commands": {
+      "validate:schema": "Compile JSON schema — confirms spec/ files are valid AJV-compilable JSON Schema",
+      "typecheck": "tsc --noEmit — full TypeScript strict check",
+      "test:unit": "Jest unit tests (fast, no I/O)",
+      "validate:deps": "depcheck — confirms no unused or prohibited dependencies",
+      "validate:examples": "Validate all examples/ against current schema",
+      "validate:openapi": "Spectral lint on openapi/**/*.yaml",
+      "validate:versions": "Version consistency across package.json, .version.json, spec/, CHANGELOG.md",
+      "test:integration": "Jest integration tests (requires built dist)",
+      "test:smoke": "E2E smoke tests (CLI + MCP + npm-pack)",
+      "test:mcp": "vitest MCP server integration tests",
+      "build": "tsc + copy spec and assets to dist/",
+      "gen:all": "Regenerate types and Zod schemas from JSON Schema source",
+      "docs:generate": "Regenerate all docs from source"
+    }
+  },
+  "ownership": {
+    "authoritative_for": [
+      "ossa manifest schema (spec/)",
+      "ossa CLI (src/cli/)",
+      "ossa MCP server (src/mcp-server/)",
+      "TypeScript SDK (src/sdks/typescript/)",
+      "Python SDK (src/sdks/python/)",
+      "platform export adapters (src/adapters/)",
+      "subagent manifests (.agents/)"
+    ],
+    "consumes_from": [
+      "@bluefly/duadp — discovery client only, no DUADP logic here",
+      "compliance-engine — Cedar policy evaluation via API, no policy bodies here",
+      "@modelcontextprotocol/sdk — MCP protocol implementation"
+    ],
+    "must_not_own": [
+      "Cedar policy YAML bodies (→ cedar-policies repo)",
+      "UI components (→ studio-ui)",
+      "DUADP discovery logic (→ duadp repo)",
+      "MCP protocol implementation (→ agent-protocol)",
+      "OpenAPI shared schemas (→ api-schema-registry)"
+    ]
   }
 }

@@ -9,7 +9,7 @@
  * If this test fails, it means getApiVersion() or .version.json is stale.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@jest/globals';
 import { API_VERSION } from '../../src/version.js';
 
 // Minimal runtime-safe wrapper — avoids fs call in test environment

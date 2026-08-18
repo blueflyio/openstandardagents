@@ -1,7 +1,7 @@
 # OSSA - Open Standard for Software Agents
 
-> **Development happens on [GitLab](https://gitlab.com/blueflyio/ossa/openstandardagents).** This repo is a read-only mirror.
-> [Source](https://gitlab.com/blueflyio/ossa/openstandardagents) | [Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues) | [npm](https://www.npmjs.com/package/@bluefly/openstandardagents)
+> **Source of truth**: [GitLab](https://gitlab.com/blueflyio/ossa/openstandardagents) — development, issues, and CI happen here.
+> [GitLab](https://gitlab.com/blueflyio/ossa/openstandardagents) | [Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues) | [npm](https://www.npmjs.com/package/@bluefly/openstandardagents)
 
 **The infrastructure bridge between agent protocols and deployment platforms.**
 
@@ -75,14 +75,17 @@ OSSA natively aligns with the [NIST CAISI Request for Information on Collaborati
 
 ## What's New in v0.5.1
 
-- **Layer 4: Execution Economics**: Portable execution intent via `ExecutionProfile`, `ContextPack`, and `ReplayPacket`.
-- **StateMesh Integration**: Support for governed agent state exchange (`extensions.statemesh`).
-- **Active Operational Memory**: Agents now publish `StateClaims` (Evidence/Intent) to the mesh during runtime.
-- **AI SDK v6 Loop**: Native `ToolLoopAgent` implementation in the production `OpenAIAdapter`.
-- **Reasoning Escrow**: Cryptographic hashing of reasoning traces for auditable yet private agent decisions.
-- **DUADP Trust Tiers**: Native alignment with DUADP's four-tier trust model (Official, Verified, Community, Unverified).
-- **CLI Economics**: New commands: `ossa execution-profile validate`, `ossa context-pack build`, `ossa task quote`.
-- **CAOE cognition types**: `session`, `hypothesis`, and `alignment gate` JSON schema extensions.
+- **Memory Hierarchy (P5)**: Three-tier memory contracts (working → episodic → long-term) with `ossa memory init|index|resolve|promote` CLI.
+- **Execution Economics (Layer 4)**: `ExecutionProfile`, `ContextPack`, `ReplayPacket` schemas; `ossa execution-profile validate`, `ossa context-pack build`, `ossa task quote`.
+- **StateMesh Integration**: Agents publish `StateClaims` to the mesh at runtime; governed state exchange via `extensions.statemesh`.
+- **Reasoning Escrow**: Cryptographic hashing of reasoning traces in the AI SDK v6 `ToolLoopAgent` — auditable yet private.
+- **AI SDK v6 Loop**: Native `ToolLoopAgent` in `OpenAIAdapter`; `@ai-sdk/anthropic` and `@ai-sdk/google` adapters added.
+- **DUADP Trust Tiers**: Native four-tier trust model (Official → Verified → Community → Unverified) wired into discovery.
+- **Agent Builder API**: `/api/agent-builder` canonical route; `apiVersion >= ossa/v0.5.0` enforced at scaffold time.
+- **CAOE cognition types**: `session`, `hypothesis`, `alignment gate` JSON schema extensions + `kind: Role` manifest.
+- **Skills Pipeline (6 commands)**: `ossa skills research|generate|export|list|validate|sync` — production-ready, 19 tests passing.
+- **5 new skill plugins**: `database-migration`, `chaos-engineering`, `performance-profiling`, `compliance-auditing`, `incident-response`.
+- **Dependency compliance**: `uuid ^11.1.0`, `@modelcontextprotocol/sdk ^1.26.0`.
 
 See [CHANGELOG.md](./CHANGELOG.md) for complete details.
 
@@ -300,7 +303,7 @@ Upgrade manifests to the latest spec version:
 
 ```bash
 # Migrate from older version to current
-ossa migrate agent.ossa.yaml --to 0.5.0
+ossa migrate agent.ossa.yaml --to 0.5.1
 
 # List available migration paths
 ossa migrate --list
@@ -345,7 +348,7 @@ if (result.valid) {
 - `npm` (production) - TypeScript package with manifest
 - `agent-skills` (production) - SKILL.md for Claude Code
 
-**Skills Pipeline** (✅ Current in v0.5.0):
+**Skills Pipeline** (✅ Current in v0.5.1):
 - `ossa skills research` - Index skills from curated sources (cached locally at ~/.ossa/skills-index.json)
 - `ossa skills generate` - Auto-detects input format (OSSA, Oracle Agent Spec, AGENTS.md)
 - `ossa skills export` - Package as npm, install to ~/.claude/skills/, publish to registry
@@ -408,7 +411,7 @@ OSSA complements MCP and A2A by adding the packaging and deployment layer they d
 ### Manifest Format
 
 ```yaml
-apiVersion: ossa/v0.5.0
+apiVersion: ossa/v0.5.1
 kind: Agent
 metadata:
   name: code-reviewer
@@ -435,7 +438,7 @@ spec:
 #### Team Manifest Example
 
 ```yaml
-apiVersion: ossa/v0.5.0
+apiVersion: ossa/v0.5.1
 kind: Agent
 metadata:
   name: dev-team
@@ -529,7 +532,7 @@ import { validateManifest } from '@bluefly/openstandardagents/validation';
 import type { OssaAgent } from '@bluefly/openstandardagents/types';
 
 const agent: OssaAgent = {
-  apiVersion: 'ossa/v0.5.0',
+  apiVersion: 'ossa/v0.5.1',
   kind: 'Agent',
   metadata: { name: 'creative-agent-naming', version: '1.0.0' },
   spec: {
@@ -575,7 +578,7 @@ OSSA is designed to work **alongside** existing agent protocols, not replace the
 **Example**: An OSSA manifest can declare that an agent uses MCP tools and A2A messaging, then export that configuration to Docker, Kubernetes, or LangChain deployment packages.
 
 ```yaml
-apiVersion: ossa/v0.5.0
+apiVersion: ossa/v0.5.1
 kind: Agent
 metadata:
   name: code-reviewer
@@ -629,7 +632,7 @@ ossa export agent.ossa.yaml --platform docker --output ./docker-deploy
 ossa export --list-platforms
 ossa lint agent.ossa.yaml
 ossa diff old.ossa.yaml new.ossa.yaml
-ossa migrate agent.ossa.yaml --to 0.5.0
+ossa migrate agent.ossa.yaml --to 0.5.1
 ossa generate-gaid agent.ossa.yaml
 ossa export agent.ossa.yaml --perfect-agent
 ossa export agent.ossa.yaml --include-agents-md --include-team --include-evals

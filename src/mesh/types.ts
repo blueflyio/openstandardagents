@@ -190,6 +190,12 @@ export interface AgentCard {
     websocket?: string;
   };
   transport: Transport[];
+  /**
+   * A2A preferred transport. 'http-stateless' when the agent's MCP surface
+   * targets spec 2026-07-28 (sessionless), 'http' for the 2025-11-25 stateful
+   * revision. Derived from protocols.mcp.specVersion.
+   */
+  preferredTransport?: string;
 
   // Security
   authentication: AuthMethod[];

@@ -71,7 +71,7 @@ Single JSON with OSSA contract, A2A skills, MCP tools, and 12 platform adapters 
 
 ### Resources
 
-- `ossa://schema/v0.4/agent` — JSON Schema
+- `ossa://schema/v0.5.1/agent` — JSON Schema
 - `ossa://template/minimal` — Minimal manifest template
 - `ossa://template/full` — Full manifest with all sections
 - `ossa://guide/mcp-ossa-a2a` — MCP → OSSA → A2A guide
@@ -92,13 +92,13 @@ ossa validate agent.ossa.yaml         # Validate against schema
 ossa export agent.ossa.yaml --platform docker  # Export to platform
 ossa export --list-platforms           # List supported export platforms
 ossa diff old.yaml new.yaml           # Compare manifests
-ossa migrate agent.yaml --to 0.5.0    # Migrate to newer version
+ossa migrate agent.yaml --to 0.5.1    # Migrate to newer version
 ```
 
 ## Minimal Manifest
 
 ```yaml
-apiVersion: ossa/v0.5.0
+apiVersion: ossa/v0.5.1
 kind: Agent
 metadata:
   name: my-agent
@@ -126,7 +126,7 @@ npm run test:unit     # Unit tests
 
 ## Status (March 2026)
 
-CLI: production | MCP Server: 10 tools | Export: see `ossa export --list-platforms` | Spec: v0.5.0
+CLI: production | MCP Server: 10 tools | Export: see `ossa export --list-platforms` | Spec: v0.5.1
 
 ## Repository Governance Instructions
 **ATTENTION ALL AI AGENTS AND COPILOTS:**
