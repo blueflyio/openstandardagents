@@ -909,12 +909,163 @@
             "sampling": {
               "type": "boolean",
               "default": false,
-              "description": "Whether agent supports MCP sampling"
+              "description": "Whether agent supports MCP sampling. DEPRECATED in MCP spec 2026-07-28."
+            },
+            "serverDiscover": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether the server supports the server/discover RPC (2026-07-28) for capability negotiation without an initialize handshake"
+            },
+            "tasks": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether the server supports the Tasks extension. In 2026-07-28 Tasks moved out of experimental core into an extension"
+            }
+          },
+          "additionalProperties": false
+        },
+        "specVersion": {
+          "type": "string",
+          "enum": [
+            "2025-11-25",
+            "2026-07-28"
+          ],
+          "description": "MCP wire-spec revision this agent's MCP surface targets. '2026-07-28' is the stateless default (no initialize handshake, no Mcp-Session-Id); '2025-11-25' is the legacy stateful, session-pinned revision. Distinct from 'version', which is the semver protocol version.",
+          "examples": [
+            "2026-07-28"
+          ]
+        },
+        "transport": {
+          "type": "string",
+          "enum": [
+            "stateless",
+            "stateful"
+          ],
+          "description": "HTTP transport mode. 'stateless' (single self-contained request; client info travels in _meta) is required for specVersion 2026-07-28. 'stateful' (initialize handshake + Mcp-Session-Id) is only valid for specVersion 2025-11-25."
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "The MCP HTTP endpoint (the /mcp URL) that clients POST to.",
+          "examples": [
+            "https://agents.example.com/mcp"
+          ]
+        },
+        "wellKnownPath": {
+          "type": "string",
+          "default": "/.well-known/mcp",
+          "description": "Optional override for the well-known discovery path."
+        },
+        "auth": {
+          "type": "object",
+          "description": "MCP endpoint authentication configuration.",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "oauth2.1",
+                "api-key",
+                "none"
+              ],
+              "description": "Authentication scheme for the MCP endpoint."
+            },
+            "pkce": {
+              "type": "boolean",
+              "description": "Whether PKCE is used. MUST be true when type is 'oauth2.1'."
+            },
+            "issuerValidation": {
+              "type": "boolean",
+              "description": "Whether the client validates the 'iss' authorization-server identifier per RFC 9207. Required by MCP spec 2026-07-28 (SEP-2468); omitting or disabling it emits a validation warning under 2026-07-28."
+            }
+          },
+          "additionalProperties": false
+        },
+        "deprecated": {
+          "type": "object",
+          "description": "Declares use of MCP features deprecated in the 2026-07-28 spec. These remain valid under 2025-11-25; under 2026-07-28 each enabled flag emits a deprecation warning.",
+          "properties": {
+            "sampling": {
+              "type": "boolean",
+              "default": false,
+              "description": "Server-initiated LLM sampling. Deprecated in 2026-07-28."
+            },
+            "roots": {
+              "type": "boolean",
+              "default": false,
+              "description": "Client filesystem roots. Deprecated in 2026-07-28."
+            },
+            "logging": {
+              "type": "boolean",
+              "default": false,
+              "description": "Protocol-level logging. Deprecated in 2026-07-28."
             }
           },
           "additionalProperties": false
         }
       },
+      "allOf": [
+        {
+          "$comment": "MCP 2026-07-28 removed stateful/session-pinned HTTP transport (SEP-2567). Declaring transport 'stateful' with specVersion '2026-07-28' is invalid.",
+          "if": {
+            "required": [
+              "specVersion",
+              "transport"
+            ],
+            "properties": {
+              "specVersion": {
+                "const": "2026-07-28"
+              },
+              "transport": {
+                "const": "stateful"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "transport": {
+                "const": "stateless"
+              }
+            }
+          }
+        },
+        {
+          "$comment": "OAuth 2.1 requires PKCE. When auth.type is 'oauth2.1', auth.pkce must be present and true.",
+          "if": {
+            "required": [
+              "auth"
+            ],
+            "properties": {
+              "auth": {
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "const": "oauth2.1"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "auth": {
+                "required": [
+                  "pkce"
+                ],
+                "properties": {
+                  "pkce": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
       "additionalProperties": false
     },
     "A2AProtocol": {
