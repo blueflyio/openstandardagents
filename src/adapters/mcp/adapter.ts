@@ -63,7 +63,116 @@ export class MCPAdapter extends BaseExporter {
       });
     }
 
+    // ── MCP 2026-07-28 transport-mode guards ─────────────────────────────
+    const mcp = this.getMcpProtocol(manifest);
+    const specVersion = (mcp?.specVersion as string) || '2026-07-28';
+
+    // Hard error: stateful transport is removed in 2026-07-28 (SEP-2567).
+    if (mcp?.transport === 'stateful' && specVersion === '2026-07-28') {
+      errors.push({
+        message:
+          "MCP 2026-07-28 does not support stateful transport. Use specVersion: '2025-11-25' or switch to transport: 'stateless'.",
+        path: 'protocols.mcp.transport',
+        code: 'MCP_STATEFUL_UNSUPPORTED',
+      });
+    }
+
+    // Deprecation warnings: a 2025-11-25 manifest still using sampling, roots,
+    // or protocol logging — deprecated in 2026-07-28 (12-month migration window).
+    if (specVersion === '2025-11-25') {
+      const deprecated = (mcp?.deprecated as Record<string, boolean>) || {};
+      const caps = (mcp?.capabilities as Record<string, boolean>) || {};
+      const uses: Array<[string, boolean]> = [
+        ['sampling', Boolean(deprecated.sampling || caps.sampling)],
+        ['roots', Boolean(deprecated.roots)],
+        ['logging', Boolean(deprecated.logging)],
+      ];
+      for (const [feature, used] of uses) {
+        if (used) {
+          warnings.push({
+            message: `MCP feature '${feature}' is deprecated in spec 2026-07-28. The 12-month migration window has started.`,
+            path: `protocols.mcp.deprecated.${feature}`,
+            suggestion: `Migrate off ${feature} before adopting specVersion 2026-07-28.`,
+            code: 'MCP_FEATURE_DEPRECATED',
+          });
+        }
+      }
+    }
+
     return { errors, warnings };
+  }
+
+  /** Safely read the protocols.mcp declaration block from a manifest. */
+  private getMcpProtocol(
+    manifest: OssaAgent
+  ): Record<string, unknown> | undefined {
+    return (
+      manifest as { protocols?: { mcp?: Record<string, unknown> } }
+    ).protocols?.mcp;
+  }
+
+  /**
+   * Resolve the effective MCP spec version: CLI flag override
+   * (platformOptions.mcpSpecVersion) > manifest protocols.mcp.specVersion >
+   * default '2026-07-28'.
+   */
+  private resolveMcpSpecVersion(
+    manifest: OssaAgent,
+    options?: ExportOptions
+  ): string {
+    const flag = options?.platformOptions?.mcpSpecVersion as string | undefined;
+    const declared = this.getMcpProtocol(manifest)?.specVersion as
+      | string
+      | undefined;
+    return flag || declared || '2026-07-28';
+  }
+
+  /**
+   * Generate a client `.mcp.json` for the target spec version.
+   *
+   * - 2026-07-28 → stateless HTTP: { url, transport, specVersion, headers, auth }.
+   *   No command/args (those are stdio/stateful patterns); no session management.
+   * - 2025-11-25 → legacy stateful stdio launcher: { command, args, env }.
+   */
+  private generateMcpJson(
+    manifest: OssaAgent,
+    agentName: string,
+    options?: ExportOptions
+  ): string {
+    const mcp = this.getMcpProtocol(manifest);
+    const specVersion = this.resolveMcpSpecVersion(manifest, options);
+
+    let serverConfig: Record<string, unknown>;
+
+    if (specVersion === '2025-11-25') {
+      // Legacy stateful stdio launcher.
+      serverConfig = {
+        command: 'npx',
+        args: ['-y', '@bluefly/openstandardagents', 'serve', '--mcp'],
+        env: {},
+      };
+    } else {
+      // Stateless 2026-07-28 HTTP client config.
+      const servers = mcp?.servers as Array<Record<string, unknown>> | undefined;
+      const endpoint =
+        (mcp?.endpoint as string) ||
+        (servers?.[0]?.url as string) ||
+        'https://REPLACE_ME/mcp';
+      serverConfig = {
+        url: endpoint,
+        transport: 'http',
+        specVersion: '2026-07-28',
+        headers: {
+          'MCP-Protocol-Version': '2026-07-28',
+        },
+        ...(mcp?.auth ? { auth: mcp.auth } : {}),
+      };
+    }
+
+    return (
+      JSON.stringify({ mcpServers: { [agentName]: serverConfig } }, null, 2) +
+      '\n'
+    );
   }
 
   /**
@@ -148,6 +257,17 @@ export class MCPAdapter extends BaseExporter {
           ? [{ title: 'Available Tools', content: toolsList }]
           : undefined,
       })
+    );
+
+    // Generate .mcp.json — client config for the target MCP spec version.
+    // Stateless (2026-07-28) by default; legacy stateful (2025-11-25) on request.
+    files.push(
+      this.createFile(
+        `${prefix}/.mcp.json`,
+        this.generateMcpJson(manifest, agentName, options),
+        'config',
+        'json'
+      )
     );
 
     return files;

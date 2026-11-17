@@ -1,0 +1,254 @@
+{
+  "$id": "https://ossa.dev/spec/v1/agent-card.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Card v1.0",
+  "description": "Machine-readable agent passport enabling auto-discovery, auth negotiation, capability verification, and A2A protocol compatibility.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "humanReadableId",
+    "agentVersion",
+    "name",
+    "description",
+    "url",
+    "capabilities",
+    "authSchemes"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Version of the Agent Card schema."
+    },
+    "humanReadableId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$",
+      "description": "Unique namespace/agent identifier in 'org/agent-name' format.",
+      "examples": ["acme/weather-reporter", "blueflyio/code-review-agent"]
+    },
+    "agentVersion": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "description": "Semantic version (MAJOR.MINOR.PATCH) of the agent software.",
+      "examples": ["1.0.0", "2.1.0-beta.1"]
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 150,
+      "description": "Human-readable display name."
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "Clear description of the agent's purpose and capabilities."
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Primary A2A endpoint URL. MUST use HTTPS except for localhost.",
+      "examples": ["https://api.my-agent.example.com/a2a"]
+    },
+    "provider": {
+      "$ref": "#/$defs/Provider"
+    },
+    "capabilities": {
+      "$ref": "#/$defs/Capabilities"
+    },
+    "authSchemes": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Authentication schemes supported. At least one is required.",
+      "items": {
+        "$ref": "#/$defs/AuthScheme"
+      }
+    },
+    "skills": {
+      "type": "array",
+      "description": "Discrete operations the agent can perform.",
+      "items": {
+        "$ref": "#/$defs/Skill"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "description": "Searchable discovery keywords.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "privacyPolicyUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to the agent's privacy policy."
+    },
+    "termsOfServiceUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to the agent's terms of service."
+    },
+    "iconUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to the agent's icon image."
+    },
+    "lastUpdated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of last modification to this card."
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "Provider": {
+      "type": "object",
+      "required": ["name"],
+      "description": "Organization or individual operating this agent.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name of the provider."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Provider's homepage URL."
+        },
+        "support_contact": {
+          "type": "string",
+          "description": "Support contact (email, URL, or mailto: URI)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "Capabilities": {
+      "type": "object",
+      "required": ["a2aVersion"],
+      "description": "Protocol capabilities for this agent.",
+      "properties": {
+        "a2aVersion": {
+          "type": "string",
+          "description": "A2A protocol version supported.",
+          "examples": ["1.0"]
+        },
+        "mcpVersion": {
+          "type": "string",
+          "description": "MCP protocol version supported, if any.",
+          "examples": ["0.6"]
+        },
+        "supportedMessageParts": {
+          "type": "array",
+          "description": "Message part types this agent can consume/produce.",
+          "items": {
+            "type": "string",
+            "enum": ["text", "file", "data", "image", "audio", "video"]
+          }
+        },
+        "supportsPushNotifications": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the agent supports async push notifications."
+        },
+        "teeDetails": {
+          "$ref": "#/$defs/TeeDetails"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TeeDetails": {
+      "type": "object",
+      "required": ["type"],
+      "description": "Trusted Execution Environment attestation details.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "TEE technology type.",
+          "examples": ["Intel SGX", "AMD SEV", "AWS Nitro"]
+        },
+        "attestationEndpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the TEE remote attestation endpoint."
+        },
+        "publicKey": {
+          "type": "string",
+          "description": "PEM-encoded public key of the enclave."
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable explanation of what the TEE protects."
+        }
+      },
+      "additionalProperties": false
+    },
+    "AuthScheme": {
+      "type": "object",
+      "required": ["scheme"],
+      "description": "A single authentication method supported by the agent.",
+      "properties": {
+        "scheme": {
+          "type": "string",
+          "enum": ["apiKey", "oauth2", "bearer", "none"],
+          "description": "Authentication scheme identifier."
+        },
+        "description": {
+          "type": "string",
+          "description": "How to obtain and use credentials for this scheme."
+        },
+        "tokenUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "OAuth2 token endpoint. Required when scheme is 'oauth2'."
+        },
+        "scopes": {
+          "type": "array",
+          "description": "OAuth2 scopes required (scheme: oauth2 only).",
+          "items": {
+            "type": "string"
+          }
+        },
+        "service_identifier": {
+          "type": "string",
+          "description": "Stable key for credential managers (e.g., 'acme-weather-api')."
+        }
+      },
+      "if": {
+        "properties": { "scheme": { "const": "oauth2" } }
+      },
+      "then": {
+        "required": ["tokenUrl"]
+      },
+      "additionalProperties": false
+    },
+    "Skill": {
+      "type": "object",
+      "required": ["id", "name", "description"],
+      "description": "A discrete callable operation the agent can perform.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "description": "Stable machine-readable skill identifier, unique within the agent."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable display name."
+        },
+        "description": {
+          "type": "string",
+          "description": "Purpose and behaviour of this skill."
+        },
+        "input_schema": {
+          "type": "object",
+          "description": "JSON Schema describing the expected input payload.",
+          "additionalProperties": true
+        },
+        "output_schema": {
+          "type": "object",
+          "description": "JSON Schema describing the response payload structure.",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

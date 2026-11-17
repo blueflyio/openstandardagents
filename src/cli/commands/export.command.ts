@@ -45,10 +45,15 @@ export const exportCommand = new Command('export')
   .argument('[manifest]', 'Path to OSSA agent manifest')
   .option(
     '-p, --platform <platform>',
-    'Target platform (kagent, langchain, langflow, crewai, symfony, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, orchestration, agent-skills, agent-card)'
+    'Target platform (kagent, langchain, langflow, crewai, symfony, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, mcp, drupal, orchestration, agent-skills, agent-card)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
+  .option(
+    '--mcp-spec-version <version>',
+    "MCP wire-spec revision for --platform mcp: '2026-07-28' (stateless, default) or '2025-11-25' (legacy stateful). Overrides protocols.mcp.specVersion.",
+    '2026-07-28'
+  )
   .option(
     '--crd-version <version>',
     'Kagent CRD version (v1alpha1 | v1alpha2). v1alpha2 = Declarative Agent for native kagent installs',
@@ -98,6 +103,7 @@ exportCommand.action(
       platform?: string;
       output?: string;
       format: string;
+      mcpSpecVersion?: string;
       crdVersion?: string;
       namespace?: string;
       skill?: boolean;
@@ -928,6 +934,65 @@ exportCommand.action(
           }
 
           return;
+        }
+
+        case 'mcp': {
+          // Use registry adapter for MCP server export
+          const adapter = registry.getAdapter('mcp');
+          if (!adapter) {
+            throw new Error('MCP adapter not registered');
+          }
+
+          const mcpSpecVersion = options.mcpSpecVersion || '2026-07-28';
+          const transportMode =
+            mcpSpecVersion === '2026-07-28' ? 'stateless' : 'stateful';
+
+          // Surface deprecation warnings (and any hard errors) from the
+          // platform validator before writing files.
+          const validation = await adapter.validate(manifest);
+          for (const w of validation.warnings || []) {
+            console.warn(
+              chalk.yellow(`⚠ ${w.message}${w.path ? ` (${w.path})` : ''}`)
+            );
+          }
+
+          const outputDir =
+            options.output || `./mcp-${manifest.metadata?.name || 'agent'}`;
+
+          const result = await adapter.export(manifest, {
+            validate: options.validate !== false,
+            outputDir,
+            platformOptions: { mcpSpecVersion },
+          });
+
+          if (!result.success) {
+            // Includes the stateful+2026-07-28 hard error message.
+            throw new Error(result.error || 'MCP export failed');
+          }
+
+          if (!options.dryRun) {
+            fs.mkdirSync(outputDir, { recursive: true });
+            for (const file of result.files) {
+              const filePath = path.join(outputDir, file.path);
+              fs.mkdirSync(path.dirname(filePath), { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+            }
+            console.log(chalk.green(`✓ MCP server exported to: ${outputDir}`));
+          } else {
+            log(
+              `\nDRY RUN: Would write ${result.files.length} MCP files to ${outputDir}`
+            );
+          }
+
+          console.log(
+            chalk.gray(
+              `  Spec version: ${mcpSpecVersion} (${transportMode} transport)`
+            )
+          );
+          console.log(
+            chalk.gray(`  Files: ${result.files.map((f) => f.path).join(', ')}`)
+          );
+          return; // Early return to skip single-file write
         }
 
         case 'npm': {

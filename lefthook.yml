@@ -27,12 +27,12 @@ pre-commit:
         exit 1
 
     validate-gitlab-ci:
-      run: tsx src/tools/validation/gitlab-ci-validator.ts .gitlab-ci.yml
+      run: npx tsx src/tools/validation/gitlab-ci-validator.ts .gitlab-ci.yml
       glob: ".gitlab-ci.yml"
       stage_fixed: true
 
     prevent-hardcoded-versions:
-      run: tsx src/tools/validation/version-validator.ts
+      run: npx tsx src/tools/validation/version-validator.ts
       stage_fixed: false
 
 pre-push:
@@ -68,7 +68,7 @@ pre-push:
 
     architecture-audit:
       priority: 3
-      run: tsx src/tools/validation/architecture-audit.ts
+      run: npx tsx src/tools/validation/architecture-audit.ts
 
     validate-all:
       run: npm run validate

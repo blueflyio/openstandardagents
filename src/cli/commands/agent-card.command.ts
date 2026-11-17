@@ -171,8 +171,16 @@ agentCardCommand
 agentCardCommand
   .command('validate')
   .argument('<file>', 'Path to agent-card.json to validate')
-  .description('Validate an agent-card.json against the OSSA schema')
-  .action(async (filePath: string) => {
+  .option(
+    '--schema-version <version>',
+    'Schema version to validate against: "v0.4" (OSSA legacy) or "1.0" (Agent Card v1.0 spec)',
+    'v0.4'
+  )
+  .description(
+    'Validate an agent-card.json against the OSSA schema or Agent Card v1.0 spec.\n' +
+    'Use --schema-version 1.0 to validate against the interoperability Agent Card v1.0 spec.'
+  )
+  .action(async (filePath: string, opts: { schemaVersion: string }) => {
     try {
       const fullPath = path.resolve(filePath);
       if (!fs.existsSync(fullPath)) {
@@ -189,17 +197,20 @@ agentCardCommand
         process.exit(1);
       }
 
-      // Load schema
-      const schemaPath = path.resolve(
-        __dirname,
-        '../../../spec/v0.4/agent-card.schema.json'
-      );
+      // Resolve schema path based on --schema-version
+      let schemaPath: string;
+      let schemaLabel: string;
+
+      if (opts.schemaVersion === '1.0') {
+        schemaPath = path.resolve(__dirname, '../../../spec/v1/agent-card.schema.json');
+        schemaLabel = 'Agent Card v1.0';
+      } else {
+        schemaPath = path.resolve(__dirname, '../../../spec/v0.4/agent-card.schema.json');
+        schemaLabel = 'OSSA Agent Card v0.4';
+      }
+
       if (!fs.existsSync(schemaPath)) {
-        console.error(
-          chalk.red(
-            '✗ Agent card schema not found at spec/v0.4/agent-card.schema.json'
-          )
-        );
+        console.error(chalk.red(`✗ Schema not found: ${schemaPath}`));
         process.exit(1);
       }
 
@@ -210,15 +221,29 @@ agentCardCommand
       const validate = ajv.compile(schema);
 
       if (validate(card)) {
-        console.log(chalk.green('✓ Agent card is valid'));
+        console.log(chalk.green(`✓ Agent card is valid (${schemaLabel})`));
         const c = card as Record<string, unknown>;
-        console.log(chalk.gray(`  Name: ${c.name}`));
-        console.log(chalk.gray(`  URI: ${c.uri}`));
-        console.log(
-          chalk.gray(`  Version: ${c.version} (OSSA ${c.ossaVersion})`)
-        );
+
+        if (opts.schemaVersion === '1.0') {
+          // Agent Card v1.0 fields
+          console.log(chalk.gray(`  Name:            ${c.name}`));
+          console.log(chalk.gray(`  humanReadableId: ${c.humanReadableId}`));
+          console.log(chalk.gray(`  agentVersion:    ${c.agentVersion}`));
+          console.log(chalk.gray(`  url:             ${c.url}`));
+          const schemes = Array.isArray(c.authSchemes)
+            ? (c.authSchemes as Array<{ scheme: string }>).map((s) => s.scheme).join(', ')
+            : '—';
+          console.log(chalk.gray(`  authSchemes:     ${schemes}`));
+          const skillCount = Array.isArray(c.skills) ? c.skills.length : 0;
+          console.log(chalk.gray(`  skills:          ${skillCount} defined`));
+        } else {
+          // Legacy OSSA v0.4 fields
+          console.log(chalk.gray(`  Name: ${c.name}`));
+          console.log(chalk.gray(`  URI: ${c.uri}`));
+          console.log(chalk.gray(`  Version: ${c.version} (OSSA ${c.ossaVersion})`));
+        }
       } else {
-        console.error(chalk.red('✗ Agent card validation failed:'));
+        console.error(chalk.red(`✗ Agent card validation failed (${schemaLabel}):`));
         for (const error of validate.errors || []) {
           console.error(chalk.red(`  ${error.instancePath} ${error.message}`));
         }
@@ -232,3 +257,4 @@ agentCardCommand
       process.exit(1);
     }
   });
+

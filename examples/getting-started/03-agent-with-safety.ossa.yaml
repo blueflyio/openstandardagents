@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.5.0
+apiVersion: ossa/v0.5.1
 kind: Agent
 metadata:
   name: secure-assistant

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://openstandardagents.org/schemas/v0.5/extensions/cognition.schema.json",
   "title": "OSSA Cognition Extension (v0.5.0 draft)",
-  "description": "Reasoning pattern, thought schema, trace configuration, and governance for auditable agent cognition. First-class spec-level primitive for NIST/FedRAMP alignment.",
+  "description": "Reasoning pattern, thought schema, trace configuration, governance, session capabilities, hypothesis behavior, and alignment gates for auditable agent cognition. First-class spec-level primitive for NIST/FedRAMP alignment.",
   "type": "object",
   "properties": {
     "pattern": {
@@ -85,6 +85,83 @@
           "type": "boolean",
           "default": false,
           "description": "Whether reasoning chain must be retained for compliance audit"
+        }
+      },
+      "additionalProperties": false
+    },
+    "session": {
+      "type": "object",
+      "description": "Session capabilities for collaborative multi-agent interactions",
+      "properties": {
+        "joinable": {
+          "type": "boolean",
+          "description": "Can this agent join collaborative sessions"
+        },
+        "maxConcurrent": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Maximum number of concurrent sessions this agent can participate in"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["leader", "contributor", "observer"],
+          "default": "contributor",
+          "description": "Default role this agent assumes in collaborative sessions"
+        },
+        "conflictBehavior": {
+          "type": "string",
+          "enum": ["pause", "yield", "escalate"],
+          "default": "pause",
+          "description": "How the agent handles conflicts during collaborative sessions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "hypothesis": {
+      "type": "object",
+      "description": "Hypothesis declaration behavior for transparent agent reasoning",
+      "properties": {
+        "declaresIntent": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the agent declares its intent before acting"
+        },
+        "confidenceThreshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.7,
+          "description": "Minimum confidence score required to proceed without review"
+        },
+        "requiresAlignment": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the agent must pass an alignment gate before executing hypotheses"
+        }
+      },
+      "additionalProperties": false
+    },
+    "alignmentGate": {
+      "type": "object",
+      "description": "Alignment gate configuration for hypothesis validation before execution",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the alignment gate is active"
+        },
+        "arbiter": {
+          "type": "string",
+          "enum": ["human", "compliance-engine", "consensus"],
+          "default": "human",
+          "description": "Who or what arbitrates alignment decisions"
+        },
+        "timeout": {
+          "type": "string",
+          "default": "5m",
+          "pattern": "^\\d+[smhd]$",
+          "description": "Maximum time to wait for alignment decision (e.g. 5m, 30s, 1h)"
         }
       },
       "additionalProperties": false

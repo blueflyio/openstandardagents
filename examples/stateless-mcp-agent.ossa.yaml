@@ -1,0 +1,145 @@
+# OSSA v0.5 Example: Stateless MCP Agent (MCP spec 2026-07-28)
+#
+# Demonstrates the protocols.mcp stateless-transport declaration introduced for
+# the finalized MCP 2026-07-28 wire spec:
+#   - specVersion 2026-07-28 (no initialize handshake, no Mcp-Session-Id)
+#   - transport: stateless (single self-contained HTTP request; client info in _meta)
+#   - OAuth 2.1 + PKCE + RFC 9207 issuer validation (SEP-2468)
+#   - server/discover capability (replaces the removed handshake negotiation)
+#
+# It also shows how the sessionless MCP auth surface lines up with the agent's
+# identity (protocols.anp.did) and governance (governance.authorization) blocks —
+# see stateless-mcp-agent.README.md for the open design decisions.
+#
+# All v0.5 fields are optional and backward compatible with v0.4.
+apiVersion: ossa/v0.5
+kind: Agent
+metadata:
+  name: knowledge-search
+  version: 1.0.0
+  description: >
+    Stateless MCP search agent that exposes a document/knowledge lookup tool
+    over the 2026-07-28 HTTP transport.
+  namespace: blueflyio
+  labels:
+    team: platform-search
+    tier: production
+  identity:
+    namespace: blueflyio/platform
+    agent_id: knowledge-search
+    version: 1.0.0
+    publisher:
+      name: BlueFly.io
+      email: agents@bluefly.io
+      website: https://openstandardagents.org
+      registry_url: https://registry.openstandardagents.org/blueflyio
+    created_at: "2026-07-28T00:00:00Z"
+    updated_at: "2026-07-28T00:00:00Z"
+  agentType: claude
+  agentKind: worker
+
+spec:
+  role: >
+    You are a knowledge search agent. You answer lookup queries by searching an
+    indexed document corpus and returning ranked, cited results. You do not
+    mutate state; every call is self-contained.
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.0
+    maxTokens: 4000
+  tools:
+    - name: search
+      type: mcp
+      description: Full-text and semantic search over the indexed corpus
+    - name: fetch_document
+      type: mcp
+      description: Fetch a single document by id with its metadata
+
+# Protocol Declarations — stateless MCP surface
+protocols:
+  mcp:
+    # Semver protocol version (unchanged field); distinct from specVersion below.
+    version: "1.0.0"
+    role: server
+    # NEW: MCP wire-spec revision this surface targets.
+    specVersion: "2026-07-28"
+    # NEW: stateless HTTP transport (required for 2026-07-28).
+    transport: stateless
+    # NEW: the /mcp endpoint clients POST self-contained requests to.
+    endpoint: https://agents.bluefly.io/mcp
+    wellKnownPath: /.well-known/mcp
+    # NEW: endpoint authentication. OAuth 2.1 mandates PKCE; 2026-07-28 mandates
+    # issuer (iss) validation per RFC 9207.
+    auth:
+      type: oauth2.1
+      pkce: true
+      issuerValidation: true
+    servers:
+      - name: knowledge-search-tools
+        transport: streamable-http
+        url: https://agents.bluefly.io/mcp
+        tools:
+          - search
+          - fetch_document
+    capabilities:
+      tools: true
+      resources: true
+      prompts: false
+      # sampling is deprecated in 2026-07-28 — left off.
+      sampling: false
+      # NEW: capability negotiation without a handshake.
+      serverDiscover: true
+      # NEW: Tasks is an extension in 2026-07-28; this agent does not use it.
+      tasks: false
+    # NEW: no deprecated features in use under 2026-07-28.
+    deprecated:
+      sampling: false
+      roots: false
+      logging: false
+  # A2A Agent Card projection. preferredTransport on the generated card will be
+  # "http-stateless" because specVersion is 2026-07-28 (set by `ossa agent-card`).
+  a2a:
+    version: "1.0.0"
+    endpoint: https://agents.bluefly.io/.well-known/agent-card.json
+    agent_card:
+      name: Knowledge Search
+      description: Stateless MCP knowledge/document search agent
+      skills:
+        - id: search
+          name: Corpus Search
+          description: Full-text and semantic search over the indexed corpus
+        - id: fetch-document
+          name: Fetch Document
+          description: Retrieve a single document by id
+    capabilities:
+      streaming: true
+      pushNotifications: false
+      stateTransitionHistory: false
+    authentication:
+      schemes:
+        - oauth2
+  # Decentralized identity for the agent. The DID is the stable caller identity
+  # that Cedar policies bind to in the sessionless model (see README, decision 2).
+  anp:
+    did: "did:web:agents.bluefly.io:knowledge-search"
+    discovery:
+      registry_url: https://registry.openstandardagents.org
+      advertise: true
+
+# Governance — Cedar authorization the MCP auth surface must line up with.
+governance:
+  authorization:
+    clearance_level: 1
+    tool_permissions:
+      - tool: search
+        risk_level: low
+        requires_approval: false
+      - tool: fetch_document
+        risk_level: low
+        requires_approval: false
+    # The Cedar policy pack this agent adheres to. In the stateless model the
+    # caller principal derives from the OAuth 2.1 subject + validated issuer
+    # rather than an Mcp-Session-Id (see README, decision 2 & 3).
+    policy_references:
+      - blueflyio/knowledge-search-v1

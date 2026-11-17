@@ -127,6 +127,7 @@ export class AgentCardGenerator {
     const observability = this.extractObservability(manifest);
     const endpoints = this.extractEndpoints(manifest, options);
     const transport = this.extractTransport(endpoints);
+    const preferredTransport = this.extractPreferredTransport(manifest);
     const authentication = this.extractAuthentication(manifest);
     const encryption = this.extractEncryption(manifest);
     const metadata = this.extractMetadata(manifest);
@@ -198,6 +199,7 @@ export class AgentCardGenerator {
       // Connectivity
       endpoints,
       transport,
+      ...(preferredTransport ? { preferredTransport } : {}),
 
       // Security
       authentication,
@@ -770,6 +772,22 @@ export class AgentCardGenerator {
     if (endpoints.websocket) transports.push('websocket');
     if (transports.length === 0) transports.push('http');
     return transports;
+  }
+
+  /**
+   * Derive the A2A Agent Card preferredTransport from the manifest's MCP
+   * spec version. MCP 2026-07-28 is sessionless → 'http-stateless';
+   * 2025-11-25 is the legacy stateful revision → 'http'. Undefined when the
+   * manifest declares no protocols.mcp.specVersion.
+   */
+  private extractPreferredTransport(
+    manifest: OssaAgent
+  ): string | undefined {
+    const specVersion = (manifest as { protocols?: { mcp?: { specVersion?: string } } })
+      .protocols?.mcp?.specVersion;
+    if (specVersion === '2026-07-28') return 'http-stateless';
+    if (specVersion === '2025-11-25') return 'http';
+    return undefined;
   }
 
   // ─── Authentication ────────────────────────────────────────
